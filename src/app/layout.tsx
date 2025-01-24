@@ -5,6 +5,8 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from '@/lib/react-query'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeProvider } from '@/components/theme-provider'
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { AppSidebar } from '@/components/app-sidebar'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -39,7 +41,13 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <Toaster richColors closeButton />
-            <main>{children}</main>
+            <SidebarProvider>
+              <AppSidebar />
+              <main className="flex flex-col w-full h-screen overflow-hidden">
+                <SidebarTrigger />
+                {children}
+              </main>
+            </SidebarProvider>
           </ThemeProvider>
         </QueryClientProvider>
       </body>
