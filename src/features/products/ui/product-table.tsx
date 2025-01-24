@@ -12,7 +12,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { ChevronDown, PlusCircle } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -30,170 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { columns } from './columns'
-
-// const data: Product[] = [
-//   {
-//     id: '1',
-//     name: 'Arroz Branco',
-//     currentQuantity: 5,
-//     desiredQuantity: 10,
-//     unit: 'kg',
-//     category: 'Grãos',
-//   },
-//   {
-//     id: '2',
-//     name: 'Açúcar Refinado',
-//     currentQuantity: 1500,
-//     desiredQuantity: 3000,
-//     unit: 'g',
-//     category: 'Açúcar',
-//   },
-//   {
-//     id: '3',
-//     name: 'Farinha de Trigo',
-//     currentQuantity: 2,
-//     desiredQuantity: 5,
-//     unit: 'kg',
-//     category: 'Farinhas',
-//   },
-//   {
-//     id: '4',
-//     name: 'Leite em Pó',
-//     currentQuantity: 800,
-//     desiredQuantity: 2000,
-//     unit: 'g',
-//     category: 'Laticínios',
-//   },
-//   {
-//     id: '5',
-//     name: 'Feijão Preto',
-//     currentQuantity: 3,
-//     desiredQuantity: 7,
-//     unit: 'kg',
-//     category: 'Grãos',
-//   },
-//   {
-//     id: '6',
-//     name: 'Macarrão Espaguete',
-//     currentQuantity: 4,
-//     desiredQuantity: 8,
-//     unit: 'kg',
-//     category: 'Massas',
-//   },
-//   {
-//     id: '7',
-//     name: 'Óleo de Soja',
-//     currentQuantity: 2,
-//     desiredQuantity: 4,
-//     unit: 'L',
-//     category: 'Óleos',
-//   },
-//   {
-//     id: '8',
-//     name: 'Café em Pó',
-//     currentQuantity: 500,
-//     desiredQuantity: 1000,
-//     unit: 'g',
-//     category: 'Bebidas',
-//   },
-//   {
-//     id: '9',
-//     name: 'Sal Refinado',
-//     currentQuantity: 1,
-//     desiredQuantity: 3,
-//     unit: 'kg',
-//     category: 'Temperos',
-//   },
-//   {
-//     id: '10',
-//     name: 'Milho em Conserva',
-//     currentQuantity: 2,
-//     desiredQuantity: 5,
-//     unit: 'lata',
-//     category: 'Conservas',
-//   },
-//   {
-//     id: '11',
-//     name: 'Creme de Leite',
-//     currentQuantity: 3,
-//     desiredQuantity: 6,
-//     unit: 'lata',
-//     category: 'Laticínios',
-//   },
-//   {
-//     id: '12',
-//     name: 'Azeite de Oliva',
-//     currentQuantity: 1,
-//     desiredQuantity: 2,
-//     unit: 'L',
-//     category: 'Óleos',
-//   },
-//   {
-//     id: '13',
-//     name: 'Biscoito de Maizena',
-//     currentQuantity: 3,
-//     desiredQuantity: 6,
-//     unit: 'pacote',
-//     category: 'Snacks',
-//   },
-//   {
-//     id: '14',
-//     name: 'Batata Palha',
-//     currentQuantity: 2,
-//     desiredQuantity: 4,
-//     unit: 'pacote',
-//     category: 'Snacks',
-//   },
-//   {
-//     id: '15',
-//     name: 'Achocolatado em Pó',
-//     currentQuantity: 800,
-//     desiredQuantity: 1600,
-//     unit: 'g',
-//     category: 'Bebidas',
-//   },
-//   {
-//     id: '16',
-//     name: 'Fermento Químico',
-//     currentQuantity: 500,
-//     desiredQuantity: 1000,
-//     unit: 'g',
-//     category: 'Farinhas',
-//   },
-//   {
-//     id: '17',
-//     name: 'Leite Condensado',
-//     currentQuantity: 2,
-//     desiredQuantity: 5,
-//     unit: 'lata',
-//     category: 'Laticínios',
-//   },
-//   {
-//     id: '18',
-//     name: 'Chocolate em Barra',
-//     currentQuantity: 1,
-//     desiredQuantity: 3,
-//     unit: 'kg',
-//     category: 'Doces',
-//   },
-//   {
-//     id: '19',
-//     name: 'Ervilha em Conserva',
-//     currentQuantity: 2,
-//     desiredQuantity: 5,
-//     unit: 'lata',
-//     category: 'Conservas',
-//   },
-//   {
-//     id: '20',
-//     name: 'Molho de Tomate',
-//     currentQuantity: 5,
-//     desiredQuantity: 10,
-//     unit: 'pacote',
-//     category: 'Conservas',
-//   },
-// ]
+import { columns, type Product } from './columns'
 
 export const getProductsFromLocalStorageAPI = (): Promise<Product[]> => {
   return new Promise((resolve, reject) => {
@@ -210,17 +47,8 @@ export const getProductsFromLocalStorageAPI = (): Promise<Product[]> => {
   })
 }
 
-export interface Product {
-  id: string
-  name: string
-  currentQuantity: number
-  desiredQuantity: number
-  unit: 'kg' | 'g' | 'L' | 'lata' | 'pacote'
-  category: string
-}
-
 import { useQuery } from '@tanstack/react-query'
-import { DialogDemo } from './create-product-dialog'
+import { CreateProductDialog } from './create-product-dialog'
 
 export function DataTableDemo() {
   const [sorting, setSorting] = React.useState<SortingState>([])
@@ -269,11 +97,7 @@ export function DataTableDemo() {
             </span>
           )}
         </p>
-        <DialogDemo />
-        {/* <Button>
-          <PlusCircle />
-          Adicionar Produto
-        </Button> */}
+        <CreateProductDialog />
       </div>
 
       <div className="flex items-center gap-4">
@@ -335,7 +159,7 @@ export function DataTableDemo() {
           </TableHeader>
 
           <TableBody>
-            {productsQuery.isLoading ? (
+            {productsQuery.isLoading || productsQuery.isFetching ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}

@@ -30,17 +30,11 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { PlusCircle } from 'lucide-react'
-import { getProductsFromLocalStorageAPI, type Product } from './product-table'
+import { getProductsFromLocalStorageAPI } from './product-table'
 import { useState } from 'react'
 import { toast } from 'sonner'
-
-enum Unit {
-  kg = 'kg',
-  g = 'g',
-  L = 'L',
-  lata = 'lata',
-  pacote = 'pacote',
-}
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { Unit, type Product } from './columns'
 
 const addProductToLocalStorageAPI = async (product: Product): Promise<void> => {
   return new Promise((resolve, reject) => {
@@ -62,10 +56,7 @@ const addProductToLocalStorageAPI = async (product: Product): Promise<void> => {
 
 const formSchema = z.object({
   name: z.string().nonempty('Nome é obrigatório'),
-  currentQuantity: z.coerce
-    .number()
-    .int()
-    .positive('Quantidade deve ser um número positivo'),
+  currentQuantity: z.coerce.number().int(),
   desiredQuantity: z.coerce
     .number()
     .int()
@@ -74,7 +65,7 @@ const formSchema = z.object({
   category: z.string().nonempty('Categoria é obrigatória'),
 })
 
-export function DialogDemo() {
+export function CreateProductDialog() {
   const [isOpen, setIsOpen] = useState(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -88,18 +79,35 @@ export function DialogDemo() {
     },
   })
 
+  const queryClient = useQueryClient()
+
+  const mutation = useMutation<void, Error, Product>({
+    mutationFn: addProductToLocalStorageAPI,
+    onMutate: (product) => {
+      queryClient.cancelQueries({ queryKey: ['products'] })
+      const previousProducts = queryClient.getQueryData<Product[]>(['products'])
+      queryClient.setQueryData<Product[]>(['products'], (old) => [
+        ...(old ?? []),
+        product,
+      ])
+      return { previousProducts }
+    },
+    onError: () => {
+      toast.error('Falha ao adicionar produto')
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+    },
+    onSuccess: () => {
+      toast.success('Produto adicionado com sucesso')
+      form.reset()
+      setIsOpen(false)
+    },
+  })
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const productWithId = { ...values, id: crypto.randomUUID() }
-    addProductToLocalStorageAPI(productWithId)
-      .then(() => {
-        form.reset()
-        setIsOpen(false)
-        toast.success('Produto adicionado com sucesso!')
-      })
-      .catch((error) => {
-        console.error('Error adding product to localStorage', error)
-        toast.error('Falha ao adicionar produto')
-      })
+    await mutation.mutateAsync(productWithId)
   }
 
   return (
@@ -219,7 +227,9 @@ export function DialogDemo() {
               )}
             />
             <DialogFooter>
-              <Button type="submit">Save changes</Button>
+              <Button disabled={mutation.isPending} type="submit">
+                Save changes
+              </Button>
             </DialogFooter>
           </form>
         </Form>

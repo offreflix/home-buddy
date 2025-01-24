@@ -13,7 +13,24 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Progress } from '@/components/ui/progress'
-import type { Product } from './product-table'
+
+export enum Unit {
+  kg = 'kg',
+  g = 'g',
+  L = 'L',
+  lata = 'lata',
+  pacote = 'pacote',
+  unidade = 'unidade',
+}
+
+export interface Product {
+  id: string
+  name: string
+  currentQuantity: number
+  desiredQuantity: number
+  unit: Unit
+  category: string
+}
 
 export const columns: ColumnDef<Product>[] = [
   {
