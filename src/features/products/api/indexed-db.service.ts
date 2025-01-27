@@ -28,7 +28,7 @@ export const productIndexedDbService = {
     const transaction = database.transaction(STORE_NAME, 'readwrite')
     const store = transaction.objectStore(STORE_NAME)
 
-    store.add(product)
+    store.add(product, product.id)
 
     return this.handleTransaction(transaction)
   },
@@ -57,7 +57,7 @@ export const productIndexedDbService = {
 
     store.delete(id)
 
-    store.add(product)
+    store.add(product, id)
 
     return this.handleTransaction(transaction)
   },
