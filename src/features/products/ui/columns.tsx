@@ -13,24 +13,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Progress } from '@/components/ui/progress'
+import type { Product } from '../model/types'
+import { useModalStore } from '../stores/modal.store'
 
-export enum Unit {
-  kg = 'kg',
-  g = 'g',
-  L = 'L',
-  lata = 'lata',
-  pacote = 'pacote',
-  unidade = 'unidade',
-}
-
-export interface Product {
-  id: string
-  name: string
-  currentQuantity: number
-  desiredQuantity: number
-  unit: Unit
-  category: string
-}
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 
 export const columns: ColumnDef<Product>[] = [
   {
@@ -123,26 +113,28 @@ export const columns: ColumnDef<Product>[] = [
     id: 'actions',
     enableHiding: false,
     cell: ({ row }) => {
-      const payment = row.original
+      const { openEdit, setEditProduct } = useModalStore()
 
       return (
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">Open menu</span>
               <MoreHorizontal />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
-            >
-              Copy payment ID
-            </DropdownMenuItem>
+          <DropdownMenuContent align="start">
+            <DropdownMenuLabel>Ações</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                openEdit()
+                setEditProduct(row.original)
+              }}
+            >
+              Editar
+            </DropdownMenuItem>
+            {/* <DropdownMenuItem>Excluir</DropdownMenuItem> */}
           </DropdownMenuContent>
         </DropdownMenu>
       )

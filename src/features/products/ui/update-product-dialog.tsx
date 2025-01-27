@@ -1,3 +1,5 @@
+'use client'
+
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -18,7 +20,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import { z } from 'zod'
@@ -30,14 +31,16 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { PlusCircle } from 'lucide-react'
-import { useState } from 'react'
 import { toast } from 'sonner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { productApi } from '../api/product-api'
 import { Category, type Product, Unit } from '../model/types'
 import { useModalStore } from '../stores/modal.store'
+import { useForm } from 'react-hook-form'
+import { useEffect } from 'react'
 
 const formSchema = z.object({
+  id: z.string().optional(),
   name: z.string().nonempty('Nome é obrigatório'),
   currentQuantity: z.coerce.number().int(),
   desiredQuantity: z.coerce
@@ -48,12 +51,13 @@ const formSchema = z.object({
   category: z.nativeEnum(Category),
 })
 
-export function CreateProductDialog() {
-  const { isOpen, close, toggleModal } = useModalStore()
+export function UpdateProductDialog() {
+  const { isOpenEdit, closeEdit, toggleEditModal, formValues } = useModalStore()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      id: '',
       name: '',
       currentQuantity: 0,
       desiredQuantity: 0,
@@ -65,7 +69,8 @@ export function CreateProductDialog() {
   const queryClient = useQueryClient()
 
   const mutation = useMutation<void, Error, Product>({
-    mutationFn: (product: Product) => productApi.addProduct(product),
+    mutationFn: (product: Product) =>
+      productApi.updateProduct(product.id, product),
     onMutate: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
     },
@@ -78,26 +83,28 @@ export function CreateProductDialog() {
     onSuccess: () => {
       toast.success('Produto adicionado com sucesso')
       form.reset()
-      close()
+      closeEdit()
     },
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const productWithId = { ...values, id: crypto.randomUUID() }
-    await mutation.mutateAsync(productWithId)
+    await mutation.mutateAsync({
+      ...values,
+      id: values.id || crypto.randomUUID(),
+    })
   }
 
+  useEffect(() => {
+    if (formValues) {
+      form.reset(formValues)
+    }
+  }, [formValues, form])
+
   return (
-    <Dialog open={isOpen} onOpenChange={toggleModal}>
-      <DialogTrigger asChild>
-        <Button>
-          <PlusCircle />
-          Adicionar Produto
-        </Button>
-      </DialogTrigger>
+    <Dialog open={isOpenEdit} onOpenChange={toggleEditModal}>
       <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-auto">
         <DialogHeader>
-          <DialogTitle>Adicionar Produto</DialogTitle>
+          <DialogTitle>Editar Produto</DialogTitle>
           <DialogDescription>
             Adicione um novo produto ao seu estoque.
           </DialogDescription>
@@ -220,7 +227,7 @@ export function CreateProductDialog() {
 
             <DialogFooter>
               <Button disabled={mutation.isPending} type="submit">
-                Salvar
+                Save changes
               </Button>
             </DialogFooter>
           </form>

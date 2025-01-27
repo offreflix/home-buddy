@@ -30,25 +30,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { columns, type Product } from './columns'
-
-export const getProductsFromLocalStorageAPI = (): Promise<Product[]> => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      try {
-        const storedData = localStorage.getItem('products')
-        const products = storedData ? JSON.parse(storedData).reverse() : []
-        resolve(products)
-      } catch (error) {
-        console.error('Error parsing products from localStorage', error)
-        reject(new Error('Failed to retrieve products from localStorage'))
-      }
-    }, 1000)
-  })
-}
+import { columns } from './columns'
 
 import { useQuery } from '@tanstack/react-query'
 import { CreateProductDialog } from './create-product-dialog'
+import { productApi } from '../api/product-api'
+import { UpdateProductDialog } from './update-product-dialog'
 
 export function DataTableDemo() {
   const [sorting, setSorting] = React.useState<SortingState>([])
@@ -61,7 +48,7 @@ export function DataTableDemo() {
 
   const productsQuery = useQuery({
     queryKey: ['products'],
-    queryFn: getProductsFromLocalStorageAPI,
+    queryFn: productApi.getAllProducts,
   })
 
   const table = useReactTable({
@@ -82,8 +69,6 @@ export function DataTableDemo() {
       rowSelection,
     },
   })
-
-  console.log(productsQuery)
 
   return (
     <div className="w-full flex flex-col gap-2">
