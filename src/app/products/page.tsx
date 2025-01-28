@@ -1,3 +1,4 @@
+import { DeleteProductDialog } from '@/features/products/ui/delete-product-dialog'
 import { DataTableDemo } from '@/features/products/ui/product-table'
 import { UpdateProductDialog } from '@/features/products/ui/update-product-dialog'
 import Link from 'next/link'
@@ -5,9 +6,9 @@ import Link from 'next/link'
 export default function Page() {
   return (
     <div className="p-8 flex flex-col gap-4">
-      <Link href="/">Home</Link>
-
       <UpdateProductDialog />
+
+      <DeleteProductDialog />
 
       <DataTableDemo />
     </div>
