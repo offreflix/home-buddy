@@ -24,7 +24,7 @@ export function DataTableSkeleton() {
             <TableRow key={crypto.randomUUID()}>
               <TableCell>
                 <div className="pl-4">
-                  <Skeleton className="h-4 w-[200px]" />
+                  <Skeleton className="h-4 w-[75px] sm:w-[100px] md:w-[150px] lg:w-[200px]" />
                 </div>
               </TableCell>
               <TableCell>

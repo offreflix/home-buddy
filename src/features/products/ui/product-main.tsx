@@ -33,12 +33,16 @@ import ProductTable from './product-table'
 import ProductCardSkeleton from './product-card-skeleton'
 import { DataTableSkeleton } from './product-table-skeleton'
 
+type ViewMode = 'card' | 'table'
+
 export function ProductMain() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
-  const [viewMode, setViewMode] = useState<'card' | 'table'>('table')
+  const [viewMode, setViewMode] = useState<ViewMode>(
+    (localStorage.getItem('viewMode') as ViewMode) ?? 'table'
+  )
 
   const productsQuery = useQuery({
     queryKey: ['products'],
@@ -63,6 +67,11 @@ export function ProductMain() {
       rowSelection,
     },
   })
+
+  function handleViewMode(mode: ViewMode) {
+    setViewMode(mode)
+    localStorage.setItem('viewMode', mode)
+  }
 
   return (
     <div className="w-full flex flex-col gap-2">
@@ -116,11 +125,11 @@ export function ProductMain() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <div className="border rounded-lg">
+        <div className="border rounded-lg flex">
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setViewMode('card')}
+            onClick={() => handleViewMode('card')}
             className={`${viewMode === 'card' ? 'bg-accent' : ''}`}
           >
             <LayoutGrid className="h-4 w-4" />
@@ -128,7 +137,7 @@ export function ProductMain() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setViewMode('table')}
+            onClick={() => handleViewMode('table')}
             className={`${viewMode === 'table' ? 'bg-accent' : ''}`}
           >
             <List className="h-4 w-4" />
