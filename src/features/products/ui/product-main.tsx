@@ -28,7 +28,7 @@ import { CreateProductDialog } from './create-product-dialog'
 import { productApi } from '../api/product-api'
 
 import ProductCard from './product-card'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import ProductTable from './product-table'
 import ProductCardSkeleton from './product-card-skeleton'
 import { DataTableSkeleton } from './product-table-skeleton'
@@ -40,9 +40,13 @@ export function ProductMain() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
-  const [viewMode, setViewMode] = useState<ViewMode>(
-    (localStorage.getItem('viewMode') as ViewMode) ?? 'table'
-  )
+  const [viewMode, setViewMode] = useState<ViewMode | null>(null)
+
+  useEffect(() => {
+    const viewMode = localStorage.getItem('viewMode') as ViewMode
+
+    setViewMode(viewMode || 'table')
+  }, [])
 
   const productsQuery = useQuery({
     queryKey: ['products'],
@@ -145,7 +149,8 @@ export function ProductMain() {
         </div>
       </div>
 
-      {productsQuery.isLoading &&
+      {viewMode &&
+        productsQuery.isLoading &&
         (viewMode === 'card' ? <ProductCardSkeleton /> : <DataTableSkeleton />)}
 
       {!productsQuery.isLoading &&
