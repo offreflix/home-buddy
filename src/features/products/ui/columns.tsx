@@ -137,7 +137,7 @@ export const columns: ColumnDef<Product>[] = [
       return (
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button variant="ghost" className="h-9 w-9 p-0">
               <span className="sr-only">Open menu</span>
               <MoreHorizontal />
             </Button>

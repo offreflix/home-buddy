@@ -31,7 +31,7 @@ export function AppSidebar() {
   const pathname = usePathname()
 
   return (
-    <Sidebar side="left">
+    <Sidebar collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Application</SidebarGroupLabel>
