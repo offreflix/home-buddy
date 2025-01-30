@@ -33,6 +33,38 @@ export const productIndexedDbService = {
     return this.handleTransaction(transaction)
   },
 
+  async addQuantity(id: string): Promise<void> {
+    const database = await this.openDB()
+    const transaction = database.transaction(STORE_NAME, 'readwrite')
+    const store = transaction.objectStore(STORE_NAME)
+
+    const request = store.get(id)
+
+    request.onsuccess = () => {
+      const product = request.result as Product
+      product.currentQuantity += 1
+      store.put(product, id)
+    }
+
+    return this.handleTransaction(transaction)
+  },
+
+  async decreaseQuantity(id: string): Promise<void> {
+    const database = await this.openDB()
+    const transaction = database.transaction(STORE_NAME, 'readwrite')
+    const store = transaction.objectStore(STORE_NAME)
+
+    const request = store.get(id)
+
+    request.onsuccess = () => {
+      const product = request.result as Product
+      product.currentQuantity -= 1
+      store.put(product, id)
+    }
+
+    return this.handleTransaction(transaction)
+  },
+
   async getAll(): Promise<Product[]> {
     const database = await this.openDB()
     return new Promise<Product[]>((resolve, reject) => {

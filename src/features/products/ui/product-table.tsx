@@ -1,27 +1,4 @@
-'use client'
-
-import * as React from 'react'
-import {
-  type ColumnFiltersState,
-  type SortingState,
-  type VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from '@tanstack/react-table'
-import { ChevronDown } from 'lucide-react'
-
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -30,98 +7,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { flexRender, type Table as TableType } from '@tanstack/react-table'
+import React from 'react'
 import { columns } from './columns'
+import type { Product } from '../model/types'
 
-import { useQuery } from '@tanstack/react-query'
-import { CreateProductDialog } from './create-product-dialog'
-import { productApi } from '../api/product-api'
-import { UpdateProductDialog } from './update-product-dialog'
+type Props = {
+  table: TableType<Product>
+}
 
-export function DataTableDemo() {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
-
-  const productsQuery = useQuery({
-    queryKey: ['products'],
-    queryFn: productApi.getAllProducts,
-  })
-
-  const table = useReactTable({
-    data: productsQuery.data ?? [],
-    columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    },
-  })
-
+function ProductTable({ table }: Props) {
   return (
-    <div className="w-full flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <p className="text-lg font-bold">
-          Produtos
-          {table.getIsSomePageRowsSelected() && (
-            <span className="text-sm text-muted-foreground">
-              {' '}
-              - {table.getFilteredSelectedRowModel().rows.length} selecionado(s)
-            </span>
-          )}
-        </p>
-        <CreateProductDialog />
-      </div>
-
-      <div className="flex items-center gap-4">
-        <Input
-          placeholder="Filtrar nome..."
-          value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
-          onChange={(event) =>
-            table.getColumn('name')?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Colunas <ChevronDown />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                )
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
+    <>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -144,16 +41,7 @@ export function DataTableDemo() {
           </TableHeader>
 
           <TableBody>
-            {productsQuery.isLoading || productsQuery.isFetching ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  Loading...
-                </TableCell>
-              </TableRow>
-            ) : table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -202,6 +90,8 @@ export function DataTableDemo() {
           </Button>
         </div>
       </div>
-    </div>
+    </>
   )
 }
+
+export default ProductTable

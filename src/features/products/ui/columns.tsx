@@ -14,6 +14,17 @@ import {
 import { Progress } from '@/components/ui/progress'
 import type { Product } from '../model/types'
 import { useModalStore } from '../stores/modal.store'
+import { productIndexedDbService } from '../api/indexed-db.service'
+import { useQueryClient } from '@tanstack/react-query'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Badge } from '@/components/ui/badge'
 
 export const columns: ColumnDef<Product>[] = [
   {
@@ -46,36 +57,48 @@ export const columns: ColumnDef<Product>[] = [
       )
     },
 
-    cell: ({ row }) => (
-      <div className="flex items-center space-x-2 pl-4">
-        <div className="w-[100px] space-y-1">
-          <Progress
-            value={
-              (row.original.currentQuantity / row.original.desiredQuantity) *
-              100
-            }
-          />
-          <div className="text-xs text-muted-foreground">
-            {row.original.currentQuantity} / {row.original.desiredQuantity}{' '}
-            {row.original.unit}
+    cell: ({ row }) => {
+      const queryClient = useQueryClient()
+
+      return (
+        <div className="flex items-center space-x-2 pl-4">
+          <div className="w-[100px] space-y-1">
+            <Progress
+              value={
+                (row.original.currentQuantity / row.original.desiredQuantity) *
+                100
+              }
+            />
+            <div className="text-xs text-muted-foreground">
+              {row.original.currentQuantity} / {row.original.desiredQuantity}{' '}
+              {row.original.unit}
+            </div>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={async () => {
+              await productIndexedDbService.decreaseQuantity(row.original.id)
+
+              queryClient.invalidateQueries({ queryKey: ['products'] })
+            }}
+          >
+            <Minus />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={async () => {
+              await productIndexedDbService.addQuantity(row.original.id)
+
+              queryClient.invalidateQueries({ queryKey: ['products'] })
+            }}
+          >
+            <Plus />
+          </Button>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => decreaseQuantity(row.original.id)}
-        >
-          <Minus />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => increaseQuantity(row.original.id)}
-        >
-          <Plus />
-        </Button>
-      </div>
-    ),
+      )
+    },
   },
 
   {
@@ -91,7 +114,13 @@ export const columns: ColumnDef<Product>[] = [
         </Button>
       )
     },
-    cell: ({ row }) => <div className="pl-4">{row.getValue('category')}</div>,
+    cell: ({ row }) => (
+      <div className="pl-4">
+        <Badge variant="secondary" className="text-xs">
+          {row.getValue('category')}
+        </Badge>
+      </div>
+    ),
   },
 
   {
@@ -132,8 +161,6 @@ export const columns: ColumnDef<Product>[] = [
             >
               Excluir
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Adicionar ao carrinho</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
