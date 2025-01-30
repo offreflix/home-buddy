@@ -49,7 +49,7 @@ const formSchema = z.object({
 })
 
 export function CreateProductDialog() {
-  const { isOpen, close, toggleModal } = useModalStore()
+  const { isAddModalOpen, toggleAddModal } = useModalStore()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -78,7 +78,7 @@ export function CreateProductDialog() {
     onSuccess: () => {
       toast.success('Produto adicionado com sucesso')
       form.reset()
-      close()
+      toggleAddModal()
     },
   })
 
@@ -88,7 +88,7 @@ export function CreateProductDialog() {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={toggleModal}>
+    <Dialog open={isAddModalOpen} onOpenChange={toggleAddModal}>
       <DialogTrigger asChild>
         <Button>
           <PlusCircle />

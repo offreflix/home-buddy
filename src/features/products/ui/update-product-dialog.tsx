@@ -52,7 +52,7 @@ const formSchema = z.object({
 })
 
 export function UpdateProductDialog() {
-  const { isOpenEdit, closeEdit, toggleEditModal, formValues } = useModalStore()
+  const { isEditModalOpen, toggleEditModal, editingProduct } = useModalStore()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -83,7 +83,7 @@ export function UpdateProductDialog() {
     onSuccess: () => {
       toast.success('Produto adicionado com sucesso')
       form.reset()
-      closeEdit()
+      toggleEditModal()
     },
   })
 
@@ -95,13 +95,13 @@ export function UpdateProductDialog() {
   }
 
   useEffect(() => {
-    if (formValues) {
-      form.reset(formValues)
+    if (editingProduct) {
+      form.reset(editingProduct)
     }
-  }, [formValues, form])
+  }, [editingProduct, form])
 
   return (
-    <Dialog open={isOpenEdit} onOpenChange={toggleEditModal}>
+    <Dialog open={isEditModalOpen} onOpenChange={toggleEditModal}>
       <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-auto">
         <DialogHeader>
           <DialogTitle>Editar Produto</DialogTitle>

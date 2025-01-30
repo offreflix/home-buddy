@@ -1,9 +1,8 @@
 import * as React from 'react'
 import type { ColumnDef } from '@tanstack/react-table'
-import { ArrowUpDown, MoreHorizontal } from 'lucide-react'
+import { ArrowUpDown, Minus, MoreHorizontal, Plus } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,37 +14,19 @@ import {
 import { Progress } from '@/components/ui/progress'
 import type { Product } from '../model/types'
 import { useModalStore } from '../stores/modal.store'
-
+import { productIndexedDbService } from '../api/indexed-db.service'
+import { useQueryClient } from '@tanstack/react-query'
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+  Table,
+  TableBody,
+  TableCell,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Badge } from '@/components/ui/badge'
 
 export const columns: ColumnDef<Product>[] = [
-  {
-    id: 'select',
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && 'indeterminate')
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-
   {
     accessorKey: 'name',
     header: ({ column }) => {
@@ -76,21 +57,48 @@ export const columns: ColumnDef<Product>[] = [
       )
     },
 
-    cell: ({ row }) => (
-      <div className="flex items-center space-x-1 pl-4 gap-2 justify-between">
-        <Progress
-          value={
-            (row.original.currentQuantity / row.original.desiredQuantity) * 100
-          }
-          max={100}
-          className="max-w-52"
-        />
-        <span className="text-muted-foreground text-sm whitespace-nowrap">
-          {row.original.currentQuantity} / {row.original.desiredQuantity}{' '}
-          {row.original.unit}
-        </span>
-      </div>
-    ),
+    cell: ({ row }) => {
+      const queryClient = useQueryClient()
+
+      return (
+        <div className="flex items-center space-x-2 pl-4">
+          <div className="w-[100px] space-y-1">
+            <Progress
+              value={
+                (row.original.currentQuantity / row.original.desiredQuantity) *
+                100
+              }
+            />
+            <div className="text-xs text-muted-foreground">
+              {row.original.currentQuantity} / {row.original.desiredQuantity}{' '}
+              {row.original.unit}
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={async () => {
+              await productIndexedDbService.decreaseQuantity(row.original.id)
+
+              queryClient.invalidateQueries({ queryKey: ['products'] })
+            }}
+          >
+            <Minus />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={async () => {
+              await productIndexedDbService.addQuantity(row.original.id)
+
+              queryClient.invalidateQueries({ queryKey: ['products'] })
+            }}
+          >
+            <Plus />
+          </Button>
+        </div>
+      )
+    },
   },
 
   {
@@ -106,14 +114,25 @@ export const columns: ColumnDef<Product>[] = [
         </Button>
       )
     },
-    cell: ({ row }) => <div className="pl-4">{row.getValue('category')}</div>,
+    cell: ({ row }) => (
+      <div className="pl-4">
+        <Badge variant="secondary" className="text-xs">
+          {row.getValue('category')}
+        </Badge>
+      </div>
+    ),
   },
 
   {
     id: 'actions',
     enableHiding: false,
     cell: ({ row }) => {
-      const { openEdit, setEditProduct } = useModalStore()
+      const {
+        toggleEditModal,
+        setEditingProduct,
+        toggleDeleteModal,
+        setDeletingProductId,
+      } = useModalStore()
 
       return (
         <DropdownMenu modal={false}>
@@ -128,13 +147,20 @@ export const columns: ColumnDef<Product>[] = [
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
-                openEdit()
-                setEditProduct(row.original)
+                toggleEditModal()
+                setEditingProduct(row.original)
               }}
             >
               Editar
             </DropdownMenuItem>
-            {/* <DropdownMenuItem>Excluir</DropdownMenuItem> */}
+            <DropdownMenuItem
+              onClick={() => {
+                toggleDeleteModal()
+                setDeletingProductId(row.original.id)
+              }}
+            >
+              Excluir
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
