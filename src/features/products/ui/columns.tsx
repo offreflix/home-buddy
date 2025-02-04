@@ -16,14 +16,7 @@ import type { Product } from '../model/types'
 import { useModalStore } from '../stores/modal.store'
 import { productIndexedDbService } from '../api/indexed-db.service'
 import { useQueryClient } from '@tanstack/react-query'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Skeleton } from '@/components/ui/skeleton'
+
 import { Badge } from '@/components/ui/badge'
 
 export const columns: ColumnDef<Product>[] = [
