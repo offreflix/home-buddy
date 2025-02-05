@@ -1,5 +1,5 @@
 {
-  "name": "my-turborepo",
+  "name": "home-buddy-monorepo",
   "private": true,
   "scripts": {
     "build": "turbo build",
