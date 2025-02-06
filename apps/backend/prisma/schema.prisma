@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  unit        String   @default("unidade")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  categoryId Int
+  userId     Int
+
+  category    Category        @relation(fields: [categoryId], references: [id])
+  user        User            @relation(fields: [userId], references: [id])
+  stock       Stock?
+  movements   StockMovement[]
+  Consumption Consumption[]
+}
+
+model Stock {
+  id        Int      @id @default(autoincrement())
+  productId Int      @unique
+  updatedAt DateTime @updatedAt
+
+  product   Product         @relation(fields: [productId], references: [id])
+  movements StockMovement[]
+}
+
+model StockMovement {
+  id           Int          @id @default(autoincrement())
+  productId    Int
+  movementType MovementType
+  quantity     Float
+  description  String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  product Product @relation(fields: [productId], references: [id])
+  Stock   Stock?  @relation(fields: [stockId], references: [id])
+  stockId Int?
+
+  @@index([productId])
+}
+
+enum MovementType {
+  IN
+  OUT
+}
+
+model Consumption {
+  id          Int      @id @default(autoincrement())
+  productId   Int
+  quantity    Float
+  description String?
+  consumedAt  DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([productId])
+}
