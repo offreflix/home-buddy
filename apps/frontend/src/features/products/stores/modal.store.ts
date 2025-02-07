@@ -1,20 +1,20 @@
-import { create } from "zustand";
-import type { Product } from "../model/types";
+import { create } from 'zustand'
+import type { Product } from '../model/types'
 
 type ProductModalStore = {
-  isAddModalOpen: boolean;
-  toggleAddModal: () => void;
+  isAddModalOpen: boolean
+  toggleAddModal: () => void
 
-  isEditModalOpen: boolean;
-  editingProduct: Product | null;
-  toggleEditModal: () => void;
-  setEditingProduct: (product: Product) => void;
+  isEditModalOpen: boolean
+  editingProduct: Product | null
+  toggleEditModal: () => void
+  setEditingProduct: (product: Product) => void
 
-  isDeleteModalOpen: boolean;
-  deletingProductId: string;
-  toggleDeleteModal: () => void;
-  setDeletingProductId: (id: string) => void;
-};
+  isDeleteModalOpen: boolean
+  deletingProductId: string
+  toggleDeleteModal: () => void
+  setDeletingProductId: (id: string) => void
+}
 
 export const useModalStore = create<ProductModalStore>((set) => ({
   isAddModalOpen: false,
@@ -30,8 +30,8 @@ export const useModalStore = create<ProductModalStore>((set) => ({
   setEditingProduct: (product) => set({ editingProduct: product }),
 
   isDeleteModalOpen: false,
-  deletingProductId: "",
+  deletingProductId: '',
   toggleDeleteModal: () =>
     set((state) => ({ isDeleteModalOpen: !state.isDeleteModalOpen })),
   setDeletingProductId: (id) => set({ deletingProductId: id }),
-}));
+}))

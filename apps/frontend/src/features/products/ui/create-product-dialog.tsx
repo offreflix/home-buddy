@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog'
 import {
   Form,
   FormControl,
@@ -16,75 +16,75 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 
-import { z } from "zod";
+import { z } from 'zod'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { PlusCircle } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { productApi } from "../api/product-api";
-import { Category, type Product, Unit } from "../model/types";
-import { useModalStore } from "../stores/modal.store";
+} from '@/components/ui/select'
+import { PlusCircle } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { productApi } from '../api/product-api'
+import { Category, type Product, Unit } from '../model/types'
+import { useModalStore } from '../stores/modal.store'
 
 const formSchema = z.object({
-  name: z.string().nonempty("Nome é obrigatório"),
+  name: z.string().nonempty('Nome é obrigatório'),
   currentQuantity: z.coerce.number().int(),
   desiredQuantity: z.coerce
     .number()
     .int()
-    .positive("Quantidade deve ser um número positivo"),
+    .positive('Quantidade deve ser um número positivo'),
   unit: z.nativeEnum(Unit),
   category: z.nativeEnum(Category),
-});
+})
 
 export function CreateProductDialog() {
-  const { isAddModalOpen, toggleAddModal } = useModalStore();
+  const { isAddModalOpen, toggleAddModal } = useModalStore()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      name: '',
       currentQuantity: 0,
       desiredQuantity: 0,
       unit: Unit.kg,
       category: Category.Frutas,
     },
-  });
+  })
 
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   const mutation = useMutation<void, Error, Product>({
     mutationFn: (product: Product) => productApi.addProduct(product),
     onMutate: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ['products'] })
     },
     onError: () => {
-      toast.error("Falha ao adicionar produto");
+      toast.error('Falha ao adicionar produto')
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ['products'] })
     },
     onSuccess: () => {
-      toast.success("Produto adicionado com sucesso");
-      form.reset();
-      toggleAddModal();
+      toast.success('Produto adicionado com sucesso')
+      form.reset()
+      toggleAddModal()
     },
-  });
+  })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const productWithId = { ...values, id: crypto.randomUUID() };
-    await mutation.mutateAsync(productWithId);
+    const productWithId = { ...values, id: crypto.randomUUID() }
+    await mutation.mutateAsync(productWithId)
   }
 
   return (
@@ -227,5 +227,5 @@ export function CreateProductDialog() {
         </Form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

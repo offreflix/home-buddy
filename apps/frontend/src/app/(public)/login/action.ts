@@ -26,7 +26,6 @@ export async function login(formData: FormData): Promise<LoginResponse> {
       const data = await response.json()
       const { access_token } = data
 
-      // Armazena o token em um cookie HTTP-only
       cookiesData.set({
         name: 'token',
         value: access_token,

@@ -1,6 +1,6 @@
-"use client";
+'use client'
 
-import { Home, ShoppingBasket } from "lucide-react";
+import { Home, ShoppingBasket } from 'lucide-react'
 
 import {
   Sidebar,
@@ -11,24 +11,24 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar";
-import { usePathname } from "next/navigation";
+} from '@/components/ui/sidebar'
+import { usePathname } from 'next/navigation'
 
 const items = [
   {
-    title: "Home",
-    url: "/",
+    title: 'Home',
+    url: '/',
     icon: Home,
   },
   {
-    title: "Products",
-    url: "/products",
+    title: 'Products',
+    url: '/products',
     icon: ShoppingBasket,
   },
-];
+]
 
 export function AppSidebar() {
-  const pathname = usePathname();
+  const pathname = usePathname()
 
   return (
     <Sidebar collapsible="icon">
@@ -55,5 +55,5 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
-  );
+  )
 }

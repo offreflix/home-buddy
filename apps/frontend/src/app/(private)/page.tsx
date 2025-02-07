@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import {
   Card,
@@ -6,69 +6,54 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card'
 import {
   AlertTriangle,
   ArrowDown,
   ArrowUp,
-  CarTaxiFront,
-  Lock,
-  Minus,
   Package,
-  ShoppingBag,
-  Square,
   Utensils,
-  X,
-} from "lucide-react";
-import axios from "axios";
-import { Separator } from "@/components/ui/separator";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
-import { Category, Unit, type Product } from "@/features/products/model/types";
-import { useQuery } from "@tanstack/react-query";
-import { productApi } from "@/features/products/api/product-api";
-import { Badge } from "@/components/ui/badge";
+} from 'lucide-react'
+
+import { useQuery } from '@tanstack/react-query'
+import { productApi } from '@/features/products/api/product-api'
 
 export default function Home() {
   const productsQuery = useQuery({
-    queryKey: ["products"],
+    queryKey: ['products'],
     queryFn: productApi.getAllProducts,
-  });
+  })
 
   const data = {
     totalProducts: 1500,
     totalProductsLastMonth: 1400,
     productsInShortage: 45,
     mostConsumedProduct: {
-      name: "Farinha de Trigo",
+      name: 'Farinha de Trigo',
       quantity: 320,
-      unit: "kg",
+      unit: 'kg',
       quantityLastMonth: 290,
     },
     totalProductsChange: 7.14,
     shortageChange: 5,
     consumptionChange: 10.34,
-  };
+  }
 
-  console.log(productsQuery);
+  console.log(productsQuery)
 
   function PercentageChange({ value }: { value: number }) {
-    if (value === 0) return null;
-    const Icon = value > 0 ? ArrowUp : ArrowDown;
+    if (value === 0) return null
+    const Icon = value > 0 ? ArrowUp : ArrowDown
     return (
       <span
         className={`flex items-center ${
-          value > 0 ? "text-green-500" : "text-red-500"
+          value > 0 ? 'text-green-500' : 'text-red-500'
         }`}
       >
         <Icon className="w-4 h-4 mr-1" />
         {Math.abs(value).toFixed(1)}%
       </span>
-    );
+    )
   }
 
   return (
@@ -123,7 +108,7 @@ export default function Home() {
             {data.mostConsumedProduct.name}
           </div>
           <CardDescription className="text-xs">
-            {data.mostConsumedProduct.quantity} {data.mostConsumedProduct.unit}{" "}
+            {data.mostConsumedProduct.quantity} {data.mostConsumedProduct.unit}{' '}
             consumidos
           </CardDescription>
           {data.mostConsumedProduct.quantityLastMonth > 0 ? (
@@ -137,5 +122,5 @@ export default function Home() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

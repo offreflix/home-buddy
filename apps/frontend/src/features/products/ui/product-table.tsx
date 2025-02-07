@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
 import {
   Table,
   TableBody,
@@ -6,15 +6,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { flexRender, type Table as TableType } from "@tanstack/react-table";
-import React from "react";
-import { columns } from "./columns";
-import type { Product } from "../model/types";
+} from '@/components/ui/table'
+import { flexRender, type Table as TableType } from '@tanstack/react-table'
+import React from 'react'
+import { columns } from './columns'
+import type { Product } from '../model/types'
 
 type Props = {
-  table: TableType<Product>;
-};
+  table: TableType<Product>
+}
 
 function ProductTable({ table }: Props) {
   return (
@@ -34,7 +34,7 @@ function ProductTable({ table }: Props) {
                             header.getContext(),
                           )}
                     </TableHead>
-                  );
+                  )
                 })}
               </TableRow>
             ))}
@@ -45,7 +45,7 @@ function ProductTable({ table }: Props) {
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
+                  data-state={row.getIsSelected() && 'selected'}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -91,7 +91,7 @@ function ProductTable({ table }: Props) {
         </div>
       </div>
     </>
-  );
+  )
 }
 
-export default ProductTable;
+export default ProductTable

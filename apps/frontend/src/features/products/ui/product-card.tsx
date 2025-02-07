@@ -1,12 +1,12 @@
-import * as React from "react";
+import * as React from 'react'
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu'
 
 import {
   Card,
@@ -14,45 +14,45 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Minus, Plus, MoreVertical, ShoppingCart, Trash2 } from "lucide-react";
+} from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { Minus, Plus, MoreVertical, ShoppingCart, Trash2 } from 'lucide-react'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import type { Product } from "../model/types";
-import { productIndexedDbService } from "../api/indexed-db.service";
-import { type QueryClient, useQueryClient } from "@tanstack/react-query";
-import { queryClient } from "@/lib/react-query";
-import { useModalStore } from "../stores/modal.store";
+} from '@/components/ui/tooltip'
+import type { Product } from '../model/types'
+import { productIndexedDbService } from '../api/indexed-db.service'
+import { type QueryClient, useQueryClient } from '@tanstack/react-query'
+import { queryClient } from '@/lib/react-query'
+import { useModalStore } from '../stores/modal.store'
 
 type Props = {
-  data: Array<Product> | undefined;
-};
+  data: Array<Product> | undefined
+}
 
 function ProductCard({ data }: Props) {
   const decreaseQuantity = async (id: string) => {
-    await productIndexedDbService.decreaseQuantity(id);
+    await productIndexedDbService.decreaseQuantity(id)
 
-    queryClient.invalidateQueries({ queryKey: ["products"] });
-  };
+    queryClient.invalidateQueries({ queryKey: ['products'] })
+  }
 
   const increaseQuantity = async (id: string) => {
-    await productIndexedDbService.addQuantity(id);
+    await productIndexedDbService.addQuantity(id)
 
-    queryClient.invalidateQueries({ queryKey: ["products"] });
-  };
+    queryClient.invalidateQueries({ queryKey: ['products'] })
+  }
 
   const {
     toggleEditModal,
     setEditingProduct,
     toggleDeleteModal,
     setDeletingProductId,
-  } = useModalStore();
+  } = useModalStore()
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -77,16 +77,16 @@ function ProductCard({ data }: Props) {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
                     onClick={() => {
-                      toggleEditModal();
-                      setEditingProduct(product);
+                      toggleEditModal()
+                      setEditingProduct(product)
                     }}
                   >
                     <ShoppingCart className="mr-2 h-4 w-4" /> Editar
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => {
-                      toggleDeleteModal();
-                      setDeletingProductId(product.id);
+                      toggleDeleteModal()
+                      setDeletingProductId(product.id)
                     }}
                   >
                     <Trash2 className="mr-2 h-4 w-4" /> Excluir
@@ -100,7 +100,7 @@ function ProductCard({ data }: Props) {
               <div className="flex justify-between items-center text-sm">
                 <span>Quantidade</span>
                 <span className="font-medium">
-                  {product.currentQuantity} / {product.desiredQuantity}{" "}
+                  {product.currentQuantity} / {product.desiredQuantity}{' '}
                   {product.unit}
                 </span>
               </div>
@@ -154,7 +154,7 @@ function ProductCard({ data }: Props) {
         </Card>
       ))}
     </div>
-  );
+  )
 }
 
-export default ProductCard;
+export default ProductCard
