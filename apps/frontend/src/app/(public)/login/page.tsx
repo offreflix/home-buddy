@@ -24,6 +24,7 @@ import { login } from './action'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { useState } from 'react'
+import Link from 'next/link'
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Usuário é obrigatório'),
@@ -34,7 +35,6 @@ type LoginSchema = z.infer<typeof loginSchema>
 
 export default function Page() {
   const router = useRouter()
-  const [error, setError] = useState<string | null>(null)
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -69,7 +69,7 @@ export default function Page() {
   }
 
   return (
-    <div className="flex h-screen items-center justify-center">
+    <div className="flex flex-col gap-4 h-screen items-center justify-center">
       <Card className="w-[350px]">
         <CardHeader>
           <CardTitle>Login</CardTitle>
@@ -85,35 +85,45 @@ export default function Page() {
                   <FormItem>
                     <FormLabel>Nome de Usuário</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your username" {...field} />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel className="flex justify-between">
+                      Senha
+                      <Link className="text-blue-300" href="/reset-password">
+                        Esqueceu a senha?
+                      </Link>
+                    </FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Enter your password"
-                        {...field}
-                      />
+                      <Input type="password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="w-full">
                 Login
               </Button>
             </form>
           </Form>
+        </CardContent>
+      </Card>
+
+      <Card className="w-[350px]">
+        <CardContent className="p-6 text-center">
+          Novo por aqui?{' '}
+          <Link className="text-blue-300" href="/register">
+            Criar Conta
+          </Link>
         </CardContent>
       </Card>
     </div>
