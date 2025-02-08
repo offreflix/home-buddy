@@ -20,10 +20,10 @@ import { Input } from '@/components/ui/input'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { login } from './action'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { login } from '@/features/auth/model/authActions'
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Usuário é obrigatório'),

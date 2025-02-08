@@ -23,10 +23,10 @@ import { z } from 'zod'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { register } from './action'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
+import { register } from '@/features/auth/model/authActions'
 
 const passwordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/

@@ -32,8 +32,14 @@ import { useEffect, useState } from 'react'
 import ProductTable from './product-table'
 import ProductCardSkeleton from './product-card-skeleton'
 import { DataTableSkeleton } from './product-table-skeleton'
+import axios from 'axios'
 
 type ViewMode = 'card' | 'table'
+
+export const apiClient = axios.create({
+  baseURL: 'http://localhost:3000',
+  withCredentials: true,
+})
 
 export function ProductMain() {
   const [sorting, setSorting] = useState<SortingState>([])
@@ -41,6 +47,12 @@ export function ProductMain() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
   const [viewMode, setViewMode] = useState<ViewMode | null>(null)
+  const usersQuery = useQuery({
+    queryKey: ['users'],
+    queryFn: () => apiClient.get('/auth/profile').then((res) => res.data),
+  })
+
+  console.log(usersQuery)
 
   useEffect(() => {
     const viewMode = localStorage.getItem('viewMode') as ViewMode
