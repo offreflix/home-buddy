@@ -33,6 +33,7 @@ import ProductTable from './product-table'
 import ProductCardSkeleton from './product-card-skeleton'
 import { DataTableSkeleton } from './product-table-skeleton'
 import axios from 'axios'
+import Router from 'next/router'
 
 type ViewMode = 'card' | 'table'
 
@@ -41,12 +42,23 @@ export const apiClient = axios.create({
   withCredentials: true,
 })
 
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      Router.push('/login')
+    }
+    return Promise.reject(error)
+  },
+)
+
 export function ProductMain() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
   const [viewMode, setViewMode] = useState<ViewMode | null>(null)
+
   const usersQuery = useQuery({
     queryKey: ['users'],
     queryFn: () => apiClient.get('/auth/profile').then((res) => res.data),

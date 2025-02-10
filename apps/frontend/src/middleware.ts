@@ -28,12 +28,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
+  if (access_token?.value.split('.').length !== 3) {
+    cookie.delete('access_token')
+    const redirectUrl = request.nextUrl.clone()
+
+    redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE
+
+    return NextResponse.redirect(redirectUrl)
+  }
+
   if (access_token) {
     const decodedToken = jwtDecode<{ exp?: number }>(access_token.value)
 
     console.log(decodedToken.exp, Date.now() / 1000)
-
-    const currentTimeWithBuffer = Date.now() / 1000 + 60
 
     if (decodedToken.exp && decodedToken.exp < Date.now() / 1000) {
       cookie.delete('access_token')
