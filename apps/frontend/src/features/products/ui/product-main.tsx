@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import {
   type ColumnFiltersState,
@@ -9,49 +9,73 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table";
-import { ChevronDown, LayoutGrid, List } from "lucide-react";
+} from '@tanstack/react-table'
+import { ChevronDown, LayoutGrid, List } from 'lucide-react'
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
 
-import { columns } from "./columns";
+import { columns } from './columns'
 
-import { useQuery } from "@tanstack/react-query";
-import { CreateProductDialog } from "./create-product-dialog";
-import { productApi } from "../api/product-api";
+import { useQuery } from '@tanstack/react-query'
+import { CreateProductDialog } from './create-product-dialog'
+import { productApi } from '../api/product-api'
 
-import ProductCard from "./product-card";
-import { useEffect, useState } from "react";
-import ProductTable from "./product-table";
-import ProductCardSkeleton from "./product-card-skeleton";
-import { DataTableSkeleton } from "./product-table-skeleton";
+import ProductCard from './product-card'
+import { useEffect, useState } from 'react'
+import ProductTable from './product-table'
+import ProductCardSkeleton from './product-card-skeleton'
+import { DataTableSkeleton } from './product-table-skeleton'
+import axios from 'axios'
+import Router from 'next/router'
 
-type ViewMode = "card" | "table";
+type ViewMode = 'card' | 'table'
+
+export const apiClient = axios.create({
+  baseURL: 'http://localhost:3000',
+  withCredentials: true,
+})
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      Router.push('/login')
+    }
+    return Promise.reject(error)
+  },
+)
 
 export function ProductMain() {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
-  const [viewMode, setViewMode] = useState<ViewMode | null>(null);
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = useState({})
+  const [viewMode, setViewMode] = useState<ViewMode | null>(null)
+
+  const usersQuery = useQuery({
+    queryKey: ['users'],
+    queryFn: () => apiClient.get('/auth/profile').then((res) => res.data),
+  })
+
+  console.log(usersQuery)
 
   useEffect(() => {
-    const viewMode = localStorage.getItem("viewMode") as ViewMode;
+    const viewMode = localStorage.getItem('viewMode') as ViewMode
 
-    setViewMode(viewMode || "table");
-  }, []);
+    setViewMode(viewMode || 'table')
+  }, [])
 
   const productsQuery = useQuery({
-    queryKey: ["products"],
+    queryKey: ['products'],
     queryFn: productApi.getAllProducts,
-  });
+  })
 
   const table = useReactTable({
     data: productsQuery.data ?? [],
@@ -70,11 +94,11 @@ export function ProductMain() {
       columnVisibility,
       rowSelection,
     },
-  });
+  })
 
   function handleViewMode(mode: ViewMode) {
-    setViewMode(mode);
-    localStorage.setItem("viewMode", mode);
+    setViewMode(mode)
+    localStorage.setItem('viewMode', mode)
   }
 
   return (
@@ -84,7 +108,7 @@ export function ProductMain() {
           Produtos
           {table.getIsSomePageRowsSelected() && (
             <span className="text-sm text-muted-foreground">
-              {" "}
+              {' '}
               - {table.getFilteredSelectedRowModel().rows.length} selecionado(s)
             </span>
           )}
@@ -96,9 +120,9 @@ export function ProductMain() {
       <div className="flex items-center gap-4">
         <Input
           placeholder="Filtrar nome..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
+            table.getColumn('name')?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -124,7 +148,7 @@ export function ProductMain() {
                   >
                     {column.id}
                   </DropdownMenuCheckboxItem>
-                );
+                )
               })}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -133,16 +157,16 @@ export function ProductMain() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => handleViewMode("card")}
-            className={`${viewMode === "card" ? "bg-accent" : ""}`}
+            onClick={() => handleViewMode('card')}
+            className={`${viewMode === 'card' ? 'bg-accent' : ''}`}
           >
             <LayoutGrid className="h-4 w-4" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => handleViewMode("table")}
-            className={`${viewMode === "table" ? "bg-accent" : ""}`}
+            onClick={() => handleViewMode('table')}
+            className={`${viewMode === 'table' ? 'bg-accent' : ''}`}
           >
             <List className="h-4 w-4" />
           </Button>
@@ -151,14 +175,14 @@ export function ProductMain() {
 
       {viewMode &&
         productsQuery.isLoading &&
-        (viewMode === "card" ? <ProductCardSkeleton /> : <DataTableSkeleton />)}
+        (viewMode === 'card' ? <ProductCardSkeleton /> : <DataTableSkeleton />)}
 
       {!productsQuery.isLoading &&
-        (viewMode === "card" ? (
+        (viewMode === 'card' ? (
           <ProductCard data={productsQuery.data} />
         ) : (
           <ProductTable table={table} />
         ))}
     </div>
-  );
+  )
 }

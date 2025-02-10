@@ -31,7 +31,16 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @Get('profile')
-  getProfile(@Request() req) {
-    return req.user;
+  async getProfile(@Request() req) {
+    console.log(req.user);
+    const userProfile = await this.authService.getProfile(req.user.sub);
+    return userProfile;
+  }
+
+  @Post('logout')
+  @UseGuards(AuthGuard)
+  async logout(@Request() req) {
+    await this.authService.removeToken(req.user.sub);
+    return { message: 'Logged out successfully' };
   }
 }

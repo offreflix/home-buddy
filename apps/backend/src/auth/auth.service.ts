@@ -4,12 +4,14 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { SignInDto } from 'src/users/dto/sign-in.dto';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private redisService: RedisService,
   ) {}
 
   async signUp(
@@ -45,10 +47,6 @@ export class AuthService {
   async signIn(signInDto: SignInDto): Promise<{ access_token: string }> {
     const user = await this.usersService.findByUsername(signInDto.username);
 
-    console.log(signInDto);
-
-    console.log(user);
-
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -60,9 +58,51 @@ export class AuthService {
     }
 
     const payload = { username: user.username, sub: user.id };
+    const token = this.jwtService.sign(payload, {
+      expiresIn: '15m',
+    });
+
+    await this.redisService.setToken(user.id.toString(), token, 900);
 
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: token,
     };
+  }
+
+  async logout(userId: number): Promise<void> {
+    await this.redisService.removeToken(userId.toString());
+  }
+
+  async decodeToken(token: string) {
+    try {
+      return await this.jwtService.verifyAsync(token);
+    } catch {
+      throw new UnauthorizedException();
+    }
+  }
+
+  async validateToken(token: string): Promise<boolean> {
+    try {
+      const payload = await this.jwtService.verifyAsync(token);
+      const userId = payload.sub;
+      const redisToken = await this.redisService.getToken(userId.toString());
+
+      return redisToken === token;
+    } catch {
+      return false;
+    }
+  }
+
+  async getProfile(userId: number) {
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return user;
+  }
+
+  async removeToken(userId: number): Promise<void> {
+    await this.redisService.removeToken(userId.toString());
   }
 }

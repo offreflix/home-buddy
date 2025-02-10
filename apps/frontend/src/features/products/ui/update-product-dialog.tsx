@@ -1,6 +1,6 @@
-"use client";
+'use client'
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog'
 import {
   Form,
   FormControl,
@@ -18,87 +18,87 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { zodResolver } from '@hookform/resolvers/zod'
 
-import { z } from "zod";
+import { z } from 'zod'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { PlusCircle } from "lucide-react";
-import { toast } from "sonner";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { productApi } from "../api/product-api";
-import { Category, type Product, Unit } from "../model/types";
-import { useModalStore } from "../stores/modal.store";
-import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+} from '@/components/ui/select'
+import { PlusCircle } from 'lucide-react'
+import { toast } from 'sonner'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { productApi } from '../api/product-api'
+import { Category, type Product, Unit } from '../model/types'
+import { useModalStore } from '../stores/modal.store'
+import { useForm } from 'react-hook-form'
+import { useEffect } from 'react'
 
 const formSchema = z.object({
   id: z.string().optional(),
-  name: z.string().nonempty("Nome é obrigatório"),
+  name: z.string().nonempty('Nome é obrigatório'),
   currentQuantity: z.coerce.number().int(),
   desiredQuantity: z.coerce
     .number()
     .int()
-    .positive("Quantidade deve ser um número positivo"),
+    .positive('Quantidade deve ser um número positivo'),
   unit: z.nativeEnum(Unit),
   category: z.nativeEnum(Category),
-});
+})
 
 export function UpdateProductDialog() {
-  const { isEditModalOpen, toggleEditModal, editingProduct } = useModalStore();
+  const { isEditModalOpen, toggleEditModal, editingProduct } = useModalStore()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      id: "",
-      name: "",
+      id: '',
+      name: '',
       currentQuantity: 0,
       desiredQuantity: 0,
       unit: Unit.kg,
       category: Category.Frutas,
     },
-  });
+  })
 
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   const mutation = useMutation<void, Error, Product>({
     mutationFn: (product: Product) =>
       productApi.updateProduct(product.id, product),
     onMutate: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ['products'] })
     },
     onError: () => {
-      toast.error("Falha ao adicionar produto");
+      toast.error('Falha ao adicionar produto')
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ['products'] })
     },
     onSuccess: () => {
-      toast.success("Produto adicionado com sucesso");
-      form.reset();
-      toggleEditModal();
+      toast.success('Produto adicionado com sucesso')
+      form.reset()
+      toggleEditModal()
     },
-  });
+  })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     await mutation.mutateAsync({
       ...values,
       id: values.id || crypto.randomUUID(),
-    });
+    })
   }
 
   useEffect(() => {
     if (editingProduct) {
-      form.reset(editingProduct);
+      form.reset(editingProduct)
     }
-  }, [editingProduct, form]);
+  }, [editingProduct, form])
 
   return (
     <Dialog open={isEditModalOpen} onOpenChange={toggleEditModal}>
@@ -234,5 +234,5 @@ export function UpdateProductDialog() {
         </Form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
