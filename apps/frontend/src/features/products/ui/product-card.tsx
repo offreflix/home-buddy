@@ -26,22 +26,22 @@ import {
 } from '@/components/ui/tooltip'
 import type { Product } from '../model/types'
 import { productIndexedDbService } from '../api/indexed-db.service'
-import { type QueryClient, useQueryClient } from '@tanstack/react-query'
 import { queryClient } from '@/lib/react-query'
 import { useModalStore } from '../stores/modal.store'
+import { transformProductToFormSchema } from './columns'
 
 type Props = {
   data: Array<Product> | undefined
 }
 
 function ProductCard({ data }: Props) {
-  const decreaseQuantity = async (id: string) => {
+  const decreaseQuantity = async (id: number) => {
     await productIndexedDbService.decreaseQuantity(id)
 
     queryClient.invalidateQueries({ queryKey: ['products'] })
   }
 
-  const increaseQuantity = async (id: string) => {
+  const increaseQuantity = async (id: number) => {
     await productIndexedDbService.addQuantity(id)
 
     queryClient.invalidateQueries({ queryKey: ['products'] })
@@ -65,7 +65,7 @@ function ProductCard({ data }: Props) {
                   {product.name}
                 </CardTitle>
                 <Badge variant="secondary" className="text-xs">
-                  {product.category}
+                  {product.category.name}
                 </Badge>
               </div>
               <DropdownMenu modal={false}>
@@ -78,7 +78,7 @@ function ProductCard({ data }: Props) {
                   <DropdownMenuItem
                     onClick={() => {
                       toggleEditModal()
-                      setEditingProduct(product)
+                      setEditingProduct(transformProductToFormSchema(product))
                     }}
                   >
                     <ShoppingCart className="mr-2 h-4 w-4" /> Editar
@@ -100,8 +100,8 @@ function ProductCard({ data }: Props) {
               <div className="flex justify-between items-center text-sm">
                 <span>Quantidade</span>
                 <span className="font-medium">
-                  {product.currentQuantity} / {product.desiredQuantity}{' '}
-                  {product.unit}
+                  {product.stock.currentQuantity} /{' '}
+                  {product.stock.desiredQuantity} {product.unit}
                 </span>
               </div>
               <TooltipProvider>
@@ -109,7 +109,8 @@ function ProductCard({ data }: Props) {
                   <TooltipTrigger asChild>
                     <Progress
                       value={
-                        (product.currentQuantity / product.desiredQuantity) *
+                        (product.stock.currentQuantity /
+                          product.stock.desiredQuantity) *
                         100
                       }
                       className="h-2"
@@ -118,7 +119,8 @@ function ProductCard({ data }: Props) {
                   <TooltipContent>
                     <p>
                       {(
-                        (product.currentQuantity / product.desiredQuantity) *
+                        (product.stock.currentQuantity /
+                          product.stock.desiredQuantity) *
                         100
                       ).toFixed()}
                       % do desejado
@@ -139,7 +141,7 @@ function ProductCard({ data }: Props) {
                 <Minus className="h-4 w-4" />
               </Button>
               <span className="text-lg font-semibold">
-                {product.currentQuantity}
+                {product.stock.currentQuantity}
               </span>
               <Button
                 variant="outline"

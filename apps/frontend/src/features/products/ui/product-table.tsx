@@ -11,12 +11,14 @@ import { flexRender, type Table as TableType } from '@tanstack/react-table'
 import React from 'react'
 import { columns } from './columns'
 import type { Product } from '../model/types'
+import { DataTableSkeleton } from './product-table-skeleton'
 
 type Props = {
   table: TableType<Product>
+  isLoading: boolean
 }
 
-function ProductTable({ table }: Props) {
+function ProductTable({ table, isLoading }: Props) {
   return (
     <>
       <div className="rounded-md border">
@@ -41,7 +43,7 @@ function ProductTable({ table }: Props) {
           </TableHeader>
 
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {!isLoading && table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}

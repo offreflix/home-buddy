@@ -40,6 +40,7 @@ import {
 } from './ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { logout } from '@/features/auth/model/authActions'
+import Link from 'next/link'
 
 const items = [
   {
@@ -56,7 +57,6 @@ const items = [
 
 export function AppSidebar() {
   const pathname = usePathname()
-  const { isMobile } = useSidebar()
 
   return (
     <Sidebar collapsible="icon">
@@ -71,10 +71,10 @@ export function AppSidebar() {
                     isActive={pathname === item.url && true}
                     asChild
                   >
-                    <a href={item.url}>
+                    <Link href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -106,7 +106,6 @@ export function AppSidebar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-                side={isMobile ? 'bottom' : 'right'}
                 align="end"
                 sideOffset={4}
               >

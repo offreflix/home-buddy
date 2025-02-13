@@ -64,18 +64,20 @@ export function ProductMain() {
     queryFn: () => apiClient.get('/auth/profile').then((res) => res.data),
   })
 
+  const productsQuery = useQuery({
+    queryKey: ['products'],
+    queryFn: () => apiClient.get('/products').then((res) => res.data),
+  })
+
   console.log(usersQuery)
+
+  console.log(productsQuery.data)
 
   useEffect(() => {
     const viewMode = localStorage.getItem('viewMode') as ViewMode
 
     setViewMode(viewMode || 'table')
   }, [])
-
-  const productsQuery = useQuery({
-    queryKey: ['products'],
-    queryFn: productApi.getAllProducts,
-  })
 
   const table = useReactTable({
     data: productsQuery.data ?? [],
@@ -181,7 +183,7 @@ export function ProductMain() {
         (viewMode === 'card' ? (
           <ProductCard data={productsQuery.data} />
         ) : (
-          <ProductTable table={table} />
+          <ProductTable table={table} isLoading={productsQuery.isLoading} />
         ))}
     </div>
   )

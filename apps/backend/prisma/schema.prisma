@@ -31,24 +31,25 @@ model Product {
   id          Int      @id @default(autoincrement())
   name        String
   description String?
-  unit        String   @default("unidade")
+  unit        Unit     @default(unidade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   categoryId Int
   userId     Int
 
-  category    Category        @relation(fields: [categoryId], references: [id])
-  user        User            @relation(fields: [userId], references: [id])
-  stock       Stock?
-  movements   StockMovement[]
-  Consumption Consumption[]
+  category  Category        @relation(fields: [categoryId], references: [id])
+  user      User            @relation(fields: [userId], references: [id])
+  stock     Stock?
+  movements StockMovement[]
 }
 
 model Stock {
-  id        Int      @id @default(autoincrement())
-  productId Int      @unique
-  updatedAt DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  productId       Int      @unique
+  desiredQuantity Float
+  currentQuantity Float    @default(0)
+  updatedAt       DateTime @updatedAt
 
   product   Product         @relation(fields: [productId], references: [id])
   movements StockMovement[]
@@ -75,14 +76,11 @@ enum MovementType {
   OUT
 }
 
-model Consumption {
-  id          Int      @id @default(autoincrement())
-  productId   Int
-  quantity    Float
-  description String?
-  consumedAt  DateTime @default(now())
-
-  product Product @relation(fields: [productId], references: [id])
-
-  @@index([productId])
+enum Unit {
+  kg
+  g
+  L
+  lata
+  pacote
+  unidade
 }

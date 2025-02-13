@@ -7,17 +7,30 @@ export enum Unit {
   unidade = 'unidade',
 }
 
-export enum Category {
-  Frutas = 'Frutas',
-  Verduras = 'Verduras',
-  Carnes = 'Carnes',
+export interface Category {
+  id: number
+  name: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Product {
-  id: string
+  id: number
   name: string
-  currentQuantity: number
-  desiredQuantity: number
-  unit: Unit
+  description: string
+  unit: string
+  createdAt: string
+  updatedAt: string
+  categoryId: number
+  userId: number
   category: Category
+  stock: Stock
+}
+
+export interface Stock {
+  id: number
+  productId: number
+  desiredQuantity: number
+  currentQuantity: number
+  updatedAt: string
 }

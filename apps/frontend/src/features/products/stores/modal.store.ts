@@ -1,19 +1,20 @@
 import { create } from 'zustand'
 import type { Product } from '../model/types'
+import { FormSchema } from '../ui/update-product-dialog'
 
 type ProductModalStore = {
   isAddModalOpen: boolean
   toggleAddModal: () => void
 
   isEditModalOpen: boolean
-  editingProduct: Product | null
+  editingProduct: FormSchema | null
   toggleEditModal: () => void
-  setEditingProduct: (product: Product) => void
+  setEditingProduct: (product: FormSchema) => void
 
   isDeleteModalOpen: boolean
-  deletingProductId: string
+  deletingProductId: number | null
   toggleDeleteModal: () => void
-  setDeletingProductId: (id: string) => void
+  setDeletingProductId: (id: number) => void
 }
 
 export const useModalStore = create<ProductModalStore>((set) => ({
@@ -30,7 +31,7 @@ export const useModalStore = create<ProductModalStore>((set) => ({
   setEditingProduct: (product) => set({ editingProduct: product }),
 
   isDeleteModalOpen: false,
-  deletingProductId: '',
+  deletingProductId: null,
   toggleDeleteModal: () =>
     set((state) => ({ isDeleteModalOpen: !state.isDeleteModalOpen })),
   setDeletingProductId: (id) => set({ deletingProductId: id }),

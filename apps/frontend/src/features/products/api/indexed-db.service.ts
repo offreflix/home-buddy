@@ -33,7 +33,7 @@ export const productIndexedDbService = {
     return this.handleTransaction(transaction)
   },
 
-  async addQuantity(id: string): Promise<void> {
+  async addQuantity(id: number): Promise<void> {
     const database = await this.openDB()
     const transaction = database.transaction(STORE_NAME, 'readwrite')
     const store = transaction.objectStore(STORE_NAME)
@@ -49,7 +49,7 @@ export const productIndexedDbService = {
     return this.handleTransaction(transaction)
   },
 
-  async decreaseQuantity(id: string): Promise<void> {
+  async decreaseQuantity(id: number): Promise<void> {
     const database = await this.openDB()
     const transaction = database.transaction(STORE_NAME, 'readwrite')
     const store = transaction.objectStore(STORE_NAME)
@@ -82,7 +82,7 @@ export const productIndexedDbService = {
     })
   },
 
-  async update(id: string, product: Product): Promise<void> {
+  async update(id: number, product: Product): Promise<void> {
     const database = await this.openDB()
     const transaction = database.transaction(STORE_NAME, 'readwrite')
     const store = transaction.objectStore(STORE_NAME)
@@ -94,7 +94,7 @@ export const productIndexedDbService = {
     return this.handleTransaction(transaction)
   },
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     const database = await this.openDB()
     const transaction = database.transaction(STORE_NAME, 'readwrite')
     const store = transaction.objectStore(STORE_NAME)
