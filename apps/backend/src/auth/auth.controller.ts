@@ -39,10 +39,17 @@ export class AuthController {
     return userProfile;
   }
 
-  @Post('logout')
   @UseGuards(AuthGuard)
+  @Post('logout')
   async logout(@Request() req) {
     await this.authService.removeToken(req.user.sub);
     return { message: 'Logged out successfully' };
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('refresh')
+  async refresh(@Request() req) {
+    const tokens = await this.authService.refreshToken(req.user.sub);
+    return tokens;
   }
 }
