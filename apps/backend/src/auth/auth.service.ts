@@ -95,7 +95,8 @@ export class AuthService {
   }
 
   async logout(userId: number): Promise<void> {
-    await this.redisService.removeToken(userId.toString());
+    await this.redisService.removeToken(`accessToken:${userId.toString()}`);
+    await this.redisService.removeToken(`refreshToken:${userId.toString()}`);
   }
 
   async decodeToken(token: string) {
@@ -134,22 +135,57 @@ export class AuthService {
     await this.redisService.removeToken(userId.toString());
   }
 
-  async refreshToken(userId: number) {
-    const user = await this.usersService.findById(userId);
-    if (!user) {
-      throw new UnauthorizedException('User not found');
+  async refreshToken(
+    refreshToken: string,
+  ): Promise<{ access_token: string; refresh_token: string }> {
+    try {
+      const decoded = this.jwtService.verify(refreshToken);
+
+      const userId = decoded?.sub;
+
+      const redisToken = await this.redisService.getToken(
+        `refreshToken:${userId.toString()}`,
+      );
+
+      if (redisToken !== refreshToken) {
+        throw new UnauthorizedException('Refresh token inválido.');
+      }
+
+      if (!userId) {
+        throw new UnauthorizedException('Refresh token inválido.');
+      }
+
+      const user = await this.usersService.findById(userId);
+      if (!user) {
+        throw new UnauthorizedException('Usuário não encontrado.');
+      }
+
+      const payload = { username: user.username, sub: user.id };
+
+      const newAccessToken = this.jwtService.sign(payload, {
+        expiresIn: '15m',
+      });
+      const newRefreshToken = this.jwtService.sign(payload, {
+        expiresIn: '7d',
+      });
+
+      await this.redisService.setToken(
+        `accessToken:${userId.toString()}`,
+        newAccessToken,
+        900,
+      );
+      await this.redisService.setToken(
+        `refreshToken:${userId.toString()}`,
+        newRefreshToken,
+        604800,
+      );
+
+      return {
+        access_token: newAccessToken,
+        refresh_token: newRefreshToken,
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Refresh token inválido ou expirado.');
     }
-    const payload = { username: user.username, sub: user.id };
-    const accessToken = this.jwtService.sign(payload, {
-      expiresIn: '15m',
-    });
-    const refreshToken = this.jwtService.sign(payload, {
-      expiresIn: '7d',
-    });
-    await this.redisService.setToken(user.id.toString(), refreshToken, 900);
-    return {
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    };
   }
 }

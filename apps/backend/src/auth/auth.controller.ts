@@ -12,6 +12,7 @@ import { AuthService } from './auth.service';
 import { AuthGuard, Public } from './auth.guard';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { SignInDto } from 'src/users/dto/sign-in.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -46,10 +47,10 @@ export class AuthController {
     return { message: 'Logged out successfully' };
   }
 
-  @UseGuards(AuthGuard)
+  @Public()
   @Post('refresh')
-  async refresh(@Request() req) {
-    const tokens = await this.authService.refreshToken(req.user.sub);
+  async refresh(@Body() data: RefreshTokenDto) {
+    const tokens = await this.authService.refreshToken(data.refresh_token);
     return tokens;
   }
 }
