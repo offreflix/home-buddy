@@ -16,7 +16,7 @@ export class AuthService {
 
   async signUp(
     createUserDto: CreateUserDto,
-  ): Promise<{ access_token: string }> {
+  ): Promise<{ access_token: string; refresh_token: string }> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
     const existingUsername = await this.usersService.findByUsername(
@@ -39,12 +39,23 @@ export class AuthService {
 
     const payload = { username: user.username, sub: user.id };
 
+    const accessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '15m',
+    });
+
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '7d',
+    });
+
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      access_token: accessToken,
+      refresh_token: refreshToken,
     };
   }
 
-  async signIn(signInDto: SignInDto): Promise<{ access_token: string }> {
+  async signIn(
+    signInDto: SignInDto,
+  ): Promise<{ access_token: string; refresh_token: string }> {
     const user = await this.usersService.findByUsername(signInDto.username);
 
     if (!user) {
@@ -58,19 +69,34 @@ export class AuthService {
     }
 
     const payload = { username: user.username, sub: user.id };
-    const token = this.jwtService.sign(payload, {
+
+    const accessToken = this.jwtService.sign(payload, {
       expiresIn: '15m',
     });
+    const refreshToken = this.jwtService.sign(payload, {
+      expiresIn: '7d',
+    });
 
-    await this.redisService.setToken(user.id.toString(), token, 900);
+    await this.redisService.setToken(
+      `accessToken:${user.id.toString()}`,
+      accessToken,
+      900,
+    );
+    await this.redisService.setToken(
+      `refreshToken:${user.id.toString()}`,
+      refreshToken,
+      604800,
+    );
 
     return {
-      access_token: token,
+      access_token: accessToken,
+      refresh_token: refreshToken,
     };
   }
 
   async logout(userId: number): Promise<void> {
-    await this.redisService.removeToken(userId.toString());
+    await this.redisService.removeToken(`accessToken:${userId.toString()}`);
+    await this.redisService.removeToken(`refreshToken:${userId.toString()}`);
   }
 
   async decodeToken(token: string) {
@@ -85,7 +111,10 @@ export class AuthService {
     try {
       const payload = await this.jwtService.verifyAsync(token);
       const userId = payload.sub;
-      const redisToken = await this.redisService.getToken(userId.toString());
+
+      const redisToken = await this.redisService.getToken(
+        `accessToken:${userId.toString()}`,
+      );
 
       return redisToken === token;
     } catch {
@@ -104,5 +133,59 @@ export class AuthService {
 
   async removeToken(userId: number): Promise<void> {
     await this.redisService.removeToken(userId.toString());
+  }
+
+  async refreshToken(
+    refreshToken: string,
+  ): Promise<{ access_token: string; refresh_token: string }> {
+    try {
+      const decoded = this.jwtService.verify(refreshToken);
+
+      const userId = decoded?.sub;
+
+      const redisToken = await this.redisService.getToken(
+        `refreshToken:${userId.toString()}`,
+      );
+
+      if (redisToken !== refreshToken) {
+        throw new UnauthorizedException('Refresh token inválido.');
+      }
+
+      if (!userId) {
+        throw new UnauthorizedException('Refresh token inválido.');
+      }
+
+      const user = await this.usersService.findById(userId);
+      if (!user) {
+        throw new UnauthorizedException('Usuário não encontrado.');
+      }
+
+      const payload = { username: user.username, sub: user.id };
+
+      const newAccessToken = this.jwtService.sign(payload, {
+        expiresIn: '15m',
+      });
+      const newRefreshToken = this.jwtService.sign(payload, {
+        expiresIn: '7d',
+      });
+
+      await this.redisService.setToken(
+        `accessToken:${userId.toString()}`,
+        newAccessToken,
+        900,
+      );
+      await this.redisService.setToken(
+        `refreshToken:${userId.toString()}`,
+        newRefreshToken,
+        604800,
+      );
+
+      return {
+        access_token: newAccessToken,
+        refresh_token: newRefreshToken,
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Refresh token inválido ou expirado.');
+    }
   }
 }
