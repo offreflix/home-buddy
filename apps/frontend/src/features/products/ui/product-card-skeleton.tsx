@@ -1,11 +1,6 @@
-import * as React from "react";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import * as React from 'react'
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 
 function ProductCardSkeleton() {
   return (
@@ -40,7 +35,7 @@ function ProductCardSkeleton() {
         </Card>
       ))}
     </div>
-  );
+  )
 }
 
-export default ProductCardSkeleton;
+export default ProductCardSkeleton

@@ -1,11 +1,11 @@
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   TableHeader,
   TableRow,
   TableCell,
   TableBody,
   Table,
-} from "@/components/ui/table";
+} from '@/components/ui/table'
 
 export function DataTableSkeleton() {
   return (
@@ -50,5 +50,5 @@ export function DataTableSkeleton() {
         </TableBody>
       </Table>
     </div>
-  );
+  )
 }

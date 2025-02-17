@@ -1,6 +1,6 @@
-"use client";
+'use client'
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog'
 import {
   Form,
   FormControl,
@@ -18,87 +18,93 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { zodResolver } from '@hookform/resolvers/zod'
 
-import { z } from "zod";
+import { z } from 'zod'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { PlusCircle } from "lucide-react";
-import { toast } from "sonner";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { productApi } from "../api/product-api";
-import { Category, type Product, Unit } from "../model/types";
-import { useModalStore } from "../stores/modal.store";
-import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+} from '@/components/ui/select'
+import { toast } from 'sonner'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { productApi } from '../api/product-api'
+import { Category, type Product, Unit } from '../model/types'
+import { useModalStore } from '../stores/modal.store'
+import { useForm } from 'react-hook-form'
+import { useEffect } from 'react'
+import { apiClient } from './product-main'
 
 const formSchema = z.object({
-  id: z.string().optional(),
-  name: z.string().nonempty("Nome é obrigatório"),
-  currentQuantity: z.coerce.number().int(),
+  id: z.coerce.number().int({ message: 'ID inválido' }),
+  name: z.string().nonempty('Nome é obrigatório'),
+  description: z.string().optional(),
+  unit: z.nativeEnum(Unit),
+  categoryId: z.coerce.number().int({ message: 'Categoria inválida' }),
+
+  currentQuantity: z.coerce
+    .number()
+    .min(0, 'Quantidade atual deve ser maior ou igual a 0'),
   desiredQuantity: z.coerce
     .number()
-    .int()
-    .positive("Quantidade deve ser um número positivo"),
-  unit: z.nativeEnum(Unit),
-  category: z.nativeEnum(Category),
-});
+    .positive('Quantidade desejada deve ser um número positivo'),
+})
+
+export type FormSchema = z.infer<typeof formSchema>
 
 export function UpdateProductDialog() {
-  const { isEditModalOpen, toggleEditModal, editingProduct } = useModalStore();
+  const { isEditModalOpen, toggleEditModal, editingProduct } = useModalStore()
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const categoriesQuery = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => apiClient.get('categories').then((res) => res.data),
+  })
+
+  const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      id: "",
-      name: "",
+    defaultValues: editingProduct ?? {
+      name: '',
       currentQuantity: 0,
       desiredQuantity: 0,
       unit: Unit.kg,
-      category: Category.Frutas,
+      categoryId: 0,
     },
-  });
+  })
 
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
-  const mutation = useMutation<void, Error, Product>({
-    mutationFn: (product: Product) =>
-      productApi.updateProduct(product.id, product),
+  const mutation = useMutation<void, Error, FormSchema>({
+    mutationFn: (product: FormSchema) =>
+      apiClient.patch(`products/${product.id}`, product),
     onMutate: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ['products'] })
     },
     onError: () => {
-      toast.error("Falha ao adicionar produto");
+      toast.error('Falha ao adicionar produto')
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ['products'] })
     },
     onSuccess: () => {
-      toast.success("Produto adicionado com sucesso");
-      form.reset();
-      toggleEditModal();
+      toast.success('Produto adicionado com sucesso')
+      form.reset()
+      toggleEditModal()
     },
-  });
+  })
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    await mutation.mutateAsync({
-      ...values,
-      id: values.id || crypto.randomUUID(),
-    });
+  async function onSubmit(values: FormSchema) {
+    await mutation.mutateAsync(values)
   }
 
   useEffect(() => {
     if (editingProduct) {
-      form.reset(editingProduct);
+      form.reset(editingProduct)
     }
-  }, [editingProduct, form]);
+  }, [editingProduct, form])
 
   return (
     <Dialog open={isEditModalOpen} onOpenChange={toggleEditModal}>
@@ -129,7 +135,22 @@ export function UpdateProductDialog() {
               )}
             />
 
-            <div className="flex gap-4">
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descrição</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormDescription>A descrição do produto.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* <div className="flex gap-4">
               <FormField
                 control={form.control}
                 name="currentQuantity"
@@ -163,7 +184,7 @@ export function UpdateProductDialog() {
                   </FormItem>
                 )}
               />
-            </div>
+            </div> */}
 
             <FormField
               control={form.control}
@@ -173,11 +194,11 @@ export function UpdateProductDialog() {
                   <FormLabel>Unidade</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    defaultValue={field.value?.toString()}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecione a unidade" />
+                        <SelectValue />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -198,23 +219,26 @@ export function UpdateProductDialog() {
 
             <FormField
               control={form.control}
-              name="category"
+              name="categoryId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Categoria</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    defaultValue={field.value?.toString()}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecione a categoria" />
+                        <SelectValue />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {Object.values(Category).map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
+                      {categoriesQuery?.data?.map((category: Category) => (
+                        <SelectItem
+                          key={category.id}
+                          value={category.id.toString()}
+                        >
+                          {category.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -234,5 +258,5 @@ export function UpdateProductDialog() {
         </Form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
