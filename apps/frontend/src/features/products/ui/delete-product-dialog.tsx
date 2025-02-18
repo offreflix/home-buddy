@@ -23,7 +23,7 @@ export function DeleteProductDialog() {
     useModalStore()
 
   const mutation = useMutation({
-    mutationFn: (id: string) => productApi.deleteProduct(id),
+    mutationFn: (id: number) => productApi.deleteProduct(id),
     onMutate: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
     },
@@ -39,7 +39,7 @@ export function DeleteProductDialog() {
     },
   })
 
-  function handleDelete(id: string) {
+  function handleDelete(id: number) {
     mutation.mutateAsync(id)
   }
 
@@ -55,7 +55,11 @@ export function DeleteProductDialog() {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <Button onClick={() => handleDelete(deletingProductId)}>
+          <Button
+            onClick={() =>
+              deletingProductId !== null && handleDelete(deletingProductId)
+            }
+          >
             Continuar
           </Button>
         </AlertDialogFooter>
