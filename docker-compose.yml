@@ -1,0 +1,79 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - API_BASE_URL=http://backend:3000
+    volumes:
+      - ./apps/frontend:/app/apps/frontend
+    networks:
+      - home-buddy-network
+    restart: always
+
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/home_buddy
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=your-secret-key
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./apps/backend:/app/apps/backend
+    networks:
+      - home-buddy-network
+    restart: always
+
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=home_buddy
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - home-buddy-network
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      retries: 5
+      timeout: 3s
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - home-buddy-network
+    restart: always
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      retries: 5
+      timeout: 3s
+
+volumes:
+  postgres_data:
+  redis_data:
+
+
+networks:
+  home-buddy-network:
+    driver: bridge
