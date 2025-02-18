@@ -5,8 +5,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 function ProductCardSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {[...Array(8)].map(() => (
-        <Card key={crypto.randomUUID()} className="rounded-lg overflow-hidden">
+      {[...Array(8)].map((_, index) => (
+        <Card key={index} className="rounded-lg overflow-hidden">
           <CardHeader className="pb-2">
             <div className="flex justify-between items-start">
               <div>
