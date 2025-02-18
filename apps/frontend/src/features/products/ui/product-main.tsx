@@ -34,20 +34,33 @@ import ProductCardSkeleton from './product-card-skeleton'
 import { DataTableSkeleton } from './product-table-skeleton'
 import axios from 'axios'
 import Router from 'next/router'
+import { refreshToken } from '@/features/auth/model/authActions'
 
 type ViewMode = 'card' | 'table'
 
 export const apiClient = axios.create({
-  baseURL: 'http://localhost:3000',
+  baseURL: process.env.API_BASE_URL || 'http://localhost:3000',
   withCredentials: true,
 })
 
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      Router.push('/login')
+  async (error) => {
+    const originalRequest = error.config
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
+
+      try {
+        await refreshToken()
+
+        return apiClient(originalRequest)
+      } catch (refreshError) {
+        Router.push('/login')
+        return Promise.reject(refreshError)
+      }
     }
+
     return Promise.reject(error)
   },
 )
