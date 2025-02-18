@@ -14,13 +14,13 @@ export async function middleware(request: NextRequest) {
   const cookie = await cookies()
   const path = request.nextUrl.pathname
   const publicRoute = publicRoutes.find((route) => route.path === path)
-  const access_token = cookie.get('access_token')
+  const refresh_token = cookie.get('refresh_token')
 
-  if (!access_token && publicRoute) {
+  if (!refresh_token && publicRoute) {
     return NextResponse.next()
   }
 
-  if (!access_token && !publicRoute) {
+  if (!refresh_token && !publicRoute) {
     const redirectUrl = request.nextUrl.clone()
 
     redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE
@@ -28,8 +28,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  if (access_token?.value.split('.').length !== 3) {
-    cookie.delete('access_token')
+  if (refresh_token?.value.split('.').length !== 3) {
+    cookie.delete('refresh_token')
     const redirectUrl = request.nextUrl.clone()
 
     redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE
@@ -37,13 +37,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  if (access_token) {
-    const decodedToken = jwtDecode<{ exp?: number }>(access_token.value)
-
-    console.log(decodedToken.exp, Date.now() / 1000)
+  if (refresh_token) {
+    const decodedToken = jwtDecode<{ exp?: number }>(refresh_token.value)
 
     if (decodedToken.exp && decodedToken.exp < Date.now() / 1000) {
-      cookie.delete('access_token')
+      cookie.delete('refresh_token')
       const redirectUrl = request.nextUrl.clone()
 
       redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED_ROUTE
@@ -53,7 +51,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (
-    access_token &&
+    refresh_token &&
     publicRoute &&
     publicRoute.whenAuthenticated === 'redirect'
   ) {
