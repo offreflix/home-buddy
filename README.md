@@ -1,85 +1,84 @@
 # Home Buddy
 
-A modern monorepo application built with Next.js and NestJS, featuring robust authentication and microservices architecture.
+Um aplicativo moderno em monorepositório construído com Next.js e NestJS, apresentando autenticação robusta e arquitetura de microsserviços.
 
-## 🚀 Tech Stack
+## 🚀 Tecnologias Utilizadas
 
 ### Frontend
 
-- **Next.js 14** - React framework with server-side rendering
-- **TypeScript** - Static type checking
-- **Tailwind CSS** - Utility-first CSS framework
-- **Shadcn/ui** - Reusable component library
-- **React Query** - Data fetching and caching
-- **React Hook Form** - Form handling
-- **Zod** - Schema validation
+- **Next.js 14** - Framework React com renderização do lado do servidor
+- **TypeScript** - Verificação estática de tipos
+- **Tailwind CSS** - Framework CSS utilitário
+- **Shadcn/ui** - Biblioteca de componentes reutilizáveis
+- **React Query** - Busca e cache de dados
+- **React Hook Form** - Manipulação de formulários
+- **Zod** - Validação de esquemas
 
 ### Backend
 
-- **NestJS** - Progressive Node.js framework
-- **TypeScript** - Static type checking
-- **PostgreSQL** - Primary database
-- **Redis** - Session management and caching
-- **Prisma** - ORM for database operations
-- **JWT** - Token-based authentication
+- **NestJS** - Framework progressivo para Node.js
+- **TypeScript** - Verificação estática de tipos
+- **PostgreSQL** - Banco de dados principal
+- **Redis** - Gerenciamento de sessões e cache
+- **Prisma** - ORM para operações de banco de dados
+- **JWT** - Autenticação baseada em tokens
 
-## 🏗️ Architecture
+## 🏗️ Arquitetura
 
-The project follows a monorepo structure using Yarn workspaces:
+O projeto segue uma estrutura de monorepositório utilizando Yarn workspaces:
 
 ```plaintext
-
 home-buddy-monorepo/
 
 ├── apps/
 
-│   ├── frontend/    # Next.js application
+│   ├── frontend/    # Aplicação Next.js
 
-│   └── backend/     # NestJS application
+│   └── backend/     # Aplicação NestJS
 
-└── packages/        # Shared packages
+└── packages/        # Pacotes compartilhados
 ```
 
-## 🔐 Authentication Flow
+## 🔐 Fluxo de Autenticação
 
-###### 1. Registration
+###### 1. Registro
 
-- User registers with username, email, and password
-- Password is hashed using bcrypt
-- JWT tokens (access + refresh) are generated
+- Usuário se registra com nome de usuário, e-mail e senha
+- A senha é hashada usando bcrypt
+- Tokens JWT (access e refresh) são gerados
 
 ###### 2. Login
 
-- User provides credentials
-- System validates and returns JWT tokens
-- Tokens are stored in HTTP-only cookies
+- Usuário fornece credenciais
+- Sistema valida e retorna tokens JWT
+- Tokens são armazenados em cookies HTTP-only
 
-###### 3. Token Management
+###### 3. Gerenciamento de Tokens
 
-- Access Token: 15 minutes validity
-- Refresh Token: 7 days validity
-- Redis stores active tokens for validation
+- **Access Token**: Validade de 15 minutos
+- **Refresh Token**: Validade de 7 dias
+- Redis armazena tokens ativos para validação
 
-###### 4. Security Features
+###### 4. Recursos de Segurança
 
-- HTTP-only cookies
-- JWT token validation
-- Redis token blacklisting
-- Route protection using Guards
+- Cookies HTTP-only
+- Validação de tokens JWT
+- Lista negra de tokens no Redis
+- Proteção de rotas usando Guards
 
-## 🛠️ Setup e Instalação
+## 🛠️ Configuração e Instalação
 
 ### 📌 Pré-requisitos
 
-Antes de iniciar, certifique-se de ter os seguintes requisitos instalados:
+Antes de iniciar, certifique-se de ter instalado:
 
 - Node.js 20+
 - Yarn 4.6.0+
 - Docker e Docker Compose
-- PostgreSQL 15+ (caso não utilize Docker, precisa configurar manualmente)
-- Redis 7+ (caso não utilize Docker, precisa configurar manualmente)
+- PostgreSQL 15+ (configure manualmente se não usar Docker)
+- Redis 7+ (configure manualmente se não usar Docker)
 
-### 🚀 Passo a Passo para Configuração
+### 🚀 Passo a Passo
 
 #### 1. Clone o repositório:
 
@@ -94,7 +93,7 @@ cd home-buddy-monorepo
 yarn install
 ```
 
-#### 3. Suba os serviços do banco de dados e cache com Docker:
+#### 3. Inicie os serviços com Docker:
 
 ```shell
 docker-compose up -d
@@ -107,7 +106,7 @@ Isso iniciará:
 - Backend **(NestJS)** na porta **3000**
 - Frontend **(Next.js)** na porta **5173**
 
-#### 4. Rodar as migrações do Prisma (caso esteja usando Prisma para gerenciar o banco de dados):
+#### 4. Execute as migrações do Prisma:
 
 ```shell
 docker exec -it home-buddy-backend yarn prisma migrate deploy
