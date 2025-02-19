@@ -44,28 +44,28 @@ home-buddy-monorepo/
 
 ###### 1. Registration
 
-   - User registers with username, email, and password
-   - Password is hashed using bcrypt
-   - JWT tokens (access + refresh) are generated
+- User registers with username, email, and password
+- Password is hashed using bcrypt
+- JWT tokens (access + refresh) are generated
 
 ###### 2. Login
 
-   - User provides credentials
-   - System validates and returns JWT tokens
-   - Tokens are stored in HTTP-only cookies
+- User provides credentials
+- System validates and returns JWT tokens
+- Tokens are stored in HTTP-only cookies
 
 ###### 3. Token Management
 
-   - Access Token: 15 minutes validity
-   - Refresh Token: 7 days validity
-   - Redis stores active tokens for validation
+- Access Token: 15 minutes validity
+- Refresh Token: 7 days validity
+- Redis stores active tokens for validation
 
 ###### 4. Security Features
 
-   - HTTP-only cookies
-   - JWT token validation
-   - Redis token blacklisting
-   - Route protection using Guards
+- HTTP-only cookies
+- JWT token validation
+- Redis token blacklisting
+- Route protection using Guards
 
 ## 🛠️ Setup e Instalação
 
