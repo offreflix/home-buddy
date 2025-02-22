@@ -29,6 +29,7 @@ import { productIndexedDbService } from '../api/indexed-db.service'
 import { queryClient } from '@/lib/react-query'
 import { useModalStore } from '../stores/modal.store'
 import { transformProductToFormSchema } from './columns'
+import { cn } from '@/lib/utils'
 
 type Props = {
   data: Array<Product> | undefined
@@ -57,7 +58,17 @@ function ProductCard({ data }: Props) {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {data?.map((product) => (
-        <Card key={product.id} className="rounded-lg overflow-hidden">
+        <Card
+          key={product.id}
+          className={cn(
+            'flex flex-col',
+            'bg-white dark:bg-neutral-900/70',
+            'border border-neutral-100 dark:border-neutral-800',
+            'hover:border-neutral-200 dark:hover:border-neutral-700',
+            'transition-all duration-200',
+            'shadow-sm backdrop-blur-xl',
+          )}
+        >
           <CardHeader className="pb-2">
             <div className="flex justify-between items-start">
               <div>

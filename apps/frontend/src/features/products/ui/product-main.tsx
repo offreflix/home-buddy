@@ -25,7 +25,6 @@ import { columns } from './columns'
 
 import { useQuery } from '@tanstack/react-query'
 import { CreateProductDialog } from './create-product-dialog'
-import { productApi } from '../api/product-api'
 
 import ProductCard from './product-card'
 import { useEffect, useState } from 'react'
@@ -35,6 +34,7 @@ import { DataTableSkeleton } from './product-table-skeleton'
 import axios from 'axios'
 import Router from 'next/router'
 import { refreshToken } from '@/features/auth/model/authActions'
+import { QuantityDialog } from './quantity-dialog'
 
 type ViewMode = 'card' | 'table'
 
@@ -130,6 +130,8 @@ export function ProductMain() {
         </p>
 
         <CreateProductDialog />
+
+        <QuantityDialog />
       </div>
 
       <div className="flex items-center gap-4">

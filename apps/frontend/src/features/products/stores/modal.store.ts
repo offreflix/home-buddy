@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import type { Product } from '../model/types'
 import { FormSchema } from '../ui/update-product-dialog'
 
 type ProductModalStore = {
@@ -7,14 +6,19 @@ type ProductModalStore = {
   toggleAddModal: () => void
 
   isEditModalOpen: boolean
-  editingProduct: FormSchema | null
   toggleEditModal: () => void
+  editingProduct: FormSchema | null
   setEditingProduct: (product: FormSchema) => void
 
   isDeleteModalOpen: boolean
-  deletingProductId: number | null
   toggleDeleteModal: () => void
+  deletingProductId: number | null
   setDeletingProductId: (id: number) => void
+
+  isQuantityModalOpen: boolean
+  toggleQuantityModal: () => void
+  isIncreasingQuantity: boolean
+  toggleIncreasingQuantity: () => void
 }
 
 export const useModalStore = create<ProductModalStore>((set) => ({
@@ -25,14 +29,21 @@ export const useModalStore = create<ProductModalStore>((set) => ({
     })),
 
   isEditModalOpen: false,
-  editingProduct: null,
   toggleEditModal: () =>
     set((state) => ({ isEditModalOpen: !state.isEditModalOpen })),
+  editingProduct: null,
   setEditingProduct: (product) => set({ editingProduct: product }),
 
   isDeleteModalOpen: false,
-  deletingProductId: null,
   toggleDeleteModal: () =>
     set((state) => ({ isDeleteModalOpen: !state.isDeleteModalOpen })),
+  deletingProductId: null,
   setDeletingProductId: (id) => set({ deletingProductId: id }),
+
+  isQuantityModalOpen: false,
+  toggleQuantityModal: () =>
+    set((state) => ({ isQuantityModalOpen: !state.isQuantityModalOpen })),
+  isIncreasingQuantity: true,
+  toggleIncreasingQuantity: () =>
+    set((state) => ({ isIncreasingQuantity: !state.isIncreasingQuantity })),
 }))
