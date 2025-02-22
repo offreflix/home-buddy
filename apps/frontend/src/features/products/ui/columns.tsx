@@ -46,8 +46,9 @@ export const columns: ColumnDef<Product>[] = [
       </Button>
     ),
     cell: ({ row }) => {
-      const queryClient = useQueryClient()
       const { currentQuantity, desiredQuantity } = row.original.stock
+
+      const { toggleQuantityModal } = useModalStore()
 
       return (
         <div className="flex items-center space-x-2 pl-4">
@@ -60,9 +61,8 @@ export const columns: ColumnDef<Product>[] = [
           <Button
             variant="ghost"
             size="icon"
-            onClick={async () => {
-              await productIndexedDbService.decreaseQuantity(row.original.id)
-              queryClient.invalidateQueries({ queryKey: ['products'] })
+            onClick={() => {
+              toggleQuantityModal()
             }}
           >
             <Minus />
@@ -70,9 +70,8 @@ export const columns: ColumnDef<Product>[] = [
           <Button
             variant="ghost"
             size="icon"
-            onClick={async () => {
-              await productIndexedDbService.addQuantity(row.original.id)
-              queryClient.invalidateQueries({ queryKey: ['products'] })
+            onClick={() => {
+              toggleQuantityModal()
             }}
           >
             <Plus />
