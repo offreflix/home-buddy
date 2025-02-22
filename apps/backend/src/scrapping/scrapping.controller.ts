@@ -1,12 +1,12 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ScrapedData, ScrappingService } from './scrapping.service';
+import { ScrapedResponse, ScrappingService } from './scrapping.service';
 
 @Controller('scrapping')
 export class ScrappingController {
   constructor(private readonly scrappingService: ScrappingService) {}
 
   @Get()
-  async getScrapedData(@Query('url') url: string): Promise<Array<ScrapedData>> {
+  async getScrapedData(@Query('url') url: string): Promise<ScrapedResponse> {
     return this.scrappingService.scrapeNFC(url);
   }
 }

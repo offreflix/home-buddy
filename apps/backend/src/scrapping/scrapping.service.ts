@@ -10,9 +10,18 @@ export interface ScrapedData {
   totalPrice: string;
 }
 
+export interface ScrapedResponse {
+  supermarketName: string;
+  total: string;
+  key: string;
+  date: string;
+
+  products: ScrapedData[];
+}
+
 @Injectable()
 export class ScrappingService {
-  async scrapeNFC(url: string): Promise<Array<ScrapedData>> {
+  async scrapeNFC(url: string): Promise<ScrapedResponse> {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
 
@@ -68,8 +77,24 @@ export class ScrappingService {
         .filter((item) => item !== null);
     });
 
+    const info = await page.evaluate(() => {
+      const total = document.querySelector('.txtMax')?.textContent;
+      const key = document.querySelector('.chave')?.textContent;
+      const supermarketName = document.querySelector('.txtTopo')?.textContent;
+
+      const dateText = document.querySelector(
+        'ul[data-role="listview"] li',
+      )?.textContent;
+      const dateMatch = dateText?.match(
+        /Emissão:\s(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2})/,
+      );
+      const date = dateMatch ? dateMatch[1] : null;
+
+      return { supermarketName, total, key, date };
+    });
+
     await browser.close();
 
-    return data;
+    return { ...info, products: data };
   }
 }
