@@ -7,8 +7,6 @@ services:
       - "5173:5173"
     environment:
       - API_BASE_URL=http://backend:3000
-    volumes:
-      - ./apps/frontend:/app/apps/frontend
     networks:
       - home-buddy-network
     restart: always
