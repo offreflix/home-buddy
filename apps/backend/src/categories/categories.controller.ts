@@ -10,6 +10,8 @@ import {
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { User } from 'src/users/user.decorator';
+import { UserEntity } from 'src/users/entities/user.entity';
 
 @Controller('categories')
 export class CategoriesController {
@@ -26,8 +28,8 @@ export class CategoriesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.categoriesService.findOne(+id);
+  findOne(@Param('id') id: string, @User() user: UserEntity) {
+    return this.categoriesService.findOne(+id, user);
   }
 
   @Patch(':id')

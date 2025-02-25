@@ -1,3 +1,5 @@
+'use client'
+
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -6,15 +8,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -22,62 +21,49 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import { z } from 'zod'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { PlusCircle } from 'lucide-react'
+
+import { Minus, Plus } from 'lucide-react'
 import { toast } from 'sonner'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useModalStore } from '../stores/modal.store'
-import { Category, Unit } from '../model/types'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { MovementType, useModalStore } from '../stores/modal.store'
 import { apiClient } from './product-main'
 import { AxiosError } from 'axios'
+import { cn } from '@/lib/utils'
+import { useEffect } from 'react'
 
 export const formSchema = z.object({
-  name: z.string().nonempty('Nome é obrigatório'),
-  description: z.string().optional(),
-  unit: z.nativeEnum(Unit),
-  categoryId: z.coerce.number().int({ message: 'Categoria inválida' }),
-
-  currentQuantity: z.coerce
-    .number()
-    .min(0, 'Quantidade atual deve ser maior ou igual a 0'),
-  desiredQuantity: z.coerce
-    .number()
-    .positive('Quantidade desejada deve ser um número positivo'),
+  quantity: z.number().positive(),
 })
 
 type FormSchema = z.infer<typeof formSchema>
 
 export function QuantityDialog() {
-  const { isQuantityModalOpen, toggleQuantityModal } = useModalStore()
+  const {
+    isQuantityModalOpen,
+    toggleQuantityModal,
+    movementType,
+    selectedProductId,
+  } = useModalStore()
 
-  const categoriesQuery = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => apiClient.get('categories').then((res) => res.data),
-  })
+  console.log(movementType)
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
-      description: '',
-      currentQuantity: 0,
-      desiredQuantity: 0,
-      unit: undefined,
-      categoryId: undefined,
+      quantity: 0,
     },
   })
+
+  console.log(form.formState.errors)
 
   const queryClient = useQueryClient()
 
   const mutation = useMutation<void, AxiosError, FormSchema>({
-    mutationFn: (product: FormSchema) => {
-      return apiClient.post('products', product)
+    mutationFn: (movement: FormSchema) => {
+      return apiClient.patch(`products/update-stock/${selectedProductId}`, {
+        quantity: movement.quantity,
+        type: movementType,
+      })
     },
     onMutate: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
@@ -102,18 +88,37 @@ export function QuantityDialog() {
     },
   })
 
+  useEffect(() => {
+    if (isQuantityModalOpen) {
+      form.reset({ quantity: 0 })
+    }
+  }, [isQuantityModalOpen, form])
+
   async function onSubmit(values: FormSchema) {
-    console.log(values)
+    console.log({
+      quantity: values.quantity,
+      type: movementType,
+    })
     await mutation.mutateAsync(values)
+  }
+
+  const handleQuantityChange = (change: number) => {
+    const currentValue = form.getValues('quantity')
+    const newValue = Math.max(1, currentValue + change)
+    form.setValue('quantity', newValue, { shouldValidate: true })
   }
 
   return (
     <Dialog open={isQuantityModalOpen} onOpenChange={toggleQuantityModal}>
       <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-auto">
         <DialogHeader>
-          <DialogTitle>Adicionar Produto</DialogTitle>
+          <DialogTitle>
+            {movementType === MovementType.IN ? 'Adicionar' : 'Remover'}{' '}
+            Quantidade
+          </DialogTitle>
           <DialogDescription>
-            Adicione um novo produto ao seu estoque.
+            {movementType === MovementType.IN ? 'Adicione' : 'Remova'} a
+            quantidade de um produto.
           </DialogDescription>
         </DialogHeader>
 
@@ -121,79 +126,52 @@ export function QuantityDialog() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="name"
+              name="quantity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <div
+                      className={cn(
+                        'flex justify-center items-center space-x-2',
+                      )}
+                    >
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleQuantityChange(-1)}
+                        disabled={field.value <= 1}
+                        className="transition-transform duration-200 hover:scale-105"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <Input
+                        {...field}
+                        type="number"
+                        onChange={(e) =>
+                          field.onChange(
+                            Number.parseInt(e.target.value, 10) || 1,
+                          )
+                        }
+                        className={cn(
+                          'w-20 text-center',
+                          'transition-all duration-200',
+                          'focus:ring-2 focus:ring-neutral-300 dark:focus:ring-neutral-600',
+                          'hover:border-neutral-300 dark:hover:border-neutral-600',
+                        )}
+                        min={1}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleQuantityChange(1)}
+                        className="transition-transform duration-200 hover:scale-105"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </FormControl>
-                  <FormDescription>
-                    Esse é o nome que será exibido em seus produto.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="unit"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Unidade</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value?.toString()}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {Object.values(Unit).map((unit) => (
-                        <SelectItem key={unit} value={unit}>
-                          {unit}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    A unidade de medida do produto.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="categoryId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Categoria</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value?.toString()}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categoriesQuery?.data?.map((category: Category) => (
-                        <SelectItem
-                          key={category.id}
-                          value={category.id.toString()}
-                        >
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>A categoria do produto.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

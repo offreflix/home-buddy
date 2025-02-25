@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateStockDto } from './dto/create-stock.dto';
 import { UpdateStockDto } from './dto/update-stock.dto';
+import { UserEntity } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class StocksService {
@@ -16,7 +17,9 @@ export class StocksService {
     return `This action returns a #${id} stock`;
   }
 
-  update(id: number, updateStockDto: UpdateStockDto) {
+  update(id: number, updateStockDto: UpdateStockDto, user: UserEntity) {
+    console.log(id, updateStockDto, user);
+
     return `This action updates a #${id} stock`;
   }
 

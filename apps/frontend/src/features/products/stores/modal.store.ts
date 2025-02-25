@@ -12,13 +12,15 @@ type ProductModalStore = {
 
   isDeleteModalOpen: boolean
   toggleDeleteModal: () => void
-  deletingProductId: number | null
-  setDeletingProductId: (id: number) => void
 
   isQuantityModalOpen: boolean
   toggleQuantityModal: () => void
-  isIncreasingQuantity: boolean
-  toggleIncreasingQuantity: () => void
+
+  movementType: MovementType
+  setMovementType: (type: MovementType) => void
+
+  selectedProductId: number | null
+  setSelectedProductId: (id: number) => void
 }
 
 export const useModalStore = create<ProductModalStore>((set) => ({
@@ -37,13 +39,18 @@ export const useModalStore = create<ProductModalStore>((set) => ({
   isDeleteModalOpen: false,
   toggleDeleteModal: () =>
     set((state) => ({ isDeleteModalOpen: !state.isDeleteModalOpen })),
-  deletingProductId: null,
-  setDeletingProductId: (id) => set({ deletingProductId: id }),
 
   isQuantityModalOpen: false,
   toggleQuantityModal: () =>
     set((state) => ({ isQuantityModalOpen: !state.isQuantityModalOpen })),
-  isIncreasingQuantity: true,
-  toggleIncreasingQuantity: () =>
-    set((state) => ({ isIncreasingQuantity: !state.isIncreasingQuantity })),
+  movementType: MovementType.IN,
+  setMovementType: (type) => set({ movementType: type }),
+
+  selectedProductId: null,
+  setSelectedProductId: (id) => set({ selectedProductId: id }),
 }))
+
+export enum MovementType {
+  IN = 'IN',
+  OUT = 'OUT',
+}

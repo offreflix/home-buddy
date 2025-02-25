@@ -12,6 +12,8 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { User } from 'src/users/user.decorator';
 import { UserEntity } from 'src/users/entities/user.entity';
+import { UpdateStockDto } from 'src/stocks/dto/update-stock.dto';
+import { UpdateProductStockDto } from './dto/update-product-stock.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -39,6 +41,15 @@ export class ProductsController {
     @User() user: UserEntity,
   ) {
     return this.productsService.update(+id, updateProductDto, user);
+  }
+
+  @Patch('/update-stock/:id')
+  updateStock(
+    @Param('id') id: string,
+    @Body() updateStockDto: UpdateProductStockDto,
+    @User() user: UserEntity,
+  ) {
+    return this.productsService.updateStock(+id, updateStockDto, user);
   }
 
   @Delete(':id')

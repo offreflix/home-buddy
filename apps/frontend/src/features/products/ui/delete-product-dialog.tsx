@@ -19,7 +19,7 @@ import { productApi } from '../api/product-api'
 import { queryClient } from '@/lib/react-query'
 
 export function DeleteProductDialog() {
-  const { deletingProductId, toggleDeleteModal, isDeleteModalOpen } =
+  const { selectedProductId, toggleDeleteModal, isDeleteModalOpen } =
     useModalStore()
 
   const mutation = useMutation({
@@ -57,7 +57,7 @@ export function DeleteProductDialog() {
           <AlertDialogCancel>Cancelar</AlertDialogCancel>
           <Button
             onClick={() =>
-              deletingProductId !== null && handleDelete(deletingProductId)
+              selectedProductId !== null && handleDelete(selectedProductId)
             }
           >
             Continuar

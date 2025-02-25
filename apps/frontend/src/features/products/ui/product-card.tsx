@@ -52,7 +52,7 @@ function ProductCard({ data }: Props) {
     toggleEditModal,
     setEditingProduct,
     toggleDeleteModal,
-    setDeletingProductId,
+    setSelectedProductId,
   } = useModalStore()
 
   return (
@@ -97,7 +97,7 @@ function ProductCard({ data }: Props) {
                   <DropdownMenuItem
                     onClick={() => {
                       toggleDeleteModal()
-                      setDeletingProductId(product.id)
+                      setSelectedProductId(product.id)
                     }}
                   >
                     <Trash2 className="mr-2 h-4 w-4" /> Excluir
