@@ -82,7 +82,11 @@ export function QuantityDialog() {
       queryClient.invalidateQueries({ queryKey: ['products'] })
     },
     onSuccess: () => {
-      toast.success('Produto adicionado com sucesso')
+      toast.success(
+        movementType === MovementType.IN
+          ? 'Produto adicionado com sucesso'
+          : 'Produto removido com sucesso',
+      )
       form.reset()
       toggleQuantityModal()
     },

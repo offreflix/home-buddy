@@ -27,7 +27,7 @@ import {
 import type { Product } from '../model/types'
 import { productIndexedDbService } from '../api/indexed-db.service'
 import { queryClient } from '@/lib/react-query'
-import { useModalStore } from '../stores/modal.store'
+import { MovementType, useModalStore } from '../stores/modal.store'
 import { transformProductToFormSchema } from './columns'
 import { cn } from '@/lib/utils'
 
@@ -53,7 +53,15 @@ function ProductCard({ data }: Props) {
     setEditingProduct,
     toggleDeleteModal,
     setSelectedProductId,
+    toggleQuantityModal,
+    setMovementType,
   } = useModalStore()
+
+  const handleQuantityChange = (type: MovementType, productId: number) => {
+    setMovementType(type)
+    setSelectedProductId(productId)
+    toggleQuantityModal()
+  }
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -62,7 +70,6 @@ function ProductCard({ data }: Props) {
           key={product.id}
           className={cn(
             'flex flex-col',
-            'bg-white dark:bg-neutral-900/70',
             'border border-neutral-100 dark:border-neutral-800',
             'hover:border-neutral-200 dark:hover:border-neutral-700',
             'transition-all duration-200',
@@ -75,7 +82,7 @@ function ProductCard({ data }: Props) {
                 <CardTitle className="text-lg font-semibold mb-1">
                   {product.name}
                 </CardTitle>
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="text-xs font-medium">
                   {product.category.name}
                 </Badge>
               </div>
@@ -146,7 +153,9 @@ function ProductCard({ data }: Props) {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => decreaseQuantity(product.id)}
+                onClick={() =>
+                  handleQuantityChange(MovementType.OUT, product.id)
+                }
                 className="h-8 w-8 rounded-full"
               >
                 <Minus className="h-4 w-4" />
@@ -157,7 +166,9 @@ function ProductCard({ data }: Props) {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => increaseQuantity(product.id)}
+                onClick={() =>
+                  handleQuantityChange(MovementType.IN, product.id)
+                }
                 className="h-8 w-8 rounded-full"
               >
                 <Plus className="h-4 w-4" />
