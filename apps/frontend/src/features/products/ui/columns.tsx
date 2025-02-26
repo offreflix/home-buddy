@@ -68,7 +68,7 @@ export const columns: ColumnDef<Product>[] = [
             </div>
           </div>
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
             onClick={() =>
               handleQuantityChange(MovementType.OUT, row.original.id)
@@ -77,7 +77,7 @@ export const columns: ColumnDef<Product>[] = [
             <Minus />
           </Button>
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
             onClick={() => {
               handleQuantityChange(MovementType.IN, row.original.id)
@@ -103,7 +103,7 @@ export const columns: ColumnDef<Product>[] = [
     ),
     cell: ({ row }) => (
       <div className="pl-4">
-        <Badge variant="secondary" className="text-xs">
+        <Badge variant="secondary" className="text-xs font-medium">
           {row.getValue('category')}
         </Badge>
       </div>
@@ -123,7 +123,7 @@ export const columns: ColumnDef<Product>[] = [
       return (
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-9 w-9 p-0">
+            <Button variant="outline" className="h-9 w-9 p-0">
               <span className="sr-only">Abrir menu</span>
               <MoreHorizontal />
             </Button>
