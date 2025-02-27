@@ -8,6 +8,9 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth/auth.guard';
 import { StocksModule } from './stocks/stocks.module';
 import { CategoriesModule } from './categories/categories.module';
+import { ScrappingService } from './scrapping/scrapping.service';
+import { ScrappingController } from './scrapping/scrapping.controller';
+import { ScrappingModule } from './scrapping/scrapping.module';
 
 @Module({
   imports: [
@@ -16,6 +19,7 @@ import { CategoriesModule } from './categories/categories.module';
     ProductsModule,
     StocksModule,
     CategoriesModule,
+    ScrappingModule,
   ],
   controllers: [AppController],
   providers: [
