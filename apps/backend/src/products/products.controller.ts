@@ -29,12 +29,27 @@ export class ProductsController {
     return this.productsService.findAll(user);
   }
 
-  @Get(':id')
+  @Get('id/:id')
   findOne(@Param('id') id: string, @User() user: UserEntity) {
     return this.productsService.findOne(+id, user);
   }
 
-  @Patch(':id')
+  @Get('count')
+  count(@User() user: UserEntity): Promise<{ count: number }> {
+    return this.productsService.count(user);
+  }
+
+  @Get('low-stock')
+  lowStock(@User() user: UserEntity) {
+    return this.productsService.lowStock(user);
+  }
+
+  @Get('most-consumed')
+  mostConsumed(@User() user: UserEntity) {
+    return this.productsService.mostConsumed(user);
+  }
+
+  @Patch('id/:id')
   update(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,

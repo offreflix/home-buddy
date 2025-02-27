@@ -74,7 +74,7 @@ export class ProductsService {
   async findAll(user: UserEntity) {
     const products = await this.prisma.product.findMany({
       where: { userId: user.id },
-      include: { category: true, stock: true },
+      include: { category: true, stock: true, movements: true },
       orderBy: {
         createdAt: 'desc',
       },
@@ -96,6 +96,56 @@ export class ProductsService {
     console.log(user);
 
     return product;
+  }
+
+  async count(user: UserEntity) {
+    const count = await this.prisma.product.count({
+      where: { userId: user.id },
+    });
+
+    return { count };
+  }
+
+  async lowStock(user: UserEntity) {
+    const products = await this.prisma.product.findMany({
+      where: {
+        userId: user.id,
+      },
+      include: {
+        stock: true,
+      },
+    });
+
+    const filteredProducts = products.filter(
+      (product) =>
+        product.stock &&
+        product.stock.currentQuantity < product.stock.desiredQuantity * 0.4,
+    );
+
+    return filteredProducts;
+  }
+
+  async mostConsumed(user: UserEntity) {
+    const products = await this.prisma.product.findMany({
+      where: {
+        userId: user.id,
+      },
+      include: { category: true, stock: true, movements: true },
+    });
+
+    const sortedProducts = products.sort((a, b) => {
+      const aTotalConsumed = a.movements.reduce(
+        (total, movement) => total + movement.quantity,
+        0,
+      );
+      const bTotalConsumed = b.movements.reduce(
+        (total, movement) => total + movement.quantity,
+        0,
+      );
+      return bTotalConsumed - aTotalConsumed;
+    });
+
+    return sortedProducts;
   }
 
   async update(
