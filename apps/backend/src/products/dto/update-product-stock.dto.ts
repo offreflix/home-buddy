@@ -6,15 +6,10 @@ import {
   IsPositive,
 } from 'class-validator';
 
-export class UpdateStockDto {
-  @IsInt()
-  @IsPositive()
-  @IsNotEmpty()
-  productId: number;
-
+export class UpdateProductStockDto {
   @IsPositive()
   @IsNumber()
-  currentQuantity: number;
+  quantity: number;
 
   @IsEnum(['IN', 'OUT'], { message: 'Type must be either IN or OUT' })
   type: 'IN' | 'OUT';

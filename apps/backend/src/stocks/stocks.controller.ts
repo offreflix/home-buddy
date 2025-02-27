@@ -10,6 +10,8 @@ import {
 import { StocksService } from './stocks.service';
 import { CreateStockDto } from './dto/create-stock.dto';
 import { UpdateStockDto } from './dto/update-stock.dto';
+import { UserEntity } from 'src/users/entities/user.entity';
+import { User } from 'src/users/user.decorator';
 
 @Controller('stocks')
 export class StocksController {
@@ -31,8 +33,12 @@ export class StocksController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateStockDto: UpdateStockDto) {
-    return this.stocksService.update(+id, updateStockDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateStockDto: UpdateStockDto,
+    @User() user: UserEntity,
+  ) {
+    return this.stocksService.update(+id, updateStockDto, user);
   }
 
   @Delete(':id')

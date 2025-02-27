@@ -13,11 +13,10 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Progress } from '@/components/ui/progress'
 import type { Product, Unit } from '../model/types'
-import { useModalStore } from '../stores/modal.store'
-import { productIndexedDbService } from '../api/indexed-db.service'
-import { useQueryClient } from '@tanstack/react-query'
+import { MovementType, useModalStore } from '../stores/modal.store'
 import { Badge } from '@/components/ui/badge'
 import { FormSchema } from './update-product-dialog'
+import { toast } from 'sonner'
 
 export const columns: ColumnDef<Product>[] = [
   {
@@ -48,30 +47,40 @@ export const columns: ColumnDef<Product>[] = [
     cell: ({ row }) => {
       const { currentQuantity, desiredQuantity } = row.original.stock
 
-      const { toggleQuantityModal } = useModalStore()
+      const { toggleQuantityModal, setMovementType, setSelectedProductId } =
+        useModalStore()
+
+      const handleQuantityChange = (type: MovementType, productId: number) => {
+        setMovementType(type)
+        setSelectedProductId(productId)
+        toggleQuantityModal()
+      }
 
       return (
         <div className="flex items-center space-x-2 pl-4">
           <div className="w-[100px] space-y-1">
-            <Progress value={(currentQuantity / desiredQuantity) * 100} />
+            <Progress
+              value={Math.min((currentQuantity / desiredQuantity) * 100, 100)}
+            />
+
             <div className="text-xs text-muted-foreground">
               {currentQuantity} / {desiredQuantity} {row.original.unit}
             </div>
           </div>
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
-            onClick={() => {
-              toggleQuantityModal()
-            }}
+            onClick={() =>
+              handleQuantityChange(MovementType.OUT, row.original.id)
+            }
           >
             <Minus />
           </Button>
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
             onClick={() => {
-              toggleQuantityModal()
+              handleQuantityChange(MovementType.IN, row.original.id)
             }}
           >
             <Plus />
@@ -94,7 +103,7 @@ export const columns: ColumnDef<Product>[] = [
     ),
     cell: ({ row }) => (
       <div className="pl-4">
-        <Badge variant="secondary" className="text-xs">
+        <Badge variant="secondary" className="text-xs font-medium">
           {row.getValue('category')}
         </Badge>
       </div>
@@ -108,13 +117,13 @@ export const columns: ColumnDef<Product>[] = [
         toggleEditModal,
         setEditingProduct,
         toggleDeleteModal,
-        setDeletingProductId,
+        setSelectedProductId,
       } = useModalStore()
 
       return (
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-9 w-9 p-0">
+            <Button variant="outline" className="h-9 w-9 p-0">
               <span className="sr-only">Abrir menu</span>
               <MoreHorizontal />
             </Button>
@@ -134,7 +143,7 @@ export const columns: ColumnDef<Product>[] = [
             <DropdownMenuItem
               onClick={() => {
                 toggleDeleteModal()
-                setDeletingProductId(row.original.id)
+                setSelectedProductId(row.original.id)
               }}
             >
               Excluir

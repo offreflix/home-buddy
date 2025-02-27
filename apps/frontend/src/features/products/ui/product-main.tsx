@@ -130,8 +130,6 @@ export function ProductMain() {
         </p>
 
         <CreateProductDialog />
-
-        <QuantityDialog />
       </div>
 
       <div className="flex items-center gap-4">
