@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -14,6 +15,8 @@ import { User } from 'src/users/user.decorator';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { UpdateStockDto } from 'src/stocks/dto/update-stock.dto';
 import { UpdateProductStockDto } from './dto/update-product-stock.dto';
+import { MostConsumedDto } from './dto/most-consumed.dto';
+import { GetStockMovementsDto } from './dto/get-stock-movements.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -45,8 +48,21 @@ export class ProductsController {
   }
 
   @Get('most-consumed')
-  mostConsumed(@User() user: UserEntity) {
-    return this.productsService.mostConsumed(user);
+  mostConsumed(@Query() query: MostConsumedDto, @User() user: UserEntity) {
+    return this.productsService.mostConsumed(query, user);
+  }
+
+  @Get('count-by-category')
+  async getProductsCountByCategory(@User() user: UserEntity) {
+    return this.productsService.countByCategory(user);
+  }
+
+  @Get('movements')
+  async getMovements(
+    @Query() dto: GetStockMovementsDto,
+    @User() user: UserEntity,
+  ) {
+    return this.productsService.getMovementsByDate(dto, user);
   }
 
   @Patch('id/:id')

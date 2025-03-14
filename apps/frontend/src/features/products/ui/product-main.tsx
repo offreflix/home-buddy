@@ -39,7 +39,7 @@ import { QuantityDialog } from './quantity-dialog'
 type ViewMode = 'card' | 'table'
 
 export const apiClient = axios.create({
-  baseURL: process.env.API_BASE_URL || 'http://localhost:3000',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:1598',
   withCredentials: true,
 })
 

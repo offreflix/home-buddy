@@ -11,6 +11,8 @@ import { PrismaService } from 'src/prisma.service';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { UpdateStockDto } from 'src/stocks/dto/update-stock.dto';
 import { UpdateProductStockDto } from './dto/update-product-stock.dto';
+import { MostConsumedDto } from './dto/most-consumed.dto';
+import { GetStockMovementsDto } from './dto/get-stock-movements.dto';
 
 @Injectable()
 export class ProductsService {
@@ -125,27 +127,156 @@ export class ProductsService {
     return filteredProducts;
   }
 
-  async mostConsumed(user: UserEntity) {
-    const products = await this.prisma.product.findMany({
+  async mostConsumed(dto: MostConsumedDto, user: UserEntity) {
+    const { month, year } = dto;
+
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 1);
+
+    try {
+      return await this.prisma.$transaction(async (prisma) => {
+        const mostConsumed = await prisma.stockMovement.groupBy({
+          by: ['productId'],
+          where: {
+            movementType: 'OUT',
+            createdAt: { gte: startDate, lt: endDate },
+            product: { userId: user.id },
+          },
+          _sum: { quantity: true },
+          orderBy: { _sum: { quantity: 'desc' } },
+          take: 1,
+        });
+
+        if (mostConsumed.length === 0) {
+          throw new NotFoundException('Nenhum produto encontrado neste mês.');
+        }
+
+        const productId = mostConsumed[0].productId;
+        const currentMonthTotal = mostConsumed[0]._sum.quantity || 0;
+
+        const prevMonthDate = new Date(year, month - 2, 1);
+        const prevStartDate = new Date(
+          prevMonthDate.getFullYear(),
+          prevMonthDate.getMonth(),
+          1,
+        );
+        const prevEndDate = new Date(
+          prevMonthDate.getFullYear(),
+          prevMonthDate.getMonth() + 1,
+          1,
+        );
+
+        const prevMonthConsumed = await prisma.stockMovement.aggregate({
+          where: {
+            productId,
+            movementType: 'OUT',
+            createdAt: { gte: prevStartDate, lt: prevEndDate },
+          },
+          _sum: { quantity: true },
+        });
+
+        const previousMonthTotal = prevMonthConsumed._sum.quantity || 0;
+
+        let percentageChange = 0;
+        if (previousMonthTotal !== 0) {
+          percentageChange =
+            ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) *
+            100;
+        } else if (currentMonthTotal > 0) {
+          percentageChange = 100;
+        }
+
+        const product = await prisma.product.findUnique({
+          where: { id: productId },
+          include: { category: true },
+        });
+
+        return {
+          product: product.name,
+          quantity: currentMonthTotal,
+          unit: product.unit,
+          percentageChange: Number(percentageChange.toFixed(2)),
+        };
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async countByCategory(user: UserEntity) {
+    const categories = await this.prisma.category.findMany({
       where: {
-        userId: user.id,
+        products: {
+          some: {
+            userId: user.id,
+          },
+        },
       },
-      include: { category: true, stock: true, movements: true },
+      select: {
+        name: true,
+        _count: {
+          select: {
+            products: true,
+          },
+        },
+      },
     });
 
-    const sortedProducts = products.sort((a, b) => {
-      const aTotalConsumed = a.movements.reduce(
-        (total, movement) => total + movement.quantity,
-        0,
-      );
-      const bTotalConsumed = b.movements.reduce(
-        (total, movement) => total + movement.quantity,
-        0,
-      );
-      return bTotalConsumed - aTotalConsumed;
+    const result = categories.map((category) => ({
+      name: category.name,
+      count: category._count.products,
+    }));
+
+    return result;
+  }
+
+  async getMovementsByDate(dto: GetStockMovementsDto, user: UserEntity) {
+    const startDate = new Date(dto.startDate);
+    const endDate = new Date(dto.endDate);
+
+    const movements = await this.prisma.stockMovement.findMany({
+      where: {
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+        product: {
+          userId: user.id,
+        },
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
     });
 
-    return sortedProducts;
+    if (!movements.length) {
+      throw new NotFoundException(
+        'Nenhum movimento encontrado para o período informado.',
+      );
+    }
+
+    const groupedData: Record<
+      string,
+      { date: string; IN: number; OUT: number }
+    > = {};
+
+    movements.forEach((movement) => {
+      const dateKey = movement.createdAt.toISOString().split('T')[0];
+      if (!groupedData[dateKey]) {
+        groupedData[dateKey] = { date: dateKey, IN: 0, OUT: 0 };
+      }
+      if (movement.movementType === 'IN') {
+        groupedData[dateKey].IN += movement.quantity;
+      } else if (movement.movementType === 'OUT') {
+        groupedData[dateKey].OUT += movement.quantity;
+      }
+    });
+
+    const result = Object.values(groupedData).sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    );
+
+    return result;
   }
 
   async update(
