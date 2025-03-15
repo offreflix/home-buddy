@@ -96,19 +96,21 @@ export default function Page() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="flex justify-between">
-                      Senha
-                      <Link className="text-blue-300" href="/reset-password">
-                        Esqueceu a senha?
-                      </Link>
-                    </FormLabel>
+                    <FormLabel>Senha</FormLabel>
                     <FormControl>
                       <Input type="password" {...field} />
                     </FormControl>
                     <FormMessage />
+                    <Link
+                      className="text-blue-300 flex justify-end"
+                      href="/reset-password"
+                    >
+                      Esqueceu a senha?
+                    </Link>
                   </FormItem>
                 )}
               />
+
               <Button type="submit" className="w-full">
                 Login
               </Button>

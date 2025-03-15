@@ -15,7 +15,6 @@ export default function RootLayout({
 }>) {
   return (
     <>
-      <Toaster richColors closeButton />
       <SidebarProvider>
         <AppSidebar />
         <main className="flex flex-col w-full h-screen overflow-hidden">

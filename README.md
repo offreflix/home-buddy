@@ -1,84 +1,118 @@
-# Turborepo starter
+# Home Buddy
 
-This Turborepo starter is maintained by the Turborepo core team.
+Um aplicativo moderno em monorepositório construído com Next.js e NestJS, apresentando autenticação robusta e arquitetura de microsserviços.
 
-## Using this example
+## 🚀 Tecnologias Utilizadas
 
-Run the following command:
+### Frontend
 
-```sh
-npx create-turbo@latest
+- **Next.js 14** - Framework React com renderização do lado do servidor
+- **TypeScript** - Verificação estática de tipos
+- **Tailwind CSS** - Framework CSS utilitário
+- **Shadcn/ui** - Biblioteca de componentes reutilizáveis
+- **React Query** - Busca e cache de dados
+- **React Hook Form** - Manipulação de formulários
+- **Zod** - Validação de esquemas
+
+### Backend
+
+- **NestJS** - Framework progressivo para Node.js
+- **TypeScript** - Verificação estática de tipos
+- **PostgreSQL** - Banco de dados principal
+- **Redis** - Gerenciamento de sessões e cache
+- **Prisma** - ORM para operações de banco de dados
+- **JWT** - Autenticação baseada em tokens
+
+## 🏗️ Arquitetura
+
+O projeto segue uma estrutura de monorepositório utilizando Yarn workspaces:
+
+```plaintext
+home-buddy-monorepo/
+
+├── apps/
+
+│   ├── frontend/    # Aplicação Next.js
+
+│   └── backend/     # Aplicação NestJS
+
+└── packages/        # Pacotes compartilhados
 ```
 
-## What's inside?
+## 🔐 Fluxo de Autenticação
 
-This Turborepo includes the following packages/apps:
+###### 1. Registro
 
-### Apps and Packages
+- Usuário se registra com nome de usuário, e-mail e senha
+- A senha é hashada usando bcrypt
+- Tokens JWT (access e refresh) são gerados
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+###### 2. Login
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+- Usuário fornece credenciais
+- Sistema valida e retorna tokens JWT
+- Tokens são armazenados em cookies HTTP-only
 
-### Utilities
+###### 3. Gerenciamento de Tokens
 
-This Turborepo has some additional tools already setup for you:
+- **Access Token**: Validade de 15 minutos
+- **Refresh Token**: Validade de 7 dias
+- Redis armazena tokens ativos para validação
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+###### 4. Recursos de Segurança
 
-### Build
+- Cookies HTTP-only
+- Validação de tokens JWT
+- Lista negra de tokens no Redis
+- Proteção de rotas usando Guards
 
-To build all apps and packages, run the following command:
+## 🛠️ Configuração e Instalação
 
-```
-cd my-turborepo
-pnpm build
-```
+### 📌 Pré-requisitos
 
-### Develop
+Antes de iniciar, certifique-se de ter instalado:
 
-To develop all apps and packages, run the following command:
+- Node.js 20+
+- Yarn 4.6.0+
+- Docker e Docker Compose
+- PostgreSQL 15+ (configure manualmente se não usar Docker)
+- Redis 7+ (configure manualmente se não usar Docker)
 
-```
-cd my-turborepo
-pnpm dev
-```
+### 🚀 Passo a Passo
 
-### Remote Caching
+#### 1. Clone o repositório:
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
+```shell
+git clone https://github.com/offreflix/home-buddy
+cd home-buddy-monorepo
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+#### 2. Instale as dependências:
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
+```shell
+yarn install
 ```
 
-## Useful Links
+#### 3. Inicie os serviços com Docker:
 
-Learn more about the power of Turborepo:
+```shell
+docker-compose up -d
+```
 
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+Isso iniciará:
+
+- **PostgreSQL** na porta **5432**
+- **Redis** na porta **6379**
+- Backend **(NestJS)** na porta **3000**
+- Frontend **(Next.js)** na porta **5173**
+
+#### 4. Execute as migrações do Prisma:
+
+```shell
+docker exec -it home-buddy-backend yarn prisma migrate deploy
+```
+
+#### 5. Acesse a aplicação:
+
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:3000

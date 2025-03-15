@@ -42,7 +42,7 @@ export const productIndexedDbService = {
 
     request.onsuccess = () => {
       const product = request.result as Product
-      product.currentQuantity += 1
+      product.stock.currentQuantity += 1
       store.put(product, id)
     }
 
@@ -58,7 +58,7 @@ export const productIndexedDbService = {
 
     request.onsuccess = () => {
       const product = request.result as Product
-      product.currentQuantity -= 1
+      product.stock.currentQuantity -= 1
       store.put(product, id)
     }
 

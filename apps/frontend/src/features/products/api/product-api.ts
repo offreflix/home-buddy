@@ -10,11 +10,11 @@ export const productApi = {
     await productIndexedDbService.add(product)
   },
 
-  async updateProduct(id: string, product: Product): Promise<void> {
+  async updateProduct(id: number, product: Product): Promise<void> {
     await productIndexedDbService.update(id, product)
   },
 
-  async deleteProduct(id: string): Promise<void> {
+  async deleteProduct(id: number): Promise<void> {
     await productIndexedDbService.delete(id)
   },
 }

@@ -20,8 +20,8 @@ export function DataTableSkeleton() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {[...Array(5)].map(() => (
-            <TableRow key={crypto.randomUUID()}>
+          {[...Array(5)].map((_, index) => (
+            <TableRow key={index}>
               <TableCell>
                 <div className="pl-4">
                   <Skeleton className="h-4 w-[75px] sm:w-[100px] md:w-[150px] lg:w-[200px]" />

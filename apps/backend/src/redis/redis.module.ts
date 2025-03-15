@@ -6,7 +6,7 @@ import { RedisService } from './redis.service';
   imports: [
     NestRedisModule.forRoot({
       type: 'single',
-      url: `redis://${process.env.REDIS_HOST || 'localhost'}:${process.env.REDIS_PORT || 6379}`,
+      url: process.env.REDIS_URL,
     }),
   ],
   providers: [RedisService],

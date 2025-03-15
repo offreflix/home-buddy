@@ -1,14 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from 'src/prisma.service';
+import { UserEntity } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class CategoriesService {
   constructor(private prisma: PrismaService) {}
 
-  create(createCategoryDto: CreateCategoryDto) {
-    return 'This action adds a new category';
+  async create(createCategoryDto: CreateCategoryDto) {
+    console.log(createCategoryDto);
+
+    const categoryAlreadyExists = await this.prisma.category.findFirst({
+      where: { name: createCategoryDto.name },
+    });
+
+    console.log(categoryAlreadyExists);
+
+    if (categoryAlreadyExists) {
+      throw new UnprocessableEntityException('Categoria já existe');
+    }
+
+    const category = await this.prisma.category.create({
+      data: createCategoryDto,
+    });
+
+    return category;
   }
 
   findAll() {
@@ -17,8 +38,18 @@ export class CategoriesService {
     return categories;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} category`;
+  async findOne(id: number, user: UserEntity) {
+    const category = await this.prisma.category.findUnique({
+      where: { id },
+    });
+
+    if (!category) {
+      throw new NotFoundException();
+    }
+
+    console.log(user);
+
+    return category;
   }
 
   update(id: number, updateCategoryDto: UpdateCategoryDto) {

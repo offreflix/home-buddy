@@ -8,6 +8,7 @@ import {
   ChevronUp,
   CreditCard,
   Home,
+  LayoutDashboard,
   LogOut,
   Settings,
   ShoppingBasket,
@@ -44,12 +45,12 @@ import Link from 'next/link'
 
 const items = [
   {
-    title: 'Home',
+    title: 'Dashboard',
     url: '/',
-    icon: Home,
+    icon: LayoutDashboard,
   },
   {
-    title: 'Products',
+    title: 'Produtos',
     url: '/products',
     icon: ShoppingBasket,
   },
@@ -62,7 +63,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroupLabel>Home Buddy</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -127,14 +128,14 @@ export function AppSidebar() {
                 <DropdownMenuGroup>
                   <DropdownMenuItem>
                     <Sparkles />
-                    Upgrade to Pro
+                    Atualizar para o Pro
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   <DropdownMenuItem>
                     <BadgeCheck />
-                    Account
+                    Conta
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <CreditCard />
@@ -142,13 +143,13 @@ export function AppSidebar() {
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Bell />
-                    Notifications
+                    Notificações
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>
                   <LogOut />
-                  Log out
+                  Sair
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
