@@ -9,7 +9,6 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from 'src/prisma.service';
 import { UserEntity } from 'src/users/entities/user.entity';
-import { UpdateStockDto } from 'src/stocks/dto/update-stock.dto';
 import { UpdateProductStockDto } from './dto/update-product-stock.dto';
 import { MostConsumedDto } from './dto/most-consumed.dto';
 import { GetStockMovementsDto } from './dto/get-stock-movements.dto';
@@ -30,7 +29,7 @@ export class ProductsService {
           throw new UnprocessableEntityException('Categoria não encontrada.');
         }
 
-        const productExists = await this.prisma.product.findFirst({
+        const productExists = await trx.product.findFirst({
           where: { name: createProductDto.name, userId: user.id },
         });
 
@@ -134,8 +133,8 @@ export class ProductsService {
     const endDate = new Date(year, month, 1);
 
     try {
-      return await this.prisma.$transaction(async (prisma) => {
-        const mostConsumed = await prisma.stockMovement.groupBy({
+      return await this.prisma.$transaction(async (trx) => {
+        const mostConsumed = await trx.stockMovement.groupBy({
           by: ['productId'],
           where: {
             movementType: 'OUT',
@@ -166,7 +165,7 @@ export class ProductsService {
           1,
         );
 
-        const prevMonthConsumed = await prisma.stockMovement.aggregate({
+        const prevMonthConsumed = await trx.stockMovement.aggregate({
           where: {
             productId,
             movementType: 'OUT',
@@ -186,7 +185,7 @@ export class ProductsService {
           percentageChange = 100;
         }
 
-        const product = await prisma.product.findUnique({
+        const product = await trx.product.findUnique({
           where: { id: productId },
           include: { category: true },
         });
@@ -320,7 +319,7 @@ export class ProductsService {
   ) {
     try {
       return await this.prisma.$transaction(async (trx) => {
-        const product = await this.prisma.product.findUnique({
+        const product = await trx.product.findUnique({
           where: { id },
           include: { stock: true },
         });
@@ -349,14 +348,14 @@ export class ProductsService {
             throw new BadRequestException('Tipo de movimentação inválido');
         }
 
-        const stock = await this.prisma.stock.update({
+        const stock = await trx.stock.update({
           where: { productId: id },
           data: {
             currentQuantity: newQuantity,
           },
         });
 
-        const stockMovement = await this.prisma.stockMovement.create({
+        const stockMovement = await trx.stockMovement.create({
           data: {
             productId: id,
             stockId: stock.id,
