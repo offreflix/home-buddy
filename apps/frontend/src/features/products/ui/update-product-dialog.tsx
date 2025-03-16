@@ -32,7 +32,6 @@ import {
 } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { productApi } from '../api/product-api'
 import { Category, type Product, Unit } from '../model/types'
 import { useModalStore } from '../stores/modal.store'
 import { useForm } from 'react-hook-form'
