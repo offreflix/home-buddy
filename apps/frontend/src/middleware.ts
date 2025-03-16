@@ -16,6 +16,12 @@ export async function middleware(request: NextRequest) {
   const publicRoute = publicRoutes.find((route) => route.path === path)
   const refresh_token = cookie.get('refresh_token')
 
+  console.log(
+    'URL DO BACKEND DE PRODUÇÃO',
+    process.env.NEXT_PUBLIC_API_BASE_URL,
+  )
+  console.log('TESTE DE URL DO BACKEND DE PRODUÇÃO', process.env.API_BASE_URL)
+
   if (!refresh_token && publicRoute) {
     return NextResponse.next()
   }
