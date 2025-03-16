@@ -45,7 +45,11 @@ export const columns: ColumnDef<Product>[] = [
       </Button>
     ),
     cell: ({ row }) => {
-      const { currentQuantity, desiredQuantity } = row.original.stock
+      const stock = row.original.stock
+
+      if (!stock) {
+        return <div>0</div>
+      }
 
       const { toggleQuantityModal, setMovementType, setSelectedProductId } =
         useModalStore()
@@ -60,11 +64,15 @@ export const columns: ColumnDef<Product>[] = [
         <div className="flex items-center space-x-2 pl-4">
           <div className="w-[100px] space-y-1">
             <Progress
-              value={Math.min((currentQuantity / desiredQuantity) * 100, 100)}
+              value={Math.min(
+                (stock.currentQuantity / stock.desiredQuantity) * 100,
+                100,
+              )}
             />
 
             <div className="text-xs text-muted-foreground">
-              {currentQuantity} / {desiredQuantity} {row.original.unit}
+              {stock.currentQuantity} / {stock.desiredQuantity}{' '}
+              {row.original.unit}
             </div>
           </div>
           <Button
