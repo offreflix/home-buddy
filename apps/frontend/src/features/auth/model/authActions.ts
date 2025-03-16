@@ -3,8 +3,9 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:1598'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+
+console.log(process.env.NEXT_PUBLIC_API_BASE_URL)
 
 type LoginResponse = {
   access_token?: string

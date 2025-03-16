@@ -39,7 +39,7 @@ import { QuantityDialog } from './quantity-dialog'
 type ViewMode = 'card' | 'table'
 
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:1598',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   withCredentials: true,
 })
 
@@ -47,6 +47,7 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config
+    console.log(error.response)
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
@@ -71,6 +72,8 @@ export function ProductMain() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
   const [viewMode, setViewMode] = useState<ViewMode | null>(null)
+
+  console.log(process.env.NEXT_PUBLIC_API_BASE_URL)
 
   const usersQuery = useQuery({
     queryKey: ['users'],
