@@ -3,9 +3,13 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || process.env.API_BASE_URL
 
-console.log(process.env.NEXT_PUBLIC_API_BASE_URL)
+console.log(
+  'TESTE PARA VER SE ESTÁ UNDEFINED',
+  process.env.NEXT_PUBLIC_API_BASE_URL,
+)
 
 type LoginResponse = {
   access_token?: string
