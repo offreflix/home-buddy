@@ -24,7 +24,8 @@ export class ScrappingService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     this.browser = await puppeteer.launch({
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser',
+      executablePath:
+        process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser',
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
   }
@@ -60,7 +61,11 @@ export class ScrappingService implements OnModuleInit, OnModuleDestroy {
             const firstColumn = columns[0];
             const secondColumn = columns[1];
 
-            const getCleanText = (element: HTMLTableCellElement, selector: string, remove: string[] = []) => {
+            const getCleanText = (
+              element: HTMLTableCellElement,
+              selector: string,
+              remove: string[] = [],
+            ) => {
               const el = element.querySelector(selector);
               if (!el) return null;
 
@@ -75,10 +80,14 @@ export class ScrappingService implements OnModuleInit, OnModuleDestroy {
             const code = getCleanText(firstColumn, '.RCod', ['(Código:', ')']);
             const quantity = getCleanText(firstColumn, '.Rqtd', ['Qtde.:']);
             const unit = getCleanText(firstColumn, '.RUN', ['UN:']);
-            const unitPrice = getCleanText(firstColumn, '.RvlUnit', ['Vl. Unit.:']);
+            const unitPrice = getCleanText(firstColumn, '.RvlUnit', [
+              'Vl. Unit.:',
+            ]);
             const totalPrice = getCleanText(secondColumn, '.valor');
 
-            return title ? { title, code, quantity, unit, unitPrice, totalPrice } : null;
+            return title
+              ? { title, code, quantity, unit, unitPrice, totalPrice }
+              : null;
           })
           .filter((item) => item !== null);
       });
@@ -88,8 +97,12 @@ export class ScrappingService implements OnModuleInit, OnModuleDestroy {
         const key = document.querySelector('.chave')?.textContent;
         const supermarketName = document.querySelector('.txtTopo')?.textContent;
 
-        const dateText = document.querySelector('ul[data-role="listview"] li')?.textContent;
-        const dateMatch = dateText?.match(/Emissão:\s(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2})/);
+        const dateText = document.querySelector(
+          'ul[data-role="listview"] li',
+        )?.textContent;
+        const dateMatch = dateText?.match(
+          /Emissão:\s(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2})/,
+        );
         const date = dateMatch ? dateMatch[1] : null;
 
         return { supermarketName, total, key, date };

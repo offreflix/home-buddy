@@ -41,6 +41,7 @@ export async function login(formData: FormData): Promise<LoginResponse> {
         httpOnly: true,
         secure: true,
         sameSite: 'none',
+        domain: '.railway.app',
         path: '/',
         expires: new Date(Date.now() + 1000 * 60 * 15), // 15 minutos
       })
@@ -51,6 +52,7 @@ export async function login(formData: FormData): Promise<LoginResponse> {
         httpOnly: true,
         secure: true,
         sameSite: 'none',
+        domain: '.railway.app',
         path: '/',
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 dias
       })
@@ -136,6 +138,7 @@ export async function refreshToken(): Promise<{
       httpOnly: true,
       secure: true,
       sameSite: 'none',
+      domain: '.railway.app',
       path: '/',
       expires: new Date(Date.now() + 1000 * 60 * 15), // 15 minutos
     })
@@ -146,6 +149,7 @@ export async function refreshToken(): Promise<{
       httpOnly: true,
       secure: true,
       sameSite: 'none',
+      domain: '.railway.app',
       path: '/',
       expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 dias
     })
