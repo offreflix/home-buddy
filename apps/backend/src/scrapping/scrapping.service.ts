@@ -1,5 +1,5 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import puppeteer, { Browser } from 'puppeteer-core';
+import { Injectable } from '@nestjs/common';
+import puppeteer from 'puppeteer-core';
 
 export interface ScrapedData {
   title: string;
@@ -19,29 +19,15 @@ export interface ScrapedResponse {
 }
 
 @Injectable()
-export class ScrappingService implements OnModuleInit, OnModuleDestroy {
-  private browser: Browser | null = null;
-
-  async onModuleInit() {
-    this.browser = await puppeteer.launch({
+export class ScrappingService {
+  async scrapeNFC(url: string): Promise<ScrapedResponse> {
+    const browser = await puppeteer.launch({
       executablePath:
         process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser',
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
-  }
 
-  async onModuleDestroy() {
-    if (this.browser) {
-      await this.browser.close();
-    }
-  }
-
-  async scrapeNFC(url: string): Promise<ScrapedResponse> {
-    if (!this.browser) {
-      throw new Error('Puppeteer não inicializado');
-    }
-
-    const page = await this.browser.newPage();
+    const page = await browser.newPage();
 
     try {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -67,9 +53,8 @@ export class ScrappingService implements OnModuleInit, OnModuleDestroy {
               remove: string[] = [],
             ) => {
               const el = element.querySelector(selector);
-              if (!el) return null;
-
-              let text = el.textContent;
+              if (!el) return '';
+              let text = el.textContent ?? '';
               remove.forEach((str) => {
                 text = text.replace(str, '');
               });
@@ -93,9 +78,10 @@ export class ScrappingService implements OnModuleInit, OnModuleDestroy {
       });
 
       const info = await page.evaluate(() => {
-        const total = document.querySelector('.txtMax')?.textContent;
-        const key = document.querySelector('.chave')?.textContent;
-        const supermarketName = document.querySelector('.txtTopo')?.textContent;
+        const total = document.querySelector('.txtMax')?.textContent ?? 'N/A';
+        const key = document.querySelector('.chave')?.textContent ?? 'N/A';
+        const supermarketName =
+          document.querySelector('.txtTopo')?.textContent ?? 'N/A';
 
         const dateText = document.querySelector(
           'ul[data-role="listview"] li',
@@ -103,7 +89,7 @@ export class ScrappingService implements OnModuleInit, OnModuleDestroy {
         const dateMatch = dateText?.match(
           /Emissão:\s(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2})/,
         );
-        const date = dateMatch ? dateMatch[1] : null;
+        const date = dateMatch ? dateMatch[1] : 'N/A';
 
         return { supermarketName, total, key, date };
       });
@@ -114,6 +100,7 @@ export class ScrappingService implements OnModuleInit, OnModuleDestroy {
       throw new Error('Erro no scraping da página');
     } finally {
       await page.close();
+      await browser.close(); // Fecha o navegador no final
     }
   }
 }
