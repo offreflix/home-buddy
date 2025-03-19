@@ -141,7 +141,6 @@ export const columns: ColumnDef<Product>[] = [
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
-                console.log(row.original)
                 toggleEditModal()
                 setEditingProduct(transformProductToFormSchema(row.original))
               }}
@@ -164,8 +163,6 @@ export const columns: ColumnDef<Product>[] = [
 ]
 
 export const transformProductToFormSchema = (product: Product): FormSchema => {
-  console.log(product)
-
   return {
     id: product.id,
     name: product.name,

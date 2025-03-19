@@ -3,13 +3,7 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || process.env.API_BASE_URL
-
-console.log(
-  'TESTE PARA VER SE ESTÁ UNDEFINED',
-  process.env.NEXT_PUBLIC_API_BASE_URL,
-)
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 type LoginResponse = {
   access_token?: string
@@ -22,6 +16,8 @@ export async function login(formData: FormData): Promise<LoginResponse> {
   const password = formData.get('password')
   const cookiesStore = await cookies()
 
+  console.log(API_BASE_URL)
+
   try {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
@@ -30,6 +26,8 @@ export async function login(formData: FormData): Promise<LoginResponse> {
       },
       body: JSON.stringify({ username, password }),
     })
+
+    console.log(response)
 
     if (response.ok) {
       const data = await response.json()
@@ -41,7 +39,7 @@ export async function login(formData: FormData): Promise<LoginResponse> {
         httpOnly: true,
         secure: true,
         sameSite: 'none',
-        domain: '.railway.app',
+        // domain: '.railway.app',
         path: '/',
         expires: new Date(Date.now() + 1000 * 60 * 15), // 15 minutos
       })
@@ -52,7 +50,7 @@ export async function login(formData: FormData): Promise<LoginResponse> {
         httpOnly: true,
         secure: true,
         sameSite: 'none',
-        domain: '.railway.app',
+        // domain: '.railway.app',
         path: '/',
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 dias
       })

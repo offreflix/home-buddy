@@ -13,13 +13,9 @@ export class CategoriesService {
   constructor(private prisma: PrismaService) {}
 
   async create(createCategoryDto: CreateCategoryDto) {
-    console.log(createCategoryDto);
-
     const categoryAlreadyExists = await this.prisma.category.findFirst({
       where: { name: createCategoryDto.name },
     });
-
-    console.log(categoryAlreadyExists);
 
     if (categoryAlreadyExists) {
       throw new UnprocessableEntityException('Categoria já existe');
@@ -46,8 +42,6 @@ export class CategoriesService {
     if (!category) {
       throw new NotFoundException();
     }
-
-    console.log(user);
 
     return category;
   }

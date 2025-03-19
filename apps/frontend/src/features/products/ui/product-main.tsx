@@ -47,7 +47,6 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config
-    console.log(error.response)
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
@@ -73,11 +72,6 @@ export function ProductMain() {
   const [rowSelection, setRowSelection] = useState({})
   const [viewMode, setViewMode] = useState<ViewMode | null>(null)
 
-  console.log(
-    'TESTE PARA VER SE ISSO VAI RETORNAR CERTO',
-    process.env.NEXT_PUBLIC_API_BASE_URL,
-  )
-
   const usersQuery = useQuery({
     queryKey: ['users'],
     queryFn: () => apiClient.get('/auth/profile').then((res) => res.data),
@@ -87,10 +81,6 @@ export function ProductMain() {
     queryKey: ['products'],
     queryFn: () => apiClient.get('/products').then((res) => res.data),
   })
-
-  console.log(usersQuery)
-
-  console.log(productsQuery.data)
 
   useEffect(() => {
     const viewMode = localStorage.getItem('viewMode') as ViewMode

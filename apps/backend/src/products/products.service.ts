@@ -18,7 +18,6 @@ export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
   async create(createProductDto: CreateProductDto, user: UserEntity) {
-    console.log(createProductDto);
     try {
       return await this.prisma.$transaction(async (trx) => {
         const categoryExists = await trx.category.findFirst({
@@ -61,7 +60,6 @@ export class ProductsService {
 
           return { ...product, stock };
         } catch (error) {
-          console.log(error);
           throw new BadRequestException(
             'Erro ao criar o produto ou o estoque.',
           );
@@ -93,8 +91,6 @@ export class ProductsService {
     if (!product) {
       throw new NotFoundException();
     }
-
-    console.log(user);
 
     return product;
   }
@@ -363,8 +359,6 @@ export class ProductsService {
             movementType: updateStockDto.type,
           },
         });
-
-        console.log(id, updateStockDto, user, product);
 
         return {
           id,
