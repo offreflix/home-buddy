@@ -2,24 +2,21 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-RUN corepack enable && corepack prepare yarn@4.6.0 --activate
-
 COPY package.json .
-COPY yarn.lock .
-COPY .yarnrc.yml .
-COPY .yarn .yarn
-COPY packages/ packages/
-COPY apps/frontend apps/frontend/
 
-RUN yarn install
+RUN npm install
+
+COPY . .
 
 WORKDIR /app/apps/frontend
 
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED=1
+ARG NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
 
-RUN yarn build
+RUN npm run build
 
-EXPOSE 5173
+EXPOSE 3000
 
-CMD ["yarn", "start", "--port", "5173"]
+CMD ["npm", "start"]
+

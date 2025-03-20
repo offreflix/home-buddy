@@ -25,7 +25,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import type { Product } from '../model/types'
-import { productIndexedDbService } from '../api/indexed-db.service'
 import { queryClient } from '@/lib/react-query'
 import { MovementType, useModalStore } from '../stores/modal.store'
 import { transformProductToFormSchema } from './columns'
@@ -37,14 +36,10 @@ type Props = {
 
 function ProductCard({ data }: Props) {
   const decreaseQuantity = async (id: number) => {
-    await productIndexedDbService.decreaseQuantity(id)
-
     queryClient.invalidateQueries({ queryKey: ['products'] })
   }
 
   const increaseQuantity = async (id: number) => {
-    await productIndexedDbService.addQuantity(id)
-
     queryClient.invalidateQueries({ queryKey: ['products'] })
   }
 

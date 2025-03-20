@@ -15,33 +15,32 @@ import { Button } from '@/components/ui/button'
 import { useModalStore } from '../stores/modal.store'
 import { toast } from 'sonner'
 import { useMutation } from '@tanstack/react-query'
-import { productApi } from '../api/product-api'
 import { queryClient } from '@/lib/react-query'
 
 export function DeleteProductDialog() {
   const { selectedProductId, toggleDeleteModal, isDeleteModalOpen } =
     useModalStore()
 
-  const mutation = useMutation({
-    mutationFn: (id: number) => productApi.deleteProduct(id),
-    onMutate: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] })
-    },
-    onError: () => {
-      toast.error('Falha ao adicionar produto')
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] })
-    },
-    onSuccess: () => {
-      toast.success('Produto adicionado com sucesso')
-      toggleDeleteModal()
-    },
-  })
+  // const mutation = useMutation({
+  //   mutationFn: (id: number) => productApi.deleteProduct(id),
+  //   onMutate: () => {
+  //     queryClient.invalidateQueries({ queryKey: ['products'] })
+  //   },
+  //   onError: () => {
+  //     toast.error('Falha ao adicionar produto')
+  //   },
+  //   onSettled: () => {
+  //     queryClient.invalidateQueries({ queryKey: ['products'] })
+  //   },
+  //   onSuccess: () => {
+  //     toast.success('Produto adicionado com sucesso')
+  //     toggleDeleteModal()
+  //   },
+  // })
 
-  function handleDelete(id: number) {
-    mutation.mutateAsync(id)
-  }
+  // function handleDelete(id: number) {
+  //   mutation.mutateAsync(id)
+  // }
 
   return (
     <AlertDialog open={isDeleteModalOpen} onOpenChange={toggleDeleteModal}>
@@ -57,7 +56,8 @@ export function DeleteProductDialog() {
           <AlertDialogCancel>Cancelar</AlertDialogCancel>
           <Button
             onClick={() =>
-              selectedProductId !== null && handleDelete(selectedProductId)
+              // selectedProductId !== null && handleDelete(selectedProductId)
+              toast.info('Função temporariamente desabilitada')
             }
           >
             Continuar

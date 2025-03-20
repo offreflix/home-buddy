@@ -103,7 +103,6 @@ export function CreateProductDialog() {
   })
 
   async function onSubmit(values: FormSchema) {
-    console.log(values)
     await mutation.mutateAsync(values)
   }
 

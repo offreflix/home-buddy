@@ -18,8 +18,6 @@ export class StocksService {
   }
 
   update(id: number, updateStockDto: UpdateStockDto, user: UserEntity) {
-    console.log(id, updateStockDto, user);
-
     return `This action updateas a #${id} stock`;
   }
 

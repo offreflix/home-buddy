@@ -94,7 +94,6 @@ export default function Page() {
     const result = await register(formData)
 
     if (result.error) {
-      console.log('Register error:', result)
       switch (result.status) {
         case 409:
           toast.error('Usuário ou email já existem.')

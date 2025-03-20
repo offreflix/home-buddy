@@ -1,7 +1,6 @@
 {
   "dependencies": {
-    "@nestjs/mapped-types": "*",
-    "puppeteer-core": "^24.2.1"
+    "@nestjs/mapped-types": "*"
   },
   "name": "home-buddy-monorepo",
   "private": true,

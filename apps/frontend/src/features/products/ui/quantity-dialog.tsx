@@ -45,16 +45,12 @@ export function QuantityDialog() {
     selectedProductId,
   } = useModalStore()
 
-  console.log(movementType)
-
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       quantity: 0,
     },
   })
-
-  console.log(form.formState.errors)
 
   const queryClient = useQueryClient()
 
@@ -99,10 +95,6 @@ export function QuantityDialog() {
   }, [isQuantityModalOpen, form])
 
   async function onSubmit(values: FormSchema) {
-    console.log({
-      quantity: values.quantity,
-      type: movementType,
-    })
     await mutation.mutateAsync(values)
   }
 

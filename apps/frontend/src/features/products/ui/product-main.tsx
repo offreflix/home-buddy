@@ -39,7 +39,7 @@ import { QuantityDialog } from './quantity-dialog'
 type ViewMode = 'card' | 'table'
 
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:1598',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || process.env.API_BASE_URL,
   withCredentials: true,
 })
 
@@ -81,10 +81,6 @@ export function ProductMain() {
     queryKey: ['products'],
     queryFn: () => apiClient.get('/products').then((res) => res.data),
   })
-
-  console.log(usersQuery)
-
-  console.log(productsQuery.data)
 
   useEffect(() => {
     const viewMode = localStorage.getItem('viewMode') as ViewMode
