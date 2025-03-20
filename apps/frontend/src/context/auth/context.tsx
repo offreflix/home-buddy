@@ -4,12 +4,13 @@ import {
   createContext,
   Dispatch,
   SetStateAction,
+  useCallback,
   useContext,
   useEffect,
   useState,
 } from 'react'
 import { redirect } from 'next/navigation'
-import { getUserProfile } from '@/features/auth/model/authActions'
+import { getUserProfile, refreshToken } from '@/features/auth/model/authActions'
 import { LoadingScreen } from '@/components/loading-screen'
 
 type User = {
@@ -29,19 +30,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
+    try {
       const userProfile = await getUserProfile()
+
       if ('error' in userProfile) {
-        redirect('/login')
+        await refreshSession()
       } else {
         setUser(userProfile)
       }
+    } catch (error) {
+      console.error('Erro ao buscar usuário:', error)
+      redirect('/login')
+    } finally {
       setLoading(false)
     }
-
-    fetchUser()
   }, [])
+
+  const refreshSession = useCallback(async () => {
+    try {
+      const result = await refreshToken()
+      if (result.success) {
+        await fetchUser()
+      } else {
+        redirect('/login')
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar sessão:', error)
+      redirect('/login')
+    }
+  }, [fetchUser])
+
+  useEffect(() => {
+    fetchUser()
+  }, [fetchUser])
 
   if (loading) {
     return <LoadingScreen />
