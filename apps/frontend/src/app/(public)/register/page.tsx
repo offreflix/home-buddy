@@ -73,7 +73,6 @@ type RegisterSchema = z.infer<typeof registerSchema>
 export default function Page() {
   const router = useRouter()
   const [passwordStrength, setPasswordStrength] = useState(0)
-  const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const form = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
@@ -94,7 +93,6 @@ export default function Page() {
     const result = await register(formData)
 
     if (result.error) {
-      console.log('Register error:', result)
       switch (result.status) {
         case 409:
           toast.error('Usuário ou email já existem.')

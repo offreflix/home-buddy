@@ -50,7 +50,6 @@ export default function Page() {
     const result = await login(formData)
 
     if (result.error) {
-      console.log('Login error:', result)
       switch (result.status) {
         case 401:
           toast.error('Usuário ou senha inválidos, tente novamente.')
