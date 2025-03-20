@@ -1,6 +1,6 @@
 'use server'
 
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
@@ -137,7 +137,7 @@ export async function refreshToken(): Promise<{
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      domain: '.railway.app',
+      // domain: '.railway.app',
       path: '/',
       expires: new Date(Date.now() + 1000 * 60 * 15), // 15 minutos
     })
@@ -148,7 +148,7 @@ export async function refreshToken(): Promise<{
       httpOnly: true,
       secure: true,
       sameSite: 'none',
-      domain: '.railway.app',
+      // domain: '.railway.app',
       path: '/',
       expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 dias
     })
@@ -194,6 +194,11 @@ export async function getUserProfile(): Promise<
     return { ...response.data, status: response.status }
   } catch (error) {
     console.error('User profile fetch error:', error)
-    return error as { error: string; status: number }
+
+    if (error instanceof AxiosError && error.response) {
+      return { error: error.message, status: error.response.status }
+    }
+
+    return { error: 'An unexpected error occurred', status: 500 }
   }
 }
