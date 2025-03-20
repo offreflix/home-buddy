@@ -73,7 +73,6 @@ type RegisterSchema = z.infer<typeof registerSchema>
 export default function Page() {
   const router = useRouter()
   const [passwordStrength, setPasswordStrength] = useState(0)
-  const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const form = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),

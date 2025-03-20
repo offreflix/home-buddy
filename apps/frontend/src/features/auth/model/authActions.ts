@@ -1,5 +1,6 @@
 'use server'
 
+import axios from 'axios'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
@@ -158,5 +159,41 @@ export async function refreshToken(): Promise<{
     cookiesStore.delete('refresh_token')
     console.error('Refresh token error:', error)
     redirect('/login')
+  }
+}
+
+type User = {
+  id: string
+  username: string
+  email: string
+}
+
+export async function getUserProfile(): Promise<
+  User | { error: string; status: number }
+> {
+  try {
+    const cookiesStore = await cookies()
+    const accessToken = cookiesStore.get('access_token')?.value
+    const refreshToken = cookiesStore.get('refresh_token')?.value
+
+    console.log('Server Access Token:', accessToken)
+    console.log('Server Refresh Token:', refreshToken)
+
+    if (!accessToken) {
+      return { error: 'No access token found', status: 401 }
+    }
+
+    const response = await axios.get(`${API_BASE_URL}/auth/profile`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: `access_token=${accessToken}; refresh_token=${refreshToken}`,
+      },
+      withCredentials: true,
+    })
+
+    return { ...response.data, status: response.status }
+  } catch (error) {
+    console.error('User profile fetch error:', error)
+    return error as { error: string; status: number }
   }
 }

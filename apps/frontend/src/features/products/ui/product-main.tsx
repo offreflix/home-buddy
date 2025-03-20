@@ -72,11 +72,6 @@ export function ProductMain() {
   const [rowSelection, setRowSelection] = useState({})
   const [viewMode, setViewMode] = useState<ViewMode | null>(null)
 
-  const usersQuery = useQuery({
-    queryKey: ['users'],
-    queryFn: () => apiClient.get('/auth/profile').then((res) => res.data),
-  })
-
   const productsQuery = useQuery({
     queryKey: ['products'],
     queryFn: () => apiClient.get('/products').then((res) => res.data),

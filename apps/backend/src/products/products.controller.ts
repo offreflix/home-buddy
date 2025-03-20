@@ -13,7 +13,6 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { User } from 'src/users/user.decorator';
 import { UserEntity } from 'src/users/entities/user.entity';
-import { UpdateStockDto } from 'src/stocks/dto/update-stock.dto';
 import { UpdateProductStockDto } from './dto/update-product-stock.dto';
 import { MostConsumedDto } from './dto/most-consumed.dto';
 import { GetStockMovementsDto } from './dto/get-stock-movements.dto';

@@ -1,5 +1,6 @@
-'use client'
+'use server'
 
+import { getUserProfile } from '@/features/auth/model/authActions'
 import { DeleteProductDialog } from '@/features/products/ui/delete-product-dialog'
 import { ProductMain } from '@/features/products/ui/product-main'
 import { QuantityDialog } from '@/features/products/ui/quantity-dialog'
@@ -17,7 +18,7 @@ import type { Metadata } from 'next'
 //   },
 // }
 
-export default function Page() {
+export default async function Page() {
   return (
     <div className="p-8 flex flex-col gap-4">
       <UpdateProductDialog />
