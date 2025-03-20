@@ -12,6 +12,36 @@ type LoginResponse = {
   status: number
 }
 
+async function setAuthCookies(access_token: string, refresh_token: string) {
+  const cookiesStore = await cookies()
+
+  const cookiesConfig = [
+    {
+      name: 'access_token',
+      value: access_token,
+      expires: new Date(Date.now() + 1000 * 60 * 15), // 15 minutos
+    },
+    {
+      name: 'refresh_token',
+      value: refresh_token,
+      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 dias
+    },
+  ]
+
+  cookiesConfig.forEach(({ name, value, expires }) => {
+    cookiesStore.set({
+      name,
+      value,
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      path: '/',
+      domain: process.env.NEXT_PUBLIC_COOKIE_DOMAIN || '',
+      expires,
+    })
+  })
+}
+
 export async function login(formData: FormData): Promise<LoginResponse> {
   const username = formData.get('username')
   const password = formData.get('password')
@@ -34,27 +64,7 @@ export async function login(formData: FormData): Promise<LoginResponse> {
       const data = await response.json()
       const { access_token, refresh_token } = data
 
-      cookiesStore.set({
-        name: 'access_token',
-        value: access_token,
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        // domain: '.railway.app',
-        path: '/',
-        expires: new Date(Date.now() + 1000 * 60 * 15), // 15 minutos
-      })
-
-      cookiesStore.set({
-        name: 'refresh_token',
-        value: refresh_token,
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        // domain: '.railway.app',
-        path: '/',
-        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 dias
-      })
+      await setAuthCookies(access_token, refresh_token)
 
       return { access_token, status: response.status }
     }
@@ -131,27 +141,7 @@ export async function refreshToken(): Promise<{
 
     const { access_token, refresh_token } = await response.json()
 
-    cookiesStore.set({
-      name: 'access_token',
-      value: access_token,
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      // domain: '.railway.app',
-      path: '/',
-      expires: new Date(Date.now() + 1000 * 60 * 15), // 15 minutos
-    })
-
-    cookiesStore.set({
-      name: 'refresh_token',
-      value: refresh_token,
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      // domain: '.railway.app',
-      path: '/',
-      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 7 dias
-    })
+    await setAuthCookies(access_token, refresh_token)
 
     return { success: true }
   } catch (error) {
