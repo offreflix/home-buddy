@@ -108,10 +108,14 @@ export async function register(formData: FormData): Promise<RegisterResponse> {
 }
 
 export async function logout(): Promise<void> {
+  await clearAuthCookies()
+  redirect('/login')
+}
+
+async function clearAuthCookies(): Promise<void> {
   const cookiesStore = await cookies()
   cookiesStore.delete('access_token')
   cookiesStore.delete('refresh_token')
-  redirect('/login')
 }
 
 export async function refreshToken(): Promise<{
@@ -123,6 +127,7 @@ export async function refreshToken(): Promise<{
   const refreshToken = cookiesStore.get('refresh_token')?.value
 
   if (!refreshToken) {
+    await clearAuthCookies()
     redirect('/login')
   }
 
@@ -136,6 +141,7 @@ export async function refreshToken(): Promise<{
     })
 
     if (!response.ok) {
+      await clearAuthCookies()
       redirect('/login')
     }
 
@@ -145,8 +151,7 @@ export async function refreshToken(): Promise<{
 
     return { success: true }
   } catch (error) {
-    cookiesStore.delete('access_token')
-    cookiesStore.delete('refresh_token')
+    await clearAuthCookies()
     console.error('Refresh token error:', error)
     redirect('/login')
   }
