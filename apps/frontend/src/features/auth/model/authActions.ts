@@ -116,6 +116,28 @@ async function clearAuthCookies(): Promise<void> {
   const cookiesStore = await cookies()
   cookiesStore.delete('access_token')
   cookiesStore.delete('refresh_token')
+
+  cookiesStore.set({
+    name: 'access_token',
+    value: '',
+    path: '/',
+    expires: new Date(0),
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+    domain: process.env.NEXT_PUBLIC_COOKIE_DOMAIN || '',
+  })
+
+  cookiesStore.set({
+    name: 'refresh_token',
+    value: '',
+    path: '/',
+    expires: new Date(0),
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+    domain: process.env.NEXT_PUBLIC_COOKIE_DOMAIN || '',
+  })
 }
 
 export async function refreshToken(): Promise<{
@@ -152,7 +174,6 @@ export async function refreshToken(): Promise<{
     return { success: true }
   } catch (error) {
     await clearAuthCookies()
-    console.error('Refresh token error:', error)
     redirect('/login')
   }
 }
