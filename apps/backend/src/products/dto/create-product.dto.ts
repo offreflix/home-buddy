@@ -1,4 +1,5 @@
 import { Unit } from '@prisma/client';
+import { Transform } from 'class-transformer';
 import {
   IsNotEmpty,
   IsOptional,
@@ -10,10 +11,12 @@ import {
 export class CreateProductDto {
   @IsNotEmpty()
   @IsString()
+  @Transform(({ value }) => value.trim())
   name: string;
 
   @IsOptional()
   @IsString()
+  @Transform(({ value }) => value.trim())
   description?: string;
 
   @IsNotEmpty()
