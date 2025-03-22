@@ -32,11 +32,33 @@ import {
 } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Category, type Product, Unit } from '../model/types'
+import { Category, Unit } from '../model/types'
 import { useModalStore } from '../stores/modal.store'
 import { useForm } from 'react-hook-form'
 import { useEffect } from 'react'
 import { apiClient } from './product-main'
+import { AxiosError } from 'axios'
+
+function handleProductEditError(error: Error) {
+  if (error instanceof AxiosError) {
+    switch (error.status) {
+      case 400:
+      case 404:
+        toast.error('Produto não encontrado')
+        break
+      case 401:
+      case 403:
+        toast.error('Você não tem permissão para editar este produto')
+        break
+      case 409:
+        toast.error('Já existe um produto com este nome')
+        break
+      default:
+        toast.error('Falha ao editar produto')
+        break
+    }
+  }
+}
 
 const formSchema = z.object({
   id: z.coerce.number().int({ message: 'ID inválido' }),
@@ -78,12 +100,12 @@ export function UpdateProductDialog() {
 
   const mutation = useMutation<void, Error, FormSchema>({
     mutationFn: (product: FormSchema) =>
-      apiClient.patch(`products/${product.id}`, product),
+      apiClient.patch(`products/id/${product.id}`, product),
     onMutate: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
     },
-    onError: () => {
-      toast.error('Falha ao adicionar produto')
+    onError: (e) => {
+      handleProductEditError(e)
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
