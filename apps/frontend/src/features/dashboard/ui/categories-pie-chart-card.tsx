@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useQuery } from '@tanstack/react-query'
-import { apiClient } from '@/features/products/ui/product-main'
+import { apiClient } from '@/api/client'
 import {
   ChartConfig,
   ChartContainer,

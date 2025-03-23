@@ -12,11 +12,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Progress } from '@/components/ui/progress'
-import type { Product, Unit } from '../model/types'
-import { MovementType, useModalStore } from '../stores/modal.store'
 import { Badge } from '@/components/ui/badge'
-import { FormSchema } from './update-product-dialog'
-import { toast } from 'sonner'
+import { Product, Unit } from '../../model/types'
+import { MovementType, useModalStore } from '../../stores/modal.store'
+import { FormSchema } from '../update-product-dialog'
 
 export const columns: ColumnDef<Product>[] = [
   {

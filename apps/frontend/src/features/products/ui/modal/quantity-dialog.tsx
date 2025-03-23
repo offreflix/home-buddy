@@ -17,92 +17,16 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-
-import { z } from 'zod'
 
 import { Minus, Plus } from 'lucide-react'
-import { toast } from 'sonner'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { MovementType, useModalStore } from '../stores/modal.store'
-import { apiClient } from './product-main'
-import { AxiosError } from 'axios'
+import { MovementType, useModalStore } from '../../stores/modal.store'
 import { cn } from '@/lib/utils'
-import { useEffect } from 'react'
-
-export const formSchema = z.object({
-  quantity: z.number().positive(),
-})
-
-type FormSchema = z.infer<typeof formSchema>
+import { useQuantityModel } from './quantity.model'
 
 export function QuantityDialog() {
-  const {
-    isQuantityModalOpen,
-    toggleQuantityModal,
-    movementType,
-    selectedProductId,
-  } = useModalStore()
-
-  const form = useForm<FormSchema>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      quantity: 0,
-    },
-  })
-
-  const queryClient = useQueryClient()
-
-  const mutation = useMutation<void, AxiosError, FormSchema>({
-    mutationFn: (movement: FormSchema) => {
-      return apiClient.patch(`products/update-stock/${selectedProductId}`, {
-        quantity: movement.quantity,
-        type: movementType,
-      })
-    },
-    onMutate: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] })
-    },
-    onError: (error: AxiosError) => {
-      switch (error.response?.status) {
-        case 422:
-          toast.error('Já existe um produto com o mesmo nome.')
-          break
-        default:
-          toast.error('Falha ao adicionar produto, tente novamente mais tarde')
-          break
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] })
-    },
-    onSuccess: () => {
-      toast.success(
-        movementType === MovementType.IN
-          ? 'Produto adicionado com sucesso'
-          : 'Produto removido com sucesso',
-      )
-      form.reset()
-      toggleQuantityModal()
-    },
-  })
-
-  useEffect(() => {
-    if (isQuantityModalOpen) {
-      form.reset({ quantity: 0 })
-    }
-  }, [isQuantityModalOpen, form])
-
-  async function onSubmit(values: FormSchema) {
-    await mutation.mutateAsync(values)
-  }
-
-  const handleQuantityChange = (change: number) => {
-    const currentValue = form.getValues('quantity')
-    const newValue = Math.max(1, currentValue + change)
-    form.setValue('quantity', newValue, { shouldValidate: true })
-  }
+  const { isQuantityModalOpen, toggleQuantityModal, movementType } =
+    useModalStore()
+  const { form, handleQuantityChange, onSubmit, mutation } = useQuantityModel()
 
   return (
     <Dialog open={isQuantityModalOpen} onOpenChange={toggleQuantityModal}>

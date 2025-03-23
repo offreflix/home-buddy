@@ -36,8 +36,8 @@ import { Category, Unit } from '../model/types'
 import { useModalStore } from '../stores/modal.store'
 import { useForm } from 'react-hook-form'
 import { useEffect } from 'react'
-import { apiClient } from './product-main'
 import { AxiosError } from 'axios'
+import { apiClient } from '@/api/client'
 
 function handleProductEditError(error: Error) {
   if (error instanceof AxiosError) {

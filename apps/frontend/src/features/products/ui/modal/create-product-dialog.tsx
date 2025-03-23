@@ -6,7 +6,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import {
   Form,
@@ -18,10 +17,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 
-import { z } from 'zod'
 import {
   Select,
   SelectContent,
@@ -29,91 +25,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { PlusCircle } from 'lucide-react'
-import { toast } from 'sonner'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useModalStore } from '../stores/modal.store'
-import { Category, Unit } from '../model/types'
-import { apiClient } from './product-main'
-import { AxiosError } from 'axios'
-
-export const formSchema = z.object({
-  name: z.string().nonempty('Nome é obrigatório'),
-  description: z.string().optional(),
-  unit: z.nativeEnum(Unit),
-  categoryId: z.coerce.number().int({ message: 'Categoria inválida' }),
-
-  currentQuantity: z.coerce
-    .number()
-    .min(0, 'Quantidade atual deve ser maior ou igual a 0'),
-  desiredQuantity: z.coerce
-    .number()
-    .positive('Quantidade desejada deve ser um número positivo'),
-})
-
-type FormSchema = z.infer<typeof formSchema>
+import { useModalStore } from '../../stores/modal.store'
+import { Category, Unit } from '../../model/types'
+import { useCreateProductModel } from './create-product.model'
 
 export function CreateProductDialog() {
   const { isAddModalOpen, toggleAddModal } = useModalStore()
-
-  const categoriesQuery = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => apiClient.get('categories').then((res) => res.data),
-  })
-
-  const form = useForm<FormSchema>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      description: '',
-      currentQuantity: 0,
-      desiredQuantity: 0,
-      unit: undefined,
-      categoryId: undefined,
-    },
-  })
-
-  const queryClient = useQueryClient()
-
-  const mutation = useMutation<void, AxiosError, FormSchema>({
-    mutationFn: (product: FormSchema) => {
-      return apiClient.post('products', product)
-    },
-    onMutate: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] })
-    },
-    onError: (error: AxiosError) => {
-      switch (error.response?.status) {
-        case 422:
-          toast.error('Já existe um produto com o mesmo nome.')
-          break
-        default:
-          toast.error('Falha ao adicionar produto, tente novamente mais tarde')
-          break
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] })
-    },
-    onSuccess: () => {
-      toast.success('Produto adicionado com sucesso')
-      form.reset()
-      toggleAddModal()
-    },
-  })
-
-  async function onSubmit(values: FormSchema) {
-    await mutation.mutateAsync(values)
-  }
+  const { categoriesQuery, form, mutation, onSubmit } = useCreateProductModel()
 
   return (
     <Dialog open={isAddModalOpen} onOpenChange={toggleAddModal}>
-      <DialogTrigger asChild>
-        <Button>
-          <PlusCircle />
-          Adicionar Produto
-        </Button>
-      </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-auto">
         <DialogHeader>
           <DialogTitle>Adicionar Produto</DialogTitle>

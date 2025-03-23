@@ -6,6 +6,7 @@ import { TotalProductsCard } from '@/features/dashboard/ui/total-products-card'
 import { LowStockProductsCard } from '@/features/dashboard/ui/low-stock-product-card'
 import { CategoriesPieChart } from '@/features/dashboard/ui/categories-pie-chart-card'
 import { MovementsChart } from '@/features/dashboard/ui/movements-chart-card'
+import AppVersion from '@/components/version'
 
 export default async function Home() {
   return (

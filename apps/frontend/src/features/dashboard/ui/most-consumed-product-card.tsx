@@ -9,11 +9,11 @@ import {
 } from '@/components/ui/card'
 import { ArrowDown, ArrowUp, Utensils } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { apiClient } from '@/features/products/ui/product-main'
 
 import React from 'react'
 import { MostConsumed } from '@/entities/product/types'
 import { LoadingProductCard } from '@/app/(private)/_products'
+import { apiClient } from '@/api/client'
 
 function PercentageChange({ value }: { value?: number }) {
   if (!value) return null

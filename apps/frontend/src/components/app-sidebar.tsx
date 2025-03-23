@@ -44,6 +44,7 @@ import { logout } from '@/features/auth/model/authActions'
 import Link from 'next/link'
 import { useContext } from 'react'
 import { useAuth } from '@/context/auth/context'
+import AppVersion from './version'
 
 const items = [
   {
@@ -58,7 +59,7 @@ const items = [
   },
 ]
 
-export function AppSidebar() {
+export function AppSidebar({ version }: { version: string }) {
   const pathname = usePathname()
 
   const { user } = useAuth()
@@ -67,7 +68,10 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Home Buddy</SidebarGroupLabel>
+          <SidebarGroupLabel className="flex items-center justify-between">
+            Home Buddy
+            <span>{version}</span>
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (

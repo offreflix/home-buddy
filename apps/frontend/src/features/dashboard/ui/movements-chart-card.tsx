@@ -3,7 +3,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Utensils } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { apiClient } from '@/features/products/ui/product-main'
 import {
   ChartConfig,
   ChartContainer,
@@ -16,6 +15,7 @@ import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 import React from 'react'
 import { Movements } from '@/entities/product/types'
 import { LoadingProductCard } from '@/app/(private)/_products'
+import { apiClient } from '@/api/client'
 
 const chartConfig = {
   visitors: {

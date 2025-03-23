@@ -9,8 +9,8 @@ import {
 } from '@/components/ui/table'
 import { flexRender, type Table as TableType } from '@tanstack/react-table'
 import React from 'react'
-import { columns } from './columns'
-import type { Product } from '../model/types'
+import { columns } from '../components/columns'
+import type { Product } from '../../model/types'
 import { DataTableSkeleton } from './product-table-skeleton'
 
 type Props = {
