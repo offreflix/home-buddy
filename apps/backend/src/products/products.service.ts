@@ -143,7 +143,7 @@ export class ProductsService {
         });
 
         if (mostConsumed.length === 0) {
-          throw new NotFoundException('Nenhum produto encontrado neste mês.');
+          return [];
         }
 
         const productId = mostConsumed[0].productId;
@@ -245,9 +245,7 @@ export class ProductsService {
     });
 
     if (!movements.length) {
-      throw new NotFoundException(
-        'Nenhum movimento encontrado para o período informado.',
-      );
+      return [];
     }
 
     const groupedData: Record<
