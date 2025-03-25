@@ -9,9 +9,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthGuard, Public } from './auth.guard';
+import { JwtAuthGuard, LocalAuthGuard, Public } from './auth.guard';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { SignInDto } from 'src/users/dto/sign-in.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Controller('auth')
@@ -19,10 +18,11 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Public()
+  @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  signIn(@Body() signInDto: SignInDto) {
-    return this.authService.signIn(signInDto);
+  signIn(@Request() req) {
+    return this.authService.signIn(req.user);
   }
 
   @Public()
@@ -32,24 +32,22 @@ export class AuthController {
     return this.authService.signUp(createUserDto);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('profile')
-  async getProfile(@Request() req) {
-    const userProfile = await this.authService.getProfile(req.user.sub);
-    return userProfile;
+  getProfile(@Request() req) {
+    return this.authService.getProfile(req.user.id);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(@Request() req) {
-    await this.authService.removeToken(req.user.sub);
+    await this.authService.logout(req.user.id);
     return { message: 'Logged out successfully' };
   }
 
   @Public()
   @Post('refresh')
   async refresh(@Body() data: RefreshTokenDto) {
-    const tokens = await this.authService.refreshToken(data.refresh_token);
-    return tokens;
+    return this.authService.refreshToken(data.refresh_token);
   }
 }
