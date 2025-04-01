@@ -27,3 +27,6 @@ export class JwtAuthGuard extends PassportAuthGuard('jwt') {
 
 @Injectable()
 export class LocalAuthGuard extends PassportAuthGuard('local') {}
+
+@Injectable()
+export class GoogleAuthGuard extends PassportAuthGuard('google') {}

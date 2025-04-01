@@ -17,14 +17,7 @@ import {
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import {
-  Minus,
-  Plus,
-  MoreVertical,
-  ShoppingCart,
-  Trash2,
-  PackagePlus,
-} from 'lucide-react'
+import { Minus, Plus, MoreVertical, ShoppingCart, Trash2 } from 'lucide-react'
 import {
   Tooltip,
   TooltipContent,
@@ -36,6 +29,7 @@ import { MovementType, useModalStore } from '../../stores/modal.store'
 import { transformProductToFormSchema } from './columns'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { EmptyState } from '@/components/empty-state'
 
 type Props = {
   data: Array<Product> | undefined
@@ -49,6 +43,7 @@ function ProductCard({ data }: Props) {
     setSelectedProductId,
     toggleQuantityModal,
     setMovementType,
+    toggleAddModal,
   } = useModalStore()
 
   const handleQuantityChange = (type: MovementType, productId: number) => {
@@ -58,28 +53,7 @@ function ProductCard({ data }: Props) {
   }
 
   if (!data || data.length === 0) {
-    return (
-      <div className="border rounded-lg hover:border-neutral-300 dark:hover:border-neutral-700 transition-all duration-200 flex flex-col items-center justify-center w-full py-12 px-4 space-y-6">
-        <div className="flex flex-col items-center text-center space-y-2">
-          <div className="rounded-full p-3 bg-primary/10">
-            <PackagePlus className="h-6 w-6 text-primary" />
-          </div>
-          <h3 className="text-xl font-medium">Nenhum produto cadastrado</h3>
-          <p className="text-muted-foreground text-sm max-w-[350px]">
-            Você ainda não possui produtos cadastrados no sistema.
-          </p>
-        </div>
-        <Button
-          onClick={() =>
-            toast.info('Funcionalidade temporariamente desabilitada!')
-          }
-          className="gap-2"
-        >
-          <PackagePlus className="h-4 w-4" />
-          Adicionar primeiro produto
-        </Button>
-      </div>
-    )
+    return <EmptyState onClick={toggleAddModal} />
   }
 
   return (
