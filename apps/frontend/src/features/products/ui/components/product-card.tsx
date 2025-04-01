@@ -63,8 +63,8 @@ function ProductCard({ data }: Props) {
           key={product.id}
           className={cn(
             'flex flex-col',
-            'border border-neutral-100 dark:border-neutral-800',
-            'hover:border-neutral-200 dark:hover:border-neutral-700',
+            'border',
+            'hover:border-primary/30',
             'transition-all duration-200',
             'shadow-sm backdrop-blur-xl',
           )}
@@ -115,30 +115,28 @@ function ProductCard({ data }: Props) {
                   {product.stock.desiredQuantity} {product.unit}
                 </span>
               </div>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Progress
-                      value={
-                        (product.stock.currentQuantity /
-                          product.stock.desiredQuantity) *
-                        100
-                      }
-                      className="h-2"
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>
-                      {(
-                        (product.stock.currentQuantity /
-                          product.stock.desiredQuantity) *
-                        100
-                      ).toFixed()}
-                      % do desejado
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Progress
+                    value={
+                      (product.stock.currentQuantity /
+                        product.stock.desiredQuantity) *
+                      100
+                    }
+                    className="h-2"
+                  />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    {(
+                      (product.stock.currentQuantity /
+                        product.stock.desiredQuantity) *
+                      100
+                    ).toFixed()}
+                    % do desejado
+                  </p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           </CardContent>
           <CardFooter className="pt-2">
