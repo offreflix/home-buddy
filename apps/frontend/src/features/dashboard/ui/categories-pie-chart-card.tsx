@@ -18,7 +18,7 @@ import {
 import { Cell, Pie, PieChart } from 'recharts'
 import React from 'react'
 import { CountByCategory } from '@/entities/product/types'
-import { TrendingUp } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const chartConfig = {
   count: {
@@ -55,7 +55,39 @@ export function CategoriesPieChart() {
     'hsl(var(--chart-7))',
   ]
 
-  console.log(countByCategoryQuery.data)
+  if (countByCategoryQuery.isLoading) {
+    return (
+      <Card className="col-span-2 lg:col-span-1">
+        <CardHeader className="pb-0">
+          <CardTitle className="text-sm font-medium">
+            <Skeleton className="h-5 w-64" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex-1 pb-0">
+          <div className="mx-auto aspect-square max-h-[250px] flex items-center justify-center">
+            <div className="relative w-full h-full flex items-center justify-center">
+              <Skeleton className="aspect-square w-[180px] h-[180px] rounded-full" />
+              <div className="absolute bg-card w-[80px] h-[80px] rounded-full" />
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="pt-4 w-full flex justify-center">
+          <div className="grid grid-cols-2 gap-5">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div
+                key={index}
+                className="text-xs flex items-center justify-center gap-2"
+              >
+                <Skeleton className="h-2 w-2 shrink-0 rounded-[2px]" />
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-2 w-2 shrink-0 rounded-[2px]" />
+              </div>
+            ))}
+          </div>
+        </CardFooter>
+      </Card>
+    )
+  }
 
   return (
     <Card className="col-span-2 lg:col-span-1">
@@ -78,7 +110,7 @@ export function CategoriesPieChart() {
               data={countByCategoryQuery.data}
               dataKey="count"
               nameKey="name"
-              stroke="0"
+              innerRadius={40}
             >
               {countByCategoryQuery.data &&
                 countByCategoryQuery.data.map((entry, index) => (
@@ -92,21 +124,22 @@ export function CategoriesPieChart() {
         </ChartContainer>
       </CardContent>
       <CardFooter className="pt-4 w-full flex justify-center">
-        <div className="grid grid-cols-2 gap-5">
+        <div className="grid grid-cols-2 gap-1">
           {countByCategoryQuery.data &&
             countByCategoryQuery.data.map((category, index) => (
               <div
                 key={category.name}
-                className="text-xs flex items-center justify-center gap-2"
+                className="flex items-center justify-between gap-2 text-xs w-full h-full p-2"
               >
-                <div
-                  className="h-2 w-2 shrink-0 rounded-[2px]"
-                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                />
-                <span className="truncate block max-w-full">
-                  {category.name}
-                </span>
-
+                <div className="flex items-center gap-2">
+                  <div
+                    className="h-2 w-2 shrink-0 rounded-[2px]"
+                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                  />
+                  <span className="truncate block max-w-[100px] 2xl:max-w-[160px]">
+                    {category.name}
+                  </span>
+                </div>
                 <span
                   className="font-medium"
                   style={{ color: COLORS[index % COLORS.length] }}

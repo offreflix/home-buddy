@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "@nestjs/mapped-types": "*"
+    "@nestjs/mapped-types": "*",
+    "dayjs": "^1.11.13"
   },
   "name": "home-buddy-monorepo",
   "private": true,
