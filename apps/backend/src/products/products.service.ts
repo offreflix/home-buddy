@@ -12,13 +12,22 @@ import { UserEntity } from 'src/users/entities/user.entity';
 import { UpdateProductStockDto } from './dto/update-product-stock.dto';
 import { MostConsumedDto } from './dto/most-consumed.dto';
 import { GetStockMovementsDto } from './dto/get-stock-movements.dto';
+import { Unit } from '@prisma/client';
 
+export interface MostConsumedResult {
+  product: string;
+  quantity: number;
+  unit: Unit;
+  percentageChange: number;
+}
 @Injectable()
 export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
   async create(createProductDto: CreateProductDto, user: UserEntity) {
     try {
+      console.log('createProductDto', createProductDto);
+      console.log('user', user);
       return await this.prisma.$transaction(async (trx) => {
         const categoryExists = await trx.category.findFirst({
           where: { id: createProductDto.categoryId },
@@ -122,7 +131,10 @@ export class ProductsService {
     return filteredProducts;
   }
 
-  async mostConsumed(dto: MostConsumedDto, user: UserEntity) {
+  async mostConsumed(
+    dto: MostConsumedDto,
+    user: UserEntity,
+  ): Promise<MostConsumedResult | []> {
     const { month, year } = dto;
 
     const startDate = new Date(year, month - 1, 1);

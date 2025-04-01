@@ -64,6 +64,8 @@ export function AppSidebar({ version }: { version: string }) {
 
   const { user } = useAuth()
 
+  console.log(user)
+
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
@@ -101,7 +103,11 @@ export function AppSidebar({ version }: { version: string }) {
                   className="border data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={''} alt={user?.username} />
+                    <AvatarImage
+                      referrerPolicy="no-referrer"
+                      src={user?.picture}
+                      alt={user?.username}
+                    />
                     <AvatarFallback className="rounded-lg">
                       {user?.username.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
@@ -123,7 +129,11 @@ export function AppSidebar({ version }: { version: string }) {
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage src={'user.avatar'} alt={user?.username} />
+                      <AvatarImage
+                        referrerPolicy="no-referrer"
+                        src={user?.picture}
+                        alt={user?.username}
+                      />
                       <AvatarFallback className="rounded-lg">
                         {user?.username.slice(0, 2).toUpperCase()}
                       </AvatarFallback>

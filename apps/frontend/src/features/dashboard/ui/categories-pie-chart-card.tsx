@@ -1,6 +1,12 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/api/client'
 import {
@@ -12,6 +18,7 @@ import {
 import { Cell, Pie, PieChart } from 'recharts'
 import React from 'react'
 import { CountByCategory } from '@/entities/product/types'
+import { TrendingUp } from 'lucide-react'
 
 const chartConfig = {
   count: {
@@ -48,6 +55,8 @@ export function CategoriesPieChart() {
     'hsl(var(--chart-7))',
   ]
 
+  console.log(countByCategoryQuery.data)
+
   return (
     <Card className="col-span-2 lg:col-span-1">
       <CardHeader className="pb-0">
@@ -82,14 +91,32 @@ export function CategoriesPieChart() {
           </PieChart>
         </ChartContainer>
       </CardContent>
-      {/* <CardFooter className="flex-col gap-2 text-sm">
-          <div className="flex items-center gap-2 font-medium leading-none">
-            Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-          </div>
-          <div className="leading-none text-muted-foreground">
-            Showing total visitors for the last 6 months
-          </div>
-        </CardFooter> */}
+      <CardFooter className="pt-4 w-full flex justify-center">
+        <div className="grid grid-cols-2 gap-5">
+          {countByCategoryQuery.data &&
+            countByCategoryQuery.data.map((category, index) => (
+              <div
+                key={category.name}
+                className="text-xs flex items-center justify-center gap-2"
+              >
+                <div
+                  className="h-2 w-2 shrink-0 rounded-[2px]"
+                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                />
+                <span className="truncate block max-w-full">
+                  {category.name}
+                </span>
+
+                <span
+                  className="font-medium"
+                  style={{ color: COLORS[index % COLORS.length] }}
+                >
+                  {category.count}
+                </span>
+              </div>
+            ))}
+        </div>
+      </CardFooter>
     </Card>
   )
 }

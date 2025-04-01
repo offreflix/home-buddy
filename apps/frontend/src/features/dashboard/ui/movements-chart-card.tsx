@@ -40,8 +40,6 @@ export function MovementsChart() {
         .then((res) => res.data),
   })
 
-  console.log(movementsQuery.data)
-
   if (movementsQuery.isLoading) {
     return (
       <LoadingProductCard className="col-span-2">
@@ -130,6 +128,7 @@ export function MovementsChart() {
               fill="url(#fillMobile)"
               stroke="var(--color-OUT)"
             />
+
             <Area
               dataKey="OUT"
               type="natural"

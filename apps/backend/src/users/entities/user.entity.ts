@@ -11,7 +11,7 @@ export class UserEntity {
 
   toJWTObject(): JwtPayload {
     return {
-      sub: this.id,
+      id: this.id,
       username: this.username,
     };
   }
@@ -21,11 +21,12 @@ export class UserEntity {
   }
 
   static fromJWTObject(payload: JwtPayload): UserEntity {
-    return new UserEntity(payload.sub, payload.username);
+    console.log('payload', payload);
+    return new UserEntity(payload.id, payload.username);
   }
 }
 
 export interface JwtPayload {
-  sub: number;
+  id: number;
   username: string;
 }

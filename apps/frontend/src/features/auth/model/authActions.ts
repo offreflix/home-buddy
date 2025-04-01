@@ -47,8 +47,6 @@ export async function login(formData: FormData): Promise<LoginResponse> {
   const password = formData.get('password')
   const cookiesStore = await cookies()
 
-  console.log(API_BASE_URL)
-
   try {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
@@ -57,8 +55,6 @@ export async function login(formData: FormData): Promise<LoginResponse> {
       },
       body: JSON.stringify({ username, password }),
     })
-
-    console.log(response)
 
     if (response.ok) {
       const data = await response.json()
@@ -191,9 +187,6 @@ export async function getUserProfile(): Promise<
     const cookiesStore = await cookies()
     const accessToken = cookiesStore.get('access_token')?.value
     const refreshToken = cookiesStore.get('refresh_token')?.value
-
-    console.log('Server Access Token:', accessToken)
-    console.log('Server Refresh Token:', refreshToken)
 
     if (!accessToken) {
       return { error: 'No access token found', status: 401 }

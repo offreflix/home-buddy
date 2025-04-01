@@ -55,4 +55,12 @@ export class UsersService {
       where,
     });
   }
+
+  async findByGoogleId(googleId: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: {
+        googleId,
+      },
+    });
+  }
 }
