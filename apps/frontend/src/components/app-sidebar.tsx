@@ -6,10 +6,12 @@ import {
   ChevronDown,
   ChevronsUpDown,
   ChevronUp,
+  CloudMoonRain,
   CreditCard,
   Home,
   LayoutDashboard,
   LogOut,
+  PaintBucket,
   Settings,
   ShoppingBasket,
   Sparkles,
@@ -45,6 +47,7 @@ import Link from 'next/link'
 import { useContext } from 'react'
 import { useAuth } from '@/context/auth/context'
 import AppVersion from './version'
+import { ThemeToggle } from './theme-toggle'
 
 const items = [
   {
@@ -167,6 +170,12 @@ export function AppSidebar({ version }: { version: string }) {
                     <Bell />
                     Notificações
                   </DropdownMenuItem>
+                  <ThemeToggle>
+                    <DropdownMenuItem>
+                      <PaintBucket />
+                      Tema
+                    </DropdownMenuItem>
+                  </ThemeToggle>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>
