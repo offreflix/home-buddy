@@ -24,25 +24,18 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import type { Product } from '../model/types'
-import { queryClient } from '@/lib/react-query'
-import { MovementType, useModalStore } from '../stores/modal.store'
+import { MovementType, useModalStore } from '../../stores/modal.store'
 import { transformProductToFormSchema } from './columns'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
+import { EmptyState } from '@/components/empty-state'
+import { Product } from '../../model/products.type'
 
 type Props = {
   data: Array<Product> | undefined
 }
 
 function ProductCard({ data }: Props) {
-  const decreaseQuantity = async (id: number) => {
-    queryClient.invalidateQueries({ queryKey: ['products'] })
-  }
-
-  const increaseQuantity = async (id: number) => {
-    queryClient.invalidateQueries({ queryKey: ['products'] })
-  }
-
   const {
     toggleEditModal,
     setEditingProduct,
@@ -50,12 +43,17 @@ function ProductCard({ data }: Props) {
     setSelectedProductId,
     toggleQuantityModal,
     setMovementType,
+    toggleAddModal,
   } = useModalStore()
 
   const handleQuantityChange = (type: MovementType, productId: number) => {
     setMovementType(type)
     setSelectedProductId(productId)
     toggleQuantityModal()
+  }
+
+  if (!data || data.length === 0) {
+    return <EmptyState onClick={toggleAddModal} />
   }
 
   return (
@@ -65,8 +63,8 @@ function ProductCard({ data }: Props) {
           key={product.id}
           className={cn(
             'flex flex-col',
-            'border border-neutral-100 dark:border-neutral-800',
-            'hover:border-neutral-200 dark:hover:border-neutral-700',
+            'border',
+            'hover:border-primary/30',
             'transition-all duration-200',
             'shadow-sm backdrop-blur-xl',
           )}
@@ -117,30 +115,28 @@ function ProductCard({ data }: Props) {
                   {product.stock.desiredQuantity} {product.unit}
                 </span>
               </div>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Progress
-                      value={
-                        (product.stock.currentQuantity /
-                          product.stock.desiredQuantity) *
-                        100
-                      }
-                      className="h-2"
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>
-                      {(
-                        (product.stock.currentQuantity /
-                          product.stock.desiredQuantity) *
-                        100
-                      ).toFixed()}
-                      % do desejado
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Progress
+                    value={
+                      (product.stock.currentQuantity /
+                        product.stock.desiredQuantity) *
+                      100
+                    }
+                    className="h-2"
+                  />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    {(
+                      (product.stock.currentQuantity /
+                        product.stock.desiredQuantity) *
+                      100
+                    ).toFixed()}
+                    % do desejado
+                  </p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           </CardContent>
           <CardFooter className="pt-2">

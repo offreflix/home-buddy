@@ -2,20 +2,16 @@
 
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { useModalStore } from '../stores/modal.store'
 import { toast } from 'sonner'
-import { useMutation } from '@tanstack/react-query'
-import { queryClient } from '@/lib/react-query'
+import { useModalStore } from '../../stores/modal.store'
 
 export function DeleteProductDialog() {
   const { selectedProductId, toggleDeleteModal, isDeleteModalOpen } =

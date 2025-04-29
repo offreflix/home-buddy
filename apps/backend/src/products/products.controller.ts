@@ -8,7 +8,7 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
-import { ProductsService } from './products.service';
+import { MostConsumedResult, ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { User } from 'src/users/user.decorator';
@@ -47,7 +47,10 @@ export class ProductsController {
   }
 
   @Get('most-consumed')
-  mostConsumed(@Query() query: MostConsumedDto, @User() user: UserEntity) {
+  async mostConsumed(
+    @Query() query: MostConsumedDto,
+    @User() user: UserEntity,
+  ): Promise<MostConsumedResult | []> {
     return this.productsService.mostConsumed(query, user);
   }
 

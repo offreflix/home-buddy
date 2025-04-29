@@ -6,10 +6,12 @@ import {
   ChevronDown,
   ChevronsUpDown,
   ChevronUp,
+  CloudMoonRain,
   CreditCard,
   Home,
   LayoutDashboard,
   LogOut,
+  PaintBucket,
   Settings,
   ShoppingBasket,
   Sparkles,
@@ -44,6 +46,8 @@ import { logout } from '@/features/auth/model/authActions'
 import Link from 'next/link'
 import { useContext } from 'react'
 import { useAuth } from '@/context/auth/context'
+import AppVersion from './version'
+import { ThemeToggle } from './theme-toggle'
 
 const items = [
   {
@@ -58,16 +62,21 @@ const items = [
   },
 ]
 
-export function AppSidebar() {
+export function AppSidebar({ version }: { version: string }) {
   const pathname = usePathname()
 
   const { user } = useAuth()
+
+  console.log(user)
 
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Home Buddy</SidebarGroupLabel>
+          <SidebarGroupLabel className="flex items-center justify-between">
+            Home Buddy
+            <span>{version}</span>
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -97,7 +106,11 @@ export function AppSidebar() {
                   className="border data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={''} alt={user?.username} />
+                    <AvatarImage
+                      referrerPolicy="no-referrer"
+                      src={user?.picture}
+                      alt={user?.username}
+                    />
                     <AvatarFallback className="rounded-lg">
                       {user?.username.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
@@ -119,7 +132,11 @@ export function AppSidebar() {
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage src={'user.avatar'} alt={user?.username} />
+                      <AvatarImage
+                        referrerPolicy="no-referrer"
+                        src={user?.picture}
+                        alt={user?.username}
+                      />
                       <AvatarFallback className="rounded-lg">
                         {user?.username.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
@@ -153,6 +170,12 @@ export function AppSidebar() {
                     <Bell />
                     Notificações
                   </DropdownMenuItem>
+                  <ThemeToggle>
+                    <DropdownMenuItem>
+                      <PaintBucket />
+                      Tema
+                    </DropdownMenuItem>
+                  </ThemeToggle>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>

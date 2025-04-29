@@ -1,6 +1,8 @@
 {
   "dependencies": {
-    "@nestjs/mapped-types": "*"
+    "@nestjs/mapped-types": "*",
+    "dayjs": "^1.11.13",
+    "openai": "^4.95.0"
   },
   "name": "home-buddy-monorepo",
   "private": true,

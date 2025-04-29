@@ -47,8 +47,6 @@ export async function login(formData: FormData): Promise<LoginResponse> {
   const password = formData.get('password')
   const cookiesStore = await cookies()
 
-  console.log(API_BASE_URL)
-
   try {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
@@ -57,8 +55,6 @@ export async function login(formData: FormData): Promise<LoginResponse> {
       },
       body: JSON.stringify({ username, password }),
     })
-
-    console.log(response)
 
     if (response.ok) {
       const data = await response.json()
@@ -108,10 +104,36 @@ export async function register(formData: FormData): Promise<RegisterResponse> {
 }
 
 export async function logout(): Promise<void> {
+  await clearAuthCookies()
+  redirect('/login')
+}
+
+async function clearAuthCookies(): Promise<void> {
   const cookiesStore = await cookies()
   cookiesStore.delete('access_token')
   cookiesStore.delete('refresh_token')
-  redirect('/login')
+
+  cookiesStore.set({
+    name: 'access_token',
+    value: '',
+    path: '/',
+    expires: new Date(0),
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+    domain: process.env.NEXT_PUBLIC_COOKIE_DOMAIN || '',
+  })
+
+  cookiesStore.set({
+    name: 'refresh_token',
+    value: '',
+    path: '/',
+    expires: new Date(0),
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+    domain: process.env.NEXT_PUBLIC_COOKIE_DOMAIN || '',
+  })
 }
 
 export async function refreshToken(): Promise<{
@@ -123,6 +145,7 @@ export async function refreshToken(): Promise<{
   const refreshToken = cookiesStore.get('refresh_token')?.value
 
   if (!refreshToken) {
+    await clearAuthCookies()
     redirect('/login')
   }
 
@@ -136,6 +159,7 @@ export async function refreshToken(): Promise<{
     })
 
     if (!response.ok) {
+      await clearAuthCookies()
       redirect('/login')
     }
 
@@ -145,9 +169,7 @@ export async function refreshToken(): Promise<{
 
     return { success: true }
   } catch (error) {
-    cookiesStore.delete('access_token')
-    cookiesStore.delete('refresh_token')
-    console.error('Refresh token error:', error)
+    await clearAuthCookies()
     redirect('/login')
   }
 }
@@ -165,9 +187,6 @@ export async function getUserProfile(): Promise<
     const cookiesStore = await cookies()
     const accessToken = cookiesStore.get('access_token')?.value
     const refreshToken = cookiesStore.get('refresh_token')?.value
-
-    console.log('Server Access Token:', accessToken)
-    console.log('Server Refresh Token:', refreshToken)
 
     if (!accessToken) {
       return { error: 'No access token found', status: 401 }

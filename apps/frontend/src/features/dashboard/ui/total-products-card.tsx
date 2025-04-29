@@ -9,11 +9,11 @@ import {
 } from '@/components/ui/card'
 import { Package } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { apiClient } from '@/features/products/ui/product-main'
 
 import React from 'react'
 import { Count } from '@/entities/product/types'
 import { LoadingProductCard } from '@/app/(private)/_products'
+import { apiClient } from '@/api/client'
 
 export function TotalProductsCard() {
   const countQuery = useQuery<Count>({

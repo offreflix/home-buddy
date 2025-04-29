@@ -7,22 +7,45 @@ import {
   Post,
   Request,
   UseGuards,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { AuthService } from './auth.service';
-import { AuthGuard, Public } from './auth.guard';
+import {
+  JwtAuthGuard,
+  LocalAuthGuard,
+  GoogleAuthGuard,
+  Public,
+} from './auth.guard';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { SignInDto } from 'src/users/dto/sign-in.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+
+export interface AuthenticatedUser {
+  id: number;
+  username: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  picture: string | null;
+  googleId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AuthRequest extends Request {
+  user: AuthenticatedUser;
+}
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Public()
+  @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  signIn(@Body() signInDto: SignInDto) {
-    return this.authService.signIn(signInDto);
+  signIn(@Request() req: AuthRequest) {
+    return this.authService.signIn(req.user);
   }
 
   @Public()
@@ -32,24 +55,40 @@ export class AuthController {
     return this.authService.signUp(createUserDto);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('profile')
-  async getProfile(@Request() req) {
-    const userProfile = await this.authService.getProfile(req.user.sub);
-    return userProfile;
+  getProfile(@Request() req: AuthRequest) {
+    return this.authService.getProfile(req.user.id);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('logout')
-  async logout(@Request() req) {
-    await this.authService.removeToken(req.user.sub);
+  async logout(@Request() req: AuthRequest) {
+    await this.authService.logout(req.user.id);
     return { message: 'Logged out successfully' };
   }
 
   @Public()
   @Post('refresh')
   async refresh(@Body() data: RefreshTokenDto) {
-    const tokens = await this.authService.refreshToken(data.refresh_token);
-    return tokens;
+    return this.authService.refreshToken(data.refresh_token);
+  }
+
+  @Public()
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuth() {}
+
+  @Get('verify-cookie')
+  @UseGuards(JwtAuthGuard)
+  async verifyCookies() {
+    return { message: 'Autenticado com cookie!' };
+  }
+
+  @Public()
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuthCallback(@Request() req: AuthRequest, @Res() res: Response) {
+    return this.authService.googleAuthCallback(req, res);
   }
 }

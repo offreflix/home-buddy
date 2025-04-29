@@ -9,9 +9,10 @@ import {
 } from '@/components/ui/table'
 import { flexRender, type Table as TableType } from '@tanstack/react-table'
 import React from 'react'
-import { columns } from './columns'
-import type { Product } from '../model/types'
-import { DataTableSkeleton } from './product-table-skeleton'
+import { columns } from '../components/columns'
+import { EmptyState } from '@/components/empty-state'
+import { useModalStore } from '../../stores/modal.store'
+import { Product } from '../../model/products.type'
 
 type Props = {
   table: TableType<Product>
@@ -19,6 +20,8 @@ type Props = {
 }
 
 function ProductTable({ table, isLoading }: Props) {
+  const { toggleAddModal } = useModalStore()
+
   return (
     <>
       <div className="rounded-md border">
@@ -65,7 +68,7 @@ function ProductTable({ table, isLoading }: Props) {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Sem resultados.
+                  <EmptyState onClick={toggleAddModal} />
                 </TableCell>
               </TableRow>
             )}

@@ -1,9 +1,7 @@
 'use client'
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Utensils } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { apiClient } from '@/features/products/ui/product-main'
 import {
   ChartConfig,
   ChartContainer,
@@ -16,6 +14,10 @@ import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 import React from 'react'
 import { Movements } from '@/entities/product/types'
 import { LoadingProductCard } from '@/app/(private)/_products'
+import { apiClient } from '@/api/client'
+import dayjs from 'dayjs'
+import { Skeleton } from '@/components/ui/skeleton'
+import { AxiosResponse } from 'axios'
 
 const chartConfig = {
   visitors: {
@@ -32,24 +34,63 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export function MovementsChart() {
+  const startDate = dayjs().startOf('day').format('YYYY-MM-DD')
+  const endDate = dayjs().endOf('month').format('YYYY-MM-DD')
+
+  console.log(startDate, endDate)
+
   const movementsQuery = useQuery<Movements[]>({
-    queryKey: ['movements'],
+    queryKey: ['movements', startDate, endDate],
     queryFn: () =>
       apiClient
-        .get(`/products/movements?startDate=2025-03-01&endDate=2025-03-31`)
-        .then((res) => res.data),
+        .get(`/products/movements?startDate=${startDate}&endDate=${endDate}`)
+        .then((res: AxiosResponse<Movements[]>) =>
+          res.data.map((movement) => ({
+            ...movement,
+            date: dayjs(movement.date).format('YYYY-MM-DD'),
+          })),
+        ),
   })
 
   console.log(movementsQuery.data)
 
   if (movementsQuery.isLoading) {
     return (
-      <LoadingProductCard className="col-span-2">
-        <CardTitle className="text-sm font-medium">
-          Produto Mais Consumido
-        </CardTitle>
-        <Utensils className="h-4 w-4 text-muted-foreground" />
-      </LoadingProductCard>
+      <Card className="col-span-2">
+        <CardHeader className="pb-0">
+          <CardTitle className="text-sm font-medium">
+            <Skeleton className="h-5 w-40" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+          <div className="space-y-3">
+            <div className="aspect-auto h-[250px] w-full rounded-md">
+              <div className="flex h-full w-full flex-col">
+                <div className="relative flex-1">
+                  <Skeleton className="h-full w-full" />
+                </div>
+
+                <div className="mt-2 flex justify-between px-2">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton key={i} className="h-4 w-12" />
+                  ))}
+                </div>
+
+                <div className="mt-4 flex items-center justify-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-3 w-3 rounded-full" />
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-3 w-3 rounded-full" />
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     )
   }
 
@@ -130,6 +171,7 @@ export function MovementsChart() {
               fill="url(#fillMobile)"
               stroke="var(--color-OUT)"
             />
+
             <Area
               dataKey="OUT"
               type="natural"

@@ -1,60 +1,32 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  SetMetadata,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { Request } from 'express';
+import { ExecutionContext, Injectable, SetMetadata } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { AuthGuard as PassportAuthGuard } from '@nestjs/passport';
 
 export const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
 
 @Injectable()
-export class AuthGuard implements CanActivate {
-  constructor(
-    private authService: AuthService,
-    private reflector: Reflector,
-  ) {}
+export class JwtAuthGuard extends PassportAuthGuard('jwt') {
+  constructor(private reflector: Reflector) {
+    super();
+  }
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  canActivate(context: ExecutionContext) {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
+
     if (isPublic) {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
-
-    const token = this.extractTokenFromHeader(request);
-
-    if (!token) {
-      throw new UnauthorizedException();
-    }
-
-    const isValid = await this.authService.validateToken(token);
-
-    if (!isValid) {
-      throw new UnauthorizedException();
-    }
-
-    const payload = await this.authService.decodeToken(token);
-    request.user = payload;
-
-    return true;
-  }
-
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-
-    if (type === 'Bearer') {
-      return token;
-    }
-
-    return request.cookies.access_token;
+    return super.canActivate(context);
   }
 }
+
+@Injectable()
+export class LocalAuthGuard extends PassportAuthGuard('local') {}
+
+@Injectable()
+export class GoogleAuthGuard extends PassportAuthGuard('google') {}
