@@ -21,7 +21,7 @@ import { Input } from '@/components/ui/input'
 import { Minus, Plus } from 'lucide-react'
 import { MovementType, useModalStore } from '../../stores/modal.store'
 import { cn } from '@/lib/utils'
-import { useQuantityModel } from './quantity.model'
+import { useQuantityModel } from '../../model/quantity.model'
 
 export function QuantityDialog() {
   const { isQuantityModalOpen, toggleQuantityModal, movementType } =

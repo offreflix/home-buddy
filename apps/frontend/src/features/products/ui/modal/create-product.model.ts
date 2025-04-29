@@ -5,9 +5,9 @@ import { AxiosError } from 'axios'
 import { toast } from 'sonner'
 import { apiClient } from '@/api/client'
 import { useModalStore } from '../../stores/modal.store'
-import { CreateProductSchema } from '../products.type'
-import { createProductSchema } from '../product.schema'
+import { CreateProductSchema } from '../../model/products.type'
 import { CREATE_PRODUCTS_MESSAGES } from '../products.messages'
+import { createProductSchema } from '../../model/product.schema'
 
 export const useCreateProductModel = () => {
   const { toggleAddModal } = useModalStore()

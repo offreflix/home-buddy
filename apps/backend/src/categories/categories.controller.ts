@@ -22,6 +22,11 @@ export class CategoriesController {
     return this.categoriesService.create(createCategoryDto);
   }
 
+  @Post('create-many')
+  async createMany(@Body() createCategoryDto: CreateCategoryDto[]) {
+    return this.categoriesService.createMany(createCategoryDto);
+  }
+
   @Get()
   findAll() {
     return this.categoriesService.findAll();

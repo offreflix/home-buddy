@@ -237,9 +237,14 @@ export class ProductsService {
     return result;
   }
 
-  async getMovementsByDate(dto: GetStockMovementsDto, user: UserEntity) {
+  async getMovementsByDate(
+    dto: GetStockMovementsDto,
+    user: UserEntity,
+  ): Promise<{ date: string; IN: number; OUT: number }[] | []> {
     const startDate = new Date(dto.startDate);
     const endDate = new Date(dto.endDate);
+    console.log('startDate', startDate);
+    console.log('endDate', endDate);
 
     const movements = await this.prisma.stockMovement.findMany({
       where: {
@@ -266,7 +271,7 @@ export class ProductsService {
     > = {};
 
     movements.forEach((movement) => {
-      const dateKey = movement.createdAt.toISOString().split('T')[0];
+      const dateKey = movement.createdAt.toISOString();
       if (!groupedData[dateKey]) {
         groupedData[dateKey] = { date: dateKey, IN: 0, OUT: 0 };
       }

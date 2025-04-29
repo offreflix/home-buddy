@@ -9,9 +9,9 @@ import {
   VisibilityState,
 } from '@tanstack/react-table'
 import { useState } from 'react'
-import { ViewMode } from './products.type'
+import { ViewMode } from '../ui/products.type'
 import { useQuery } from '@tanstack/react-query'
-import { columns } from './components/columns'
+import { columns } from '../ui/components/columns'
 import { apiClient } from '@/api/client'
 
 export const useProductModel = () => {

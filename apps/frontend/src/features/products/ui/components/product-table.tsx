@@ -10,9 +10,9 @@ import {
 import { flexRender, type Table as TableType } from '@tanstack/react-table'
 import React from 'react'
 import { columns } from '../components/columns'
-import type { Product } from '../../model/types'
 import { EmptyState } from '@/components/empty-state'
 import { useModalStore } from '../../stores/modal.store'
+import { Product } from '../../model/products.type'
 
 type Props = {
   table: TableType<Product>

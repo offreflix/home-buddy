@@ -3,12 +3,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 
 import { toast } from 'sonner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { MovementType, useModalStore } from '../../stores/modal.store'
+import { MovementType, useModalStore } from '../stores/modal.store'
 import { AxiosError } from 'axios'
 import { useEffect } from 'react'
 import { apiClient } from '@/api/client'
-import { QuantitySchema } from '../products.type'
-import { quantitySchema } from '../product.schema'
+import { QuantitySchema } from './products.type'
+import { quantitySchema } from './product.schema'
 
 export const useQuantityModel = () => {
   const {

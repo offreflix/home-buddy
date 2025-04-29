@@ -1,4 +1,4 @@
-import { CreateResult, Status } from './products.type'
+import { CreateResult, Status } from '../model/products.type'
 
 export const CREATE_PRODUCTS_MESSAGES: Record<Status, CreateResult> = {
   422: { status: 'error', message: 'Já existe um produto com o mesmo nome.' },

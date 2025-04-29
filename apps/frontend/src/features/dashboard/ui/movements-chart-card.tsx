@@ -17,6 +17,7 @@ import { LoadingProductCard } from '@/app/(private)/_products'
 import { apiClient } from '@/api/client'
 import dayjs from 'dayjs'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AxiosResponse } from 'axios'
 
 const chartConfig = {
   visitors: {
@@ -35,6 +36,7 @@ const chartConfig = {
 export function MovementsChart() {
   const startDate = dayjs().startOf('day').format('YYYY-MM-DD')
   const endDate = dayjs().endOf('month').format('YYYY-MM-DD')
+
   console.log(startDate, endDate)
 
   const movementsQuery = useQuery<Movements[]>({
@@ -42,8 +44,15 @@ export function MovementsChart() {
     queryFn: () =>
       apiClient
         .get(`/products/movements?startDate=${startDate}&endDate=${endDate}`)
-        .then((res) => res.data),
+        .then((res: AxiosResponse<Movements[]>) =>
+          res.data.map((movement) => ({
+            ...movement,
+            date: dayjs(movement.date).format('YYYY-MM-DD'),
+          })),
+        ),
   })
+
+  console.log(movementsQuery.data)
 
   if (movementsQuery.isLoading) {
     return (

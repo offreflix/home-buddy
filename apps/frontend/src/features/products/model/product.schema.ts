@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { Unit } from '../model/types'
+import { Unit } from './products.type'
 
 export const createProductSchema = z.object({
   name: z.string().nonempty('Nome é obrigatório'),

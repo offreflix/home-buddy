@@ -32,12 +32,12 @@ import {
 } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Category, Unit } from '../model/types'
 import { useModalStore } from '../stores/modal.store'
 import { useForm } from 'react-hook-form'
 import { useEffect } from 'react'
 import { AxiosError } from 'axios'
 import { apiClient } from '@/api/client'
+import { Category, Unit } from '../model/products.type'
 
 function handleProductEditError(error: Error) {
   if (error instanceof AxiosError) {

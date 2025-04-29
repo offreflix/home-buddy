@@ -3,7 +3,7 @@
 import { CreateProductDialog } from '@/features/products/ui/modal/create-product-dialog'
 import { DeleteProductDialog } from '@/features/products/ui/modal/delete-product-dialog'
 import { ProductMain } from '@/features/products/ui/product-main'
-import { useProductModel } from '@/features/products/ui/product.model'
+import { useProductModel } from '@/features/products/model/product.model'
 import { QuantityDialog } from '@/features/products/ui/modal/quantity-dialog'
 import { UpdateProductDialog } from '@/features/products/ui/update-product-dialog'
 
