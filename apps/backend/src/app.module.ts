@@ -9,6 +9,7 @@ import { StocksModule } from './stocks/stocks.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ScrappingModule } from './scrapping/scrapping.module';
 import { JwtAuthGuard } from './auth/auth.guard';
+import { RecipesModule } from './recipes/recipes.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { JwtAuthGuard } from './auth/auth.guard';
     StocksModule,
     CategoriesModule,
     ScrappingModule,
+    RecipesModule,
   ],
   controllers: [AppController],
   providers: [
