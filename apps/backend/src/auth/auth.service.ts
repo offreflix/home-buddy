@@ -6,10 +6,13 @@ import {
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { createHash } from 'crypto';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { RedisService } from '../redis/redis.service';
 import { Response } from 'express';
 import { AuthenticatedUser, AuthRequest } from './auth.controller';
+import { jwtConstants } from './constants';
+import { randomUUID } from 'crypto';
 
 interface GoogleUser {
   email: string;
@@ -54,7 +57,7 @@ export class AuthService {
   async signUp(
     createUserDto: CreateUserDto,
   ): Promise<{ access_token: string; refresh_token: string }> {
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
 
     const existingUsername = await this.usersService.findByUsername(
       createUserDto.username,
@@ -84,25 +87,36 @@ export class AuthService {
   }
 
   private async generateTokens(user: AuthenticatedUser) {
-    const payload = { username: user.username, sub: user.id };
+    const jti = randomUUID();
+    const payload = { username: user.username, sub: user.id, jti };
 
     const accessToken = this.jwtService.sign(payload, {
       expiresIn: '15m',
+      secret: jwtConstants.accessSecret,
     });
     const refreshToken = this.jwtService.sign(payload, {
       expiresIn: '7d',
+      secret: jwtConstants.refreshSecret,
     });
 
+    const hashToken = (token: string) =>
+      createHash('sha256').update(token).digest('hex');
+
+    const accessTokenHash = hashToken(accessToken);
+    const refreshTokenHash = hashToken(refreshToken);
+
     await this.redisService.setToken(
-      `accessToken:${user.id.toString()}`,
-      accessToken,
+      `accessToken:${jti}`,
+      accessTokenHash,
       900,
     );
     await this.redisService.setToken(
-      `refreshToken:${user.id.toString()}`,
-      refreshToken,
+      `refreshToken:${jti}`,
+      refreshTokenHash,
       604800,
     );
+
+    await this.redisService.addUserSession(user.id, jti);
 
     return {
       access_token: accessToken,
@@ -110,9 +124,23 @@ export class AuthService {
     };
   }
 
-  async logout(userId: number): Promise<void> {
-    await this.redisService.removeToken(`accessToken:${userId.toString()}`);
-    await this.redisService.removeToken(`refreshToken:${userId.toString()}`);
+  async logout(userId: number, accessToken: string): Promise<void> {
+    if (!accessToken) return;
+
+    try {
+      const decoded = this.jwtService.verify(accessToken, {
+        secret: jwtConstants.accessSecret,
+        ignoreExpiration: true,
+      });
+
+      const jti = decoded?.jti;
+
+      if (jti) {
+        await this.redisService.removeToken(`accessToken:${jti}`);
+        await this.redisService.removeToken(`refreshToken:${jti}`);
+        await this.redisService.removeUserSession(userId, jti);
+      }
+    } catch {}
   }
 
   async getProfile(userId: number) {
@@ -129,15 +157,22 @@ export class AuthService {
     refreshToken: string,
   ): Promise<{ access_token: string; refresh_token: string }> {
     try {
-      const decoded = this.jwtService.verify(refreshToken);
+      const decoded = this.jwtService.verify(refreshToken, {
+        secret: jwtConstants.refreshSecret,
+      });
 
       const userId = decoded?.sub;
+      const jti = decoded?.jti;
 
       const redisToken = await this.redisService.getToken(
-        `refreshToken:${userId.toString()}`,
+        `refreshToken:${jti}`,
       );
 
-      if (redisToken !== refreshToken) {
+      const refreshTokenHash = createHash('sha256')
+        .update(refreshToken)
+        .digest('hex');
+
+      if (redisToken !== refreshTokenHash) {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
@@ -213,7 +248,7 @@ export class AuthService {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         maxAge: 15 * 60 * 1000, // 15 minutos
-        sameSite: 'lax',
+        sameSite: 'strict',
         path: '/',
       });
 
@@ -221,7 +256,7 @@ export class AuthService {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
-        sameSite: 'lax',
+        sameSite: 'strict',
         path: '/',
       });
 

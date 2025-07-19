@@ -32,6 +32,7 @@ export interface AuthenticatedUser {
   googleId: string | null;
   createdAt: Date;
   updatedAt: Date;
+  jti?: string;
 }
 
 export interface AuthRequest extends Request {
@@ -68,7 +69,12 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(@Request() req: AuthRequest) {
-    await this.authService.logout(req.user.id);
+    const authHeader = (req.headers as any)['authorization'];
+    const token =
+      authHeader?.split(' ')[1] || (req as any).cookies?.access_token;
+
+    await this.authService.logout(req.user.id, token);
+
     return { message: 'Logged out successfully' };
   }
 

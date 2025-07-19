@@ -16,7 +16,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
     PassportModule,
     JwtModule.register({
       global: true,
-      secret: jwtConstants.secret,
+      secret: jwtConstants.accessSecret,
       signOptions: { expiresIn: '15m' },
     }),
     RedisModule,

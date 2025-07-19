@@ -28,7 +28,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     done: VerifyCallback,
   ): Promise<any> {
     try {
-      this.logger.log(`Google profile received: ${profile.id}`);
+      this.logger.log('Google profile received');
       const { name, emails, photos } = profile;
 
       if (!emails || emails.length === 0) {
@@ -45,10 +45,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         googleId: profile.id,
       };
 
-      this.logger.log(`Processing Google user: ${userData.email}`);
+      this.logger.log('Processing Google user');
 
       const user = await this.authService.validateOrCreateGoogleUser(userData);
-      this.logger.log(`User processed: ${user.id}`);
+      this.logger.log('Google user processed');
 
       done(null, user);
     } catch (error: unknown) {

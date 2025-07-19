@@ -34,7 +34,7 @@ async function setAuthCookies(access_token: string, refresh_token: string) {
       value,
       httpOnly: true,
       secure: true,
-      sameSite: 'none',
+      sameSite: 'lax',
       path: '/',
       domain: process.env.NEXT_PUBLIC_COOKIE_DOMAIN || '',
       expires,
@@ -120,7 +120,7 @@ async function clearAuthCookies(): Promise<void> {
     expires: new Date(0),
     httpOnly: true,
     secure: true,
-    sameSite: 'none',
+    sameSite: 'lax',
     domain: process.env.NEXT_PUBLIC_COOKIE_DOMAIN || '',
   })
 
@@ -131,7 +131,7 @@ async function clearAuthCookies(): Promise<void> {
     expires: new Date(0),
     httpOnly: true,
     secure: true,
-    sameSite: 'none',
+    sameSite: 'lax',
     domain: process.env.NEXT_PUBLIC_COOKIE_DOMAIN || '',
   })
 }

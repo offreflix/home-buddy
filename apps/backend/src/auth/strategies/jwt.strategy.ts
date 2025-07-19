@@ -4,6 +4,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { jwtConstants } from '../constants';
 import { Request } from 'express';
 import { RedisService } from '../../redis/redis.service';
+import { createHash } from 'crypto';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -16,7 +17,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         },
       ]),
       ignoreExpiration: false,
-      secretOrKey: jwtConstants.secret,
+      secretOrKey: jwtConstants.accessSecret,
       passReqToCallback: true,
     });
   }
@@ -31,13 +32,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     const redisToken = await this.redisService.getToken(
-      `accessToken:${payload.sub.toString()}`,
+      `accessToken:${payload.jti}`,
     );
 
-    if (redisToken !== token) {
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+
+    if (redisToken !== tokenHash) {
       throw new UnauthorizedException();
     }
 
-    return { id: payload.sub, username: payload.username };
+    return { id: payload.sub, username: payload.username, jti: payload.jti };
   }
 }

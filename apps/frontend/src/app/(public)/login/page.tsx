@@ -93,9 +93,6 @@ export default function Page() {
       }
 
       if (access_token) {
-        localStorage.setItem('access_token', access_token)
-        localStorage.setItem('refresh_token', refresh_token)
-
         fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/verify-cookie`, {
           method: 'GET',
           credentials: 'include',

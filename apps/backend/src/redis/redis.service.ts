@@ -17,4 +17,12 @@ export class RedisService {
   async removeToken(key: string): Promise<void> {
     await this.redis.del(`auth:${key}`);
   }
+
+  async addUserSession(userId: number, jti: string): Promise<void> {
+    await this.redis.sadd(`auth:userSessions:${userId}`, jti);
+  }
+
+  async removeUserSession(userId: number, jti: string): Promise<void> {
+    await this.redis.srem(`auth:userSessions:${userId}`, jti);
+  }
 }
