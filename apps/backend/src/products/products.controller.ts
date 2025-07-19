@@ -8,7 +8,7 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
-import { ProductsService } from './products.service';
+import { MostConsumedResult, ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { User } from 'src/users/user.decorator';
@@ -16,7 +16,10 @@ import { UserEntity } from 'src/users/entities/user.entity';
 import { UpdateProductStockDto } from './dto/update-product-stock.dto';
 import { MostConsumedDto } from './dto/most-consumed.dto';
 import { GetStockMovementsDto } from './dto/get-stock-movements.dto';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiTags('products')
+@ApiBearerAuth()
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
@@ -47,7 +50,10 @@ export class ProductsController {
   }
 
   @Get('most-consumed')
-  mostConsumed(@Query() query: MostConsumedDto, @User() user: UserEntity) {
+  async mostConsumed(
+    @Query() query: MostConsumedDto,
+    @User() user: UserEntity,
+  ): Promise<MostConsumedResult | []> {
     return this.productsService.mostConsumed(query, user);
   }
 

@@ -35,12 +35,7 @@ const registerSchema = z
   .object({
     username: z.string().min(1, 'Usuário é obrigatório'),
     email: z.string().email('Email inválido'),
-    password: z
-      .string()
-      .regex(
-        passwordRegex,
-        'A senha deve conter pelo menos 8 caracteres, incluindo maiúsculas, minúsculas, números e caracteres especiais',
-      ),
+    password: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres'),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {

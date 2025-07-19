@@ -12,13 +12,22 @@ import { UserEntity } from 'src/users/entities/user.entity';
 import { UpdateProductStockDto } from './dto/update-product-stock.dto';
 import { MostConsumedDto } from './dto/most-consumed.dto';
 import { GetStockMovementsDto } from './dto/get-stock-movements.dto';
+import { Unit } from '@prisma/client';
 
+export interface MostConsumedResult {
+  product: string;
+  quantity: number;
+  unit: Unit;
+  percentageChange: number;
+}
 @Injectable()
 export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
   async create(createProductDto: CreateProductDto, user: UserEntity) {
     try {
+      console.log('createProductDto', createProductDto);
+      console.log('user', user);
       return await this.prisma.$transaction(async (trx) => {
         const categoryExists = await trx.category.findFirst({
           where: { id: createProductDto.categoryId },
@@ -122,7 +131,10 @@ export class ProductsService {
     return filteredProducts;
   }
 
-  async mostConsumed(dto: MostConsumedDto, user: UserEntity) {
+  async mostConsumed(
+    dto: MostConsumedDto,
+    user: UserEntity,
+  ): Promise<MostConsumedResult | []> {
     const { month, year } = dto;
 
     const startDate = new Date(year, month - 1, 1);
@@ -143,7 +155,7 @@ export class ProductsService {
         });
 
         if (mostConsumed.length === 0) {
-          throw new NotFoundException('Nenhum produto encontrado neste mês.');
+          return [];
         }
 
         const productId = mostConsumed[0].productId;
@@ -225,9 +237,14 @@ export class ProductsService {
     return result;
   }
 
-  async getMovementsByDate(dto: GetStockMovementsDto, user: UserEntity) {
+  async getMovementsByDate(
+    dto: GetStockMovementsDto,
+    user: UserEntity,
+  ): Promise<{ date: string; IN: number; OUT: number }[] | []> {
     const startDate = new Date(dto.startDate);
     const endDate = new Date(dto.endDate);
+    console.log('startDate', startDate);
+    console.log('endDate', endDate);
 
     const movements = await this.prisma.stockMovement.findMany({
       where: {
@@ -245,9 +262,7 @@ export class ProductsService {
     });
 
     if (!movements.length) {
-      throw new NotFoundException(
-        'Nenhum movimento encontrado para o período informado.',
-      );
+      return [];
     }
 
     const groupedData: Record<
@@ -256,7 +271,7 @@ export class ProductsService {
     > = {};
 
     movements.forEach((movement) => {
-      const dateKey = movement.createdAt.toISOString().split('T')[0];
+      const dateKey = movement.createdAt.toISOString();
       if (!groupedData[dateKey]) {
         groupedData[dateKey] = { date: dateKey, IN: 0, OUT: 0 };
       }

@@ -28,6 +28,30 @@ export class CategoriesService {
     return category;
   }
 
+  async createMany(createCategoryDto: CreateCategoryDto[]) {
+    const categoryNames = createCategoryDto.map((c) => c.name);
+
+    const categoryAlreadyExists = await this.prisma.category.findMany({
+      where: {
+        name: { in: categoryNames },
+      },
+      select: { name: true },
+    });
+
+    if (categoryAlreadyExists.length > 0) {
+      const existingNames = categoryAlreadyExists.map((c) => c.name);
+      throw new UnprocessableEntityException(
+        `As seguintes categorias já existem: ${existingNames.join(', ')}`,
+      );
+    }
+
+    const categories = await this.prisma.category.createMany({
+      data: createCategoryDto,
+    });
+
+    return categories;
+  }
+
   findAll() {
     const categories = this.prisma.category.findMany();
 
