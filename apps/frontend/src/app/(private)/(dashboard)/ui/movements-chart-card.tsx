@@ -13,7 +13,7 @@ import {
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 import React from 'react'
 import { Movements } from '@/entities/product/types'
-import { LoadingProductCard } from '@/app/(private)/_products'
+import { LoadingProductCard } from '@/app/(private)/(dashboard)/_products'
 import { apiClient } from '@/api/client'
 import dayjs from 'dayjs'
 import { Skeleton } from '@/components/ui/skeleton'

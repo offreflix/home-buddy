@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { useModalStore } from '../../stores/modal.store'
+import { useModalStore } from '../../modal.store'
 
 export function DeleteProductDialog() {
   const { selectedProductId, toggleDeleteModal, isDeleteModalOpen } =

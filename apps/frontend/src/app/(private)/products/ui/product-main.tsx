@@ -15,8 +15,8 @@ import ProductCard from './components/product-card'
 import ProductTable from './components/product-table'
 import ProductCardSkeleton from './components/product-card-skeleton'
 import { DataTableSkeleton } from './components/product-table-skeleton'
-import { useProductModel } from '../model/product.model'
-import { useModalStore } from '../stores/modal.store'
+import { useProductModel } from '../product.model'
+import { useModalStore } from '../modal.store'
 
 type ProductViewProps = ReturnType<typeof useProductModel>
 

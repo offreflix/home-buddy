@@ -24,12 +24,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { MovementType, useModalStore } from '../../stores/modal.store'
+import { MovementType, useModalStore } from '../../modal.store'
 import { transformProductToFormSchema } from './columns'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { EmptyState } from '@/components/empty-state'
-import { Product } from '../../model/products.type'
+import { Product } from '../../products.type'
 
 type Props = {
   data: Array<Product> | undefined

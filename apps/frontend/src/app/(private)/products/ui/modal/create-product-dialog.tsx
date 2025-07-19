@@ -25,9 +25,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useModalStore } from '../../stores/modal.store'
+import { useModalStore } from '../../modal.store'
 import { useCreateProductModel } from './create-product.model'
-import { Category, Unit } from '../../model/products.type'
+import { Category, Unit } from '../../products.type'
 
 export function CreateProductDialog() {
   const { isAddModalOpen, toggleAddModal } = useModalStore()

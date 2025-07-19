@@ -1,7 +1,5 @@
-'use server'
+import { ProductsView } from "./products.view";
 
-import { ProductView } from './product.view'
-
-export default async function ProductPage() {
-  return <ProductView />
+export default function ProductsPage() {
+  return <ProductsView />
 }

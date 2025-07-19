@@ -9,10 +9,10 @@ import {
   VisibilityState,
 } from '@tanstack/react-table'
 import { useState } from 'react'
-import { ViewMode } from '../ui/products.type'
 import { useQuery } from '@tanstack/react-query'
-import { columns } from '../ui/components/columns'
+import { columns } from './ui/components/columns'
 import { apiClient } from '@/api/client'
+import { ViewMode } from './products.type'
 
 export const useProductModel = () => {
   const [sorting, setSorting] = useState<SortingState>([])

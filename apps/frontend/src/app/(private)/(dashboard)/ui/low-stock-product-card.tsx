@@ -9,9 +9,9 @@ import {
 } from '@/components/ui/card'
 import { AlertTriangle } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { Product } from '@/features/products/model/types'
+import { Product } from '@/app/(private)/products/products.type'
 import React from 'react'
-import { LoadingProductCard } from '@/app/(private)/_products'
+import { LoadingProductCard } from '@/app/(private)/(dashboard)/_products'
 import { apiClient } from '@/api/client'
 
 export function LowStockProductsCard() {

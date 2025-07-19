@@ -12,7 +12,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import React from 'react'
 import { MostConsumed } from '@/entities/product/types'
-import { LoadingProductCard } from '@/app/(private)/_products'
+import { LoadingProductCard } from '@/app/(private)/(dashboard)/_products'
 import { apiClient } from '@/api/client'
 
 function PercentageChange({ value }: { value?: number }) {

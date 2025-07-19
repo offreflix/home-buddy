@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { FormSchema } from '../ui/update-product-dialog'
+import { FormSchema } from './ui/update-product-dialog'
 
 type ProductModalStore = {
   isAddModalOpen: boolean

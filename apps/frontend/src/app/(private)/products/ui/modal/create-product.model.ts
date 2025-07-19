@@ -4,10 +4,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { AxiosError } from 'axios'
 import { toast } from 'sonner'
 import { apiClient } from '@/api/client'
-import { useModalStore } from '../../stores/modal.store'
-import { CreateProductSchema } from '../../model/products.type'
+import { useModalStore } from '../../modal.store'
+import { CreateProductSchema } from '../../products.type'
 import { CREATE_PRODUCTS_MESSAGES } from '../products.messages'
-import { createProductSchema } from '../../model/product.schema'
+import { createProductSchema } from '../../product.schema'
 
 export const useCreateProductModel = () => {
   const { toggleAddModal } = useModalStore()

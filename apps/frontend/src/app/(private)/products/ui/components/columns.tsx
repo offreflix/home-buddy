@@ -13,9 +13,9 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { MovementType, useModalStore } from '../../stores/modal.store'
+import { MovementType, useModalStore } from '../../modal.store'
 import { FormSchema } from '../update-product-dialog'
-import { Product, Unit } from '../../model/products.type'
+import { Product, Unit } from '../../products.type'
 
 export const columns: ColumnDef<Product>[] = [
   {

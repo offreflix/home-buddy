@@ -19,6 +19,8 @@ import {
 } from './auth.guard';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { SignInDto } from 'src/users/dto/sign-in.dto';
 
 export interface AuthenticatedUser {
   id: number;
@@ -36,11 +38,13 @@ export interface AuthRequest extends Request {
   user: AuthenticatedUser;
 }
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Public()
+  @ApiBody({ type: SignInDto })
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('login')
