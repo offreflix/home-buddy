@@ -51,9 +51,6 @@ export class TrackingService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  /**
-   * Cria um log de operação principal
-   */
   async createOperationLog(data: CreateOperationLogData) {
     try {
       const operationLog = await this.prisma.operationLog.create({
@@ -75,9 +72,6 @@ export class TrackingService {
     }
   }
 
-  /**
-   * Atualiza o status de uma operação
-   */
   async updateOperationStatus(
     jobId: string,
     status: OperationStatus,
@@ -123,9 +117,6 @@ export class TrackingService {
     }
   }
 
-  /**
-   * Cria um log de scraping
-   */
   async createScrapingLog(data: CreateScrapingLogData) {
     try {
       const scrapingLog = await this.prisma.scrapingLog.create({
@@ -150,9 +141,6 @@ export class TrackingService {
     }
   }
 
-  /**
-   * Cria um log de matching
-   */
   async createMatchingLog(data: CreateMatchingLogData) {
     try {
       const matchingLog = await this.prisma.matchingLog.create({
@@ -178,9 +166,6 @@ export class TrackingService {
     }
   }
 
-  /**
-   * Cria um log de LLM
-   */
   async createLLMLog(data: CreateLLMLogData) {
     try {
       const llmLog = await this.prisma.lLMLog.create({
@@ -210,9 +195,6 @@ export class TrackingService {
     }
   }
 
-  /**
-   * Busca logs de operação com filtros
-   */
   async getOperationLogs(filters: {
     userId?: number;
     operationType?: OperationType;
@@ -256,9 +238,6 @@ export class TrackingService {
     }
   }
 
-  /**
-   * Busca um log de operação específico por JobID
-   */
   async getOperationLogByJobId(jobId: string) {
     try {
       const operationLog = await this.prisma.operationLog.findUnique({
@@ -280,9 +259,6 @@ export class TrackingService {
     }
   }
 
-  /**
-   * Estatísticas de operações
-   */
   async getOperationStats(userId?: number, days: number = 30) {
     try {
       const startDate = new Date();
@@ -301,7 +277,6 @@ export class TrackingService {
         _avg: { duration: true },
       });
 
-      // Estatísticas de custos da LLM
       const llmCosts = await this.prisma.lLMLog.aggregate({
         where: {
           operation: {

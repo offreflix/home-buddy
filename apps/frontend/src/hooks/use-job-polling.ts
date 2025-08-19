@@ -65,18 +65,14 @@ export const useJobPolling = (jobId: string | null): UseJobPollingReturn => {
         const jobStatus = await fetchJobStatus(id)
         setStatus(jobStatus)
 
-        // Polling adaptativo baseado no estado
         if (jobStatus.state === 'active') {
-          // Durante processamento: poll a cada 2 segundos
           setTimeout(() => pollJobStatus(id), 2000)
         } else if (jobStatus.state === 'waiting') {
-          // Na fila: poll a cada 5 segundos
           setTimeout(() => pollJobStatus(id), 5000)
         } else if (
           jobStatus.state === 'completed' ||
           jobStatus.state === 'failed'
         ) {
-          // Job finalizado: parar polling
           setIsLoading(false)
           return
         }
@@ -84,7 +80,6 @@ export const useJobPolling = (jobId: string | null): UseJobPollingReturn => {
         setError(err instanceof Error ? err.message : 'Erro desconhecido')
         setIsLoading(false)
 
-        // Em caso de erro: tentar novamente em 10 segundos
         setTimeout(() => pollJobStatus(id), 10000)
       }
     },
@@ -99,13 +94,9 @@ export const useJobPolling = (jobId: string | null): UseJobPollingReturn => {
       return
     }
 
-    // Iniciar polling
     pollJobStatus(jobId)
 
-    // Cleanup: parar polling quando componente desmontar
-    return () => {
-      // O timeout será limpo automaticamente quando o componente desmontar
-    }
+    return () => {}
   }, [jobId, pollJobStatus])
 
   return {
