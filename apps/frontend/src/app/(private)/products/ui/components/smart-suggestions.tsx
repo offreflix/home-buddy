@@ -371,7 +371,7 @@ export function SmartSuggestions({
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-10 h-10 bg-white/50 rounded-full">
+                    <div className="flex items-center justify-center w-10 h-10 bg-background rounded-full">
                       {getInsightIcon(insight.type)}
                     </div>
                     <div className="text-left">
@@ -389,7 +389,7 @@ export function SmartSuggestions({
                     >
                       {getPriorityBadge(insight.priority).text}
                     </span>
-                    <span className="text-xs px-2 py-1 bg-white/50 rounded-full">
+                    <span className="text-xs px-2 py-1 bg-background rounded-full">
                       {relatedProducts.length} produto
                       {relatedProducts.length > 1 ? 's' : ''}
                     </span>
@@ -404,7 +404,7 @@ export function SmartSuggestions({
 
               {isExpanded && (
                 <div className="ml-4 space-y-3">
-                  <div className="p-3 bg-white/50 rounded-lg border">
+                  <div className="p-3 bg-background rounded-lg border">
                     <div className="space-y-2 text-sm">
                       <div className="flex items-start gap-2">
                         <span className="text-blue-600 dark:text-blue-400">
@@ -437,7 +437,7 @@ export function SmartSuggestions({
                         {relatedProducts.slice(0, 3).map((product) => (
                           <div
                             key={product.id}
-                            className="flex items-center justify-between p-2 bg-white border rounded text-sm"
+                            className="flex items-center justify-between p-2 bg-background border rounded-lg text-sm"
                           >
                             <div className="flex items-center gap-2">
                               <div className="w-2 h-2 bg-current rounded-full opacity-50"></div>
