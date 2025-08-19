@@ -23,7 +23,7 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, document);
-  
+
   const logger = new Logger('NestApplication');
 
   const port = process.env.PORT ?? 3000;

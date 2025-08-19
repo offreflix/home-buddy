@@ -10,6 +10,7 @@ import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { InternalGuard } from './internal.guard';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
     LocalStrategy,
     JwtStrategy,
     GoogleStrategy,
+    InternalGuard,
   ],
   exports: [AuthService],
 })

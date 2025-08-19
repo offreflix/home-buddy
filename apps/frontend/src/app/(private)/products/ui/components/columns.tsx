@@ -3,6 +3,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { ArrowUpDown, Minus, MoreHorizontal, Plus } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,8 +17,31 @@ import { Badge } from '@/components/ui/badge'
 import { MovementType, useModalStore } from '../../modal.store'
 import { FormSchema } from '../update-product-dialog'
 import { Product, Unit } from '../../products.type'
+import { StockStatusBadge } from './stock-status-badge'
 
 export const columns: ColumnDef<Product>[] = [
+  {
+    id: 'select',
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && 'indeterminate')
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Selecionar todos"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Selecionar linha"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: 'name',
     header: ({ column }) => (
@@ -61,7 +85,14 @@ export const columns: ColumnDef<Product>[] = [
 
       return (
         <div className="flex items-center space-x-2 pl-4">
-          <div className="w-[100px] space-y-1">
+          <div className="w-[120px] space-y-1">
+            <div className="flex items-center gap-2 mb-1">
+              <StockStatusBadge
+                currentQuantity={stock.currentQuantity}
+                desiredQuantity={stock.desiredQuantity}
+                showIcon={false}
+              />
+            </div>
             <Progress
               value={Math.min(
                 (stock.currentQuantity / stock.desiredQuantity) * 100,

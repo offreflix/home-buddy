@@ -9,56 +9,100 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
 
 import ProductCard from './components/product-card'
 import ProductTable from './components/product-table'
 import ProductCardSkeleton from './components/product-card-skeleton'
 import { DataTableSkeleton } from './components/product-table-skeleton'
+import { AdvancedFilters } from './components/advanced-filters'
+import { BulkActions } from './components/bulk-actions'
+import { SmartSuggestions } from './components/smart-suggestions'
 import { useProductModel } from '../product.model'
 import { useModalStore } from '../modal.store'
 
 type ProductViewProps = ReturnType<typeof useProductModel>
 
 export function ProductMain(props: ProductViewProps) {
-  const { table, handleViewMode, viewMode, productsQuery } = props
+  const {
+    table,
+    handleViewMode,
+    viewMode,
+    productsQuery,
+    filters,
+    handleFiltersChange,
+    handleClearFilters,
+    filteredProducts,
+    selectedProducts,
+    allSelected,
+    handleSelectAll,
+    handleDeselectAll,
+    handleBulkDelete,
+    handleBulkCategoryChange,
+    handleBulkExport,
+  } = props
   const { toggleAddModal } = useModalStore()
 
-  return (
-    <div className="w-full flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <p className="text-lg font-bold">
-          Produtos
-          {table.getIsSomePageRowsSelected() && (
-            <span className="text-sm text-muted-foreground">
-              {' '}
-              - {table.getFilteredSelectedRowModel().rows.length} selecionado(s)
-            </span>
-          )}
-        </p>
+  const handleQuickRestock = (productId: number, suggestedQuantity: number) => {
+    console.log('Reposição rápida:', productId, suggestedQuantity)
+  }
 
-        <Button onClick={toggleAddModal}>
-          <PlusCircle />
+  return (
+    <div className="w-full flex flex-col gap-4 pb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col">
+          <p className="text-lg font-bold">
+            Produtos
+            {table.getIsSomePageRowsSelected() && (
+              <span className="text-sm text-muted-foreground">
+                {' '}
+                - {table.getFilteredSelectedRowModel().rows.length}{' '}
+                selecionado(s)
+              </span>
+            )}
+          </p>
+          <span className="text-sm text-muted-foreground">
+            {filteredProducts.length} produto
+            {filteredProducts.length !== 1 ? 's' : ''}
+            {productsQuery.data &&
+              filteredProducts.length !== productsQuery.data.length &&
+              ` de ${productsQuery.data.length} total`}
+          </span>
+        </div>
+
+        <Button onClick={toggleAddModal} className="w-full sm:w-auto">
+          <PlusCircle className="h-4 w-4" />
           Adicionar Produto
         </Button>
       </div>
 
-      <div className="flex items-center justify-between">
-        <Input
-          placeholder="Filtrar nome..."
-          value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
-          onChange={(event) =>
-            table.getColumn('name')?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
+      {/* Filtros Avançados */}
+      <AdvancedFilters
+        filters={filters}
+        onFiltersChange={handleFiltersChange}
+        onClearFilters={handleClearFilters}
+      />
 
-        <div className="flex items-center gap-2">
+      {/* Ações em Massa - apenas para modo tabela */}
+      {viewMode === 'table' && (
+        <BulkActions
+          selectedProducts={selectedProducts}
+          onSelectAll={handleSelectAll}
+          onDeselectAll={handleDeselectAll}
+          onBulkDelete={handleBulkDelete}
+          onBulkCategoryChange={handleBulkCategoryChange}
+          onBulkExport={handleBulkExport}
+          totalProducts={filteredProducts.length}
+          allSelected={allSelected}
+        />
+      )}
+
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-2 order-2 sm:order-1">
           {viewMode === 'table' && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  Colunas <ChevronDown />
+                <Button variant="outline" size="sm">
+                  Colunas <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -82,13 +126,19 @@ export function ProductMain(props: ProductViewProps) {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+        </div>
 
+        <div className="flex items-center gap-2 order-1 sm:order-2">
+          <span className="text-sm text-muted-foreground hidden sm:inline">
+            Visualização:
+          </span>
           <div className="border rounded-lg flex">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => handleViewMode('card')}
               className={`${viewMode === 'card' ? 'bg-accent' : ''}`}
+              title="Visualização em cards"
             >
               <LayoutGrid className="h-4 w-4" />
             </Button>
@@ -97,6 +147,7 @@ export function ProductMain(props: ProductViewProps) {
               size="icon"
               onClick={() => handleViewMode('table')}
               className={`${viewMode === 'table' ? 'bg-accent' : ''}`}
+              title="Visualização em tabela"
             >
               <List className="h-4 w-4" />
             </Button>
@@ -109,10 +160,20 @@ export function ProductMain(props: ProductViewProps) {
 
       {!productsQuery.isLoading &&
         (viewMode === 'card' ? (
-          <ProductCard data={productsQuery.data} />
+          <ProductCard data={filteredProducts} />
         ) : (
           <ProductTable table={table} isLoading={productsQuery.isLoading} />
         ))}
+
+      {/* Insights da Despensa (com alertas integrados) */}
+      {!productsQuery.isLoading && filteredProducts.length > 0 && (
+        <div className="mt-6">
+          <SmartSuggestions
+            products={filteredProducts}
+            onQuickRestock={handleQuickRestock}
+          />
+        </div>
+      )}
     </div>
   )
 }

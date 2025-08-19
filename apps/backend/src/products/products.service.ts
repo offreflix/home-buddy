@@ -91,6 +91,14 @@ export class ProductsService {
     return products;
   }
 
+  async findAllByUserId(userId: number) {
+    return this.prisma.product.findMany({
+      where: { userId },
+      include: { category: true, stock: true, movements: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async findOne(id: number, user: UserEntity) {
     const product = await this.prisma.product.findUnique({
       where: { id, userId: user.id },
@@ -271,7 +279,13 @@ export class ProductsService {
     > = {};
 
     movements.forEach((movement) => {
-      const dateKey = movement.createdAt.toISOString();
+      let dateKey: string;
+      if (dto.groupBy === 'month') {
+        dateKey = movement.createdAt.toISOString().substring(0, 7);
+      } else {
+        dateKey = movement.createdAt.toISOString().split('T')[0];
+      }
+
       if (!groupedData[dateKey]) {
         groupedData[dateKey] = { date: dateKey, IN: 0, OUT: 0 };
       }

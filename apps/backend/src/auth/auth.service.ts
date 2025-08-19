@@ -199,16 +199,19 @@ export class AuthService {
         user = await this.usersService.findByEmail(googleUser.email);
 
         if (user) {
-          return { error: 'user_conflict' };
-          // user = await this.usersService.updateUser({
-          //   where: { id: user.id },
-          //   data: {
-          //     googleId: googleUser.googleId,
-          //     firstName: googleUser.firstName,
-          //     lastName: googleUser.lastName,
-          //     picture: googleUser.picture,
-          //   },
-          // });
+          if (user.password) {
+            return { error: 'user_conflict' };
+          } else {
+            user = await this.usersService.updateUser({
+              where: { id: user.id },
+              data: {
+                googleId: googleUser.googleId,
+                firstName: googleUser.firstName || user.firstName,
+                lastName: googleUser.lastName || user.lastName,
+                picture: googleUser.picture || user.picture,
+              },
+            });
+          }
         } else {
           let username = googleUser.username;
           const existingUsername =
@@ -240,32 +243,85 @@ export class AuthService {
     }
   }
 
+  async linkGoogleAccount(userId: number, googleUser: GoogleUser) {
+    try {
+      const user = await this.usersService.updateUser({
+        where: { id: userId },
+        data: {
+          googleId: googleUser.googleId,
+          firstName: googleUser.firstName,
+          lastName: googleUser.lastName,
+          picture: googleUser.picture,
+        },
+      });
+
+      return {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      };
+    } catch (error) {
+      console.error('Erro ao vincular conta Google:', error);
+      throw error;
+    }
+  }
+
   async googleAuthCallback(req: AuthRequest, res: Response) {
     try {
+      if (req.user && typeof req.user === 'object' && 'error' in req.user) {
+        if (req.user.error === 'user_conflict') {
+          res.send(`
+            <script>
+              window.opener.postMessage(
+                { 
+                  error: 'user_conflict',
+                  message: 'Email já cadastrado com login local. Entre com usuário e senha ou vincule sua conta.' 
+                },
+                '${process.env.FRONTEND_URL}'
+              );
+              window.close();
+            </script>
+          `);
+          return;
+        }
+      }
+
       const tokens = await this.signIn(req.user);
 
-      res.cookie('access_token', tokens.access_token, {
+      const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 15 * 60 * 1000, // 15 minutos
-        sameSite: 'strict',
+        sameSite:
+          process.env.NODE_ENV === 'production'
+            ? ('strict' as const)
+            : ('lax' as const),
         path: '/',
+        domain:
+          process.env.NODE_ENV === 'production'
+            ? process.env.COOKIE_DOMAIN
+            : undefined,
+      };
+
+      res.cookie('access_token', tokens.access_token, {
+        ...cookieOptions,
+        maxAge: 15 * 60 * 1000, // 15 minutos
       });
 
       res.cookie('refresh_token', tokens.refresh_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        ...cookieOptions,
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
-        sameSite: 'strict',
-        path: '/',
       });
 
       res.send(`
         <script>
           window.opener.postMessage(
-            {
-              access_token: '${tokens.access_token}',
-              refresh_token: '${tokens.refresh_token}'
+            { 
+              success: true,
+              user: {
+                id: '${req.user.id}',
+                username: '${req.user.username}',
+                email: '${req.user.email}'
+              }
             },
             '${process.env.FRONTEND_URL}'
           );
@@ -277,7 +333,10 @@ export class AuthService {
       res.send(`
         <script>
           window.opener.postMessage(
-            { error: 'auth_failed' },
+            { 
+              error: 'auth_failed',
+              message: 'Erro interno do servidor. Tente novamente.' 
+            },
             '${process.env.FRONTEND_URL}'
           );
           window.close();

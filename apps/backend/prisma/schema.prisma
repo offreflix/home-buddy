@@ -19,7 +19,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  products Product[]
+  products      Product[]
+  operationLogs OperationLog[]
 }
 
 model Category {
@@ -87,4 +88,95 @@ enum Unit {
   lata
   pacote
   unidade
+}
+
+// Tabelas para tracking de operações
+model OperationLog {
+  id            Int             @id @default(autoincrement())
+  jobId         String          @unique // ID do job do Bull
+  userId        Int?
+  operationType OperationType
+  status        OperationStatus @default(RUNNING)
+  startTime     DateTime        @default(now())
+  endTime       DateTime?
+  duration      Int? // em millisegundos
+  errorMessage  String?
+  metadata      Json? // dados extras específicos da operação
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  user        User?        @relation(fields: [userId], references: [id])
+  scrapingLog ScrapingLog?
+  matchingLog MatchingLog?
+  llmLogs     LLMLog[]
+
+  @@index([jobId])
+  @@index([userId])
+  @@index([operationType])
+  @@index([status])
+}
+
+model ScrapingLog {
+  id           Int      @id @default(autoincrement())
+  operationId  Int      @unique
+  url          String
+  inputData    Json // dados de entrada (URL, parâmetros)
+  outputData   Json? // produtos extraídos
+  httpStatus   Int?
+  responseTime Int? // em millisegundos
+  errorDetails Json? // detalhes específicos do erro de scraping
+  createdAt    DateTime @default(now())
+
+  operation OperationLog @relation(fields: [operationId], references: [id], onDelete: Cascade)
+}
+
+model MatchingLog {
+  id              Int      @id @default(autoincrement())
+  operationId     Int      @unique
+  inputProducts   Json // produtos enviados para matching
+  matcherRequest  Json // request completo enviado ao matcher
+  matcherResponse Json? // response completo do matcher
+  matchCount      Int? // número de matches encontrados
+  unmatchCount    Int? // número de produtos sem match
+  responseTime    Int? // em millisegundos
+  errorDetails    Json? // detalhes específicos do erro de matching
+  createdAt       DateTime @default(now())
+
+  operation OperationLog @relation(fields: [operationId], references: [id], onDelete: Cascade)
+}
+
+model LLMLog {
+  id             Int      @id @default(autoincrement())
+  operationId    Int
+  provider       String   @default("openai") // openai, claude, etc
+  model          String // gpt-4o-mini, etc
+  prompt         String   @db.Text
+  response       String?  @db.Text
+  promptTokens   Int?
+  responseTokens Int?
+  totalTokens    Int?
+  cost           Float? // custo estimado em USD
+  temperature    Float?
+  responseTime   Int? // em millisegundos
+  errorDetails   Json? // detalhes específicos do erro da LLM
+  createdAt      DateTime @default(now())
+
+  operation OperationLog @relation(fields: [operationId], references: [id], onDelete: Cascade)
+
+  @@index([operationId])
+  @@index([provider])
+  @@index([model])
+}
+
+enum OperationType {
+  SCRAPING_ONLY // apenas scraping
+  SCRAPING_MATCHING // scraping + matching
+  MATCHING_ONLY // apenas matching (raro)
+}
+
+enum OperationStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
 }

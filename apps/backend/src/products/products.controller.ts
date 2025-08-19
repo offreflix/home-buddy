@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { MostConsumedResult, ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -17,6 +18,8 @@ import { UpdateProductStockDto } from './dto/update-product-stock.dto';
 import { MostConsumedDto } from './dto/most-consumed.dto';
 import { GetStockMovementsDto } from './dto/get-stock-movements.dto';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { Public } from 'src/auth/auth.guard';
+import { InternalGuard } from 'src/auth/internal.guard';
 
 @ApiTags('products')
 @ApiBearerAuth()
@@ -91,5 +94,12 @@ export class ProductsController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productsService.remove(+id);
+  }
+
+  @Public()
+  @UseGuards(InternalGuard)
+  @Get('internal/:userId')
+  findAllInternal(@Param('userId') userId: string) {
+    return this.productsService.findAllByUserId(+userId);
   }
 }

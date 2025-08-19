@@ -24,8 +24,12 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { login } from '@/features/auth/model/authActions'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Icons } from '@/components/icons'
+import {
+  GoogleAuthManager,
+  getGoogleAuthErrorMessage,
+} from '@/features/auth/model/googleAuth'
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Usuário é obrigatório'),
@@ -37,6 +41,8 @@ type LoginSchema = z.infer<typeof loginSchema>
 export default function Page() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const googleAuthManagerRef = useRef<GoogleAuthManager | null>(null)
+
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -44,6 +50,14 @@ export default function Page() {
       password: '',
     },
   })
+
+  useEffect(() => {
+    googleAuthManagerRef.current = new GoogleAuthManager()
+
+    return () => {
+      googleAuthManagerRef.current?.destroy()
+    }
+  }, [])
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     const formData = new FormData()
@@ -69,50 +83,47 @@ export default function Page() {
     }
   }
 
-  const openGoogleLogin = () => {
+  const openGoogleLogin = async () => {
+    if (!googleAuthManagerRef.current) return
+
     setLoading(true)
 
-    const popup = window.open(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/google`,
-      '_blank',
-      'width=500,height=600',
-    )
+    googleAuthManagerRef.current.openGoogleLogin({
+      onSuccess: async (user) => {
+        toast.success(`Bem-vindo, ${user?.username || 'usuário'}!`)
 
-    const listener = (event: MessageEvent) => {
-      if (event.origin !== process.env.NEXT_PUBLIC_API_BASE_URL) return
+        const cookiesValid = await googleAuthManagerRef.current?.verifyCookies()
 
-      const { access_token, refresh_token, error } = event.data
+        if (cookiesValid) {
+          router.push('/')
+        } else {
+          toast.error(
+            'Erro ao verificar autenticação. Tente fazer login novamente.',
+          )
+          setLoading(false)
+        }
+      },
 
-      if (error) {
-        console.error('Erro no login:', error)
-        toast.error('Falha ao entrar com o Google. Tente novamente.')
-        popup?.close()
-        window.removeEventListener('message', listener)
+      onError: (error, message) => {
+        const errorMessage = getGoogleAuthErrorMessage(error, message)
+
+        if (error === 'user_conflict') {
+          toast.error(errorMessage)
+          // TODO: Implementar modal para vincular conta
+        } else if (error === 'cancelled') {
+        } else {
+          toast.error(errorMessage)
+        }
+
         setLoading(false)
-        return
-      }
+      },
 
-      if (access_token) {
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/verify-cookie`, {
-          method: 'GET',
-          credentials: 'include',
-        })
-          .then(() => {
-            window.location.href = '/'
-          })
-          .catch(() => {
-            toast.error('Erro ao verificar cookie.')
-            setLoading(false)
-          })
-      } else {
+      onCancel: () => {
         setLoading(false)
-      }
+      },
 
-      popup?.close()
-      window.removeEventListener('message', listener)
-    }
-
-    window.addEventListener('message', listener)
+      timeout: 60000,
+    })
   }
 
   return (

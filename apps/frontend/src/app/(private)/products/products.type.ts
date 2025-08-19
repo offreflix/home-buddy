@@ -9,6 +9,15 @@ export type ViewMode = 'card' | 'table'
 
 export type Status = 'success' | 'error' | 422
 
+export type StockStatus = 'critical' | 'low' | 'adequate' | 'high'
+
+export interface ProductFilters {
+  search: string
+  categoryId: string
+  stockStatus: string
+  unit: string
+}
+
 export type CreateResult = {
   status: Status
   message: string

@@ -16,6 +16,7 @@ import {
   ShoppingBasket,
   Sparkles,
   User,
+  Upload,
 } from 'lucide-react'
 
 import {
@@ -59,6 +60,11 @@ const items = [
     title: 'Produtos',
     url: '/products',
     icon: ShoppingBasket,
+  },
+  {
+    title: 'Scraping',
+    url: '/scraping',
+    icon: Upload,
   },
 ]
 

@@ -8,13 +8,15 @@ import {
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table'
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useState, useMemo } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { columns } from './ui/components/columns'
 import { apiClient } from '@/api/client'
-import { ViewMode } from './products.type'
+import { ViewMode, ProductFilters, Product } from './products.type'
+import { filterProductsByStock } from './utils/stock-utils'
 
 export const useProductModel = () => {
+  const queryClient = useQueryClient()
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -22,14 +24,52 @@ export const useProductModel = () => {
   const [viewMode, setViewMode] = useState<ViewMode | null>(
     (localStorage.getItem('viewMode') as ViewMode) || 'table',
   )
+  const [filters, setFilters] = useState<ProductFilters>({
+    search: '',
+    categoryId: 'all',
+    stockStatus: 'all',
+    unit: 'all',
+  })
 
   const productsQuery = useQuery({
     queryKey: ['products'],
     queryFn: () => apiClient.get('/products').then((res) => res.data),
   })
 
+  const filteredProducts = useMemo(() => {
+    if (!productsQuery.data) return []
+
+    let filtered = productsQuery.data as Product[]
+
+    if (filters.search) {
+      filtered = filtered.filter(
+        (product) =>
+          product.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+          product.description
+            .toLowerCase()
+            .includes(filters.search.toLowerCase()),
+      )
+    }
+
+    if (filters.categoryId !== 'all') {
+      filtered = filtered.filter(
+        (product) => product.categoryId.toString() === filters.categoryId,
+      )
+    }
+
+    if (filters.stockStatus !== 'all') {
+      filtered = filterProductsByStock(filtered, filters.stockStatus)
+    }
+
+    if (filters.unit !== 'all') {
+      filtered = filtered.filter((product) => product.unit === filters.unit)
+    }
+
+    return filtered
+  }, [productsQuery.data, filters])
+
   const table = useReactTable({
-    data: productsQuery.data ?? [],
+    data: filteredProducts,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -52,10 +92,117 @@ export const useProductModel = () => {
     localStorage.setItem('viewMode', mode)
   }
 
+  function handleFiltersChange(newFilters: ProductFilters) {
+    setFilters(newFilters)
+  }
+
+  function handleClearFilters() {
+    setFilters({
+      search: '',
+      categoryId: 'all',
+      stockStatus: 'all',
+      unit: 'all',
+    })
+  }
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (productIds: number[]) =>
+      Promise.all(productIds.map((id) => apiClient.delete(`/products/${id}`))),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      setRowSelection({})
+    },
+  })
+
+  const bulkCategoryChangeMutation = useMutation({
+    mutationFn: ({
+      productIds,
+      categoryId,
+    }: {
+      productIds: number[]
+      categoryId: number
+    }) =>
+      Promise.all(
+        productIds.map((id) =>
+          apiClient.put(`/products/${id}`, { categoryId }),
+        ),
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] })
+      setRowSelection({})
+    },
+  })
+
+  function handleSelectAll() {
+    table.toggleAllPageRowsSelected(true)
+  }
+
+  function handleDeselectAll() {
+    table.toggleAllPageRowsSelected(false)
+    setRowSelection({})
+  }
+
+  function handleBulkDelete(productIds: number[]) {
+    bulkDeleteMutation.mutate(productIds)
+  }
+
+  function handleBulkCategoryChange(productIds: number[], categoryId: number) {
+    bulkCategoryChangeMutation.mutate({ productIds, categoryId })
+  }
+
+  function handleBulkExport(products: Product[]) {
+    const csvData = products.map((product) => ({
+      Nome: product.name,
+      Descrição: product.description,
+      Categoria: product.category.name,
+      Unidade: product.unit,
+      'Quantidade Atual': product.stock.currentQuantity,
+      'Quantidade Desejada': product.stock.desiredQuantity,
+      'Data de Criação': product.createdAt,
+    }))
+
+    const csvContent = [
+      Object.keys(csvData[0]).join(','),
+      ...csvData.map((row) => Object.values(row).join(',')),
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute(
+      'download',
+      `produtos_${new Date().toISOString().split('T')[0]}.csv`,
+    )
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const selectedProducts = filteredProducts.filter((_, index) =>
+    table.getRowModel().rows[index]?.getIsSelected(),
+  )
+
+  const allSelected = table.getIsAllPageRowsSelected()
+
   return {
     table,
     productsQuery,
     viewMode,
     handleViewMode,
+    filters,
+    handleFiltersChange,
+    handleClearFilters,
+    filteredProducts,
+    selectedProducts,
+    allSelected,
+    handleSelectAll,
+    handleDeselectAll,
+    handleBulkDelete,
+    handleBulkCategoryChange,
+    handleBulkExport,
+    bulkDeleteMutation,
+    bulkCategoryChangeMutation,
   }
 }

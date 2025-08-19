@@ -30,6 +30,8 @@ import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { EmptyState } from '@/components/empty-state'
 import { Product } from '../../products.type'
+import { StockStatusBadge } from './stock-status-badge'
+import { shouldShowAlert } from '../../utils/stock-utils'
 
 type Props = {
   data: Array<Product> | undefined
@@ -67,17 +69,24 @@ function ProductCard({ data }: Props) {
             'hover:border-primary/30',
             'transition-all duration-200',
             'shadow-sm backdrop-blur-xl',
+            shouldShowAlert(product) && 'ring-2 ring-red-200 border-red-300',
           )}
         >
           <CardHeader className="pb-2">
             <div className="flex justify-between items-start">
-              <div>
+              <div className="space-y-2">
                 <CardTitle className="text-lg font-semibold mb-1">
                   {product.name}
                 </CardTitle>
-                <Badge variant="secondary" className="text-xs font-medium">
-                  {product.category.name}
-                </Badge>
+                <div className="flex flex-wrap gap-1">
+                  <Badge variant="secondary" className="text-xs font-medium">
+                    {product.category.name}
+                  </Badge>
+                  <StockStatusBadge
+                    currentQuantity={product.stock.currentQuantity}
+                    desiredQuantity={product.stock.desiredQuantity}
+                  />
+                </div>
               </div>
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>

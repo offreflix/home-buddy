@@ -1,4 +1,4 @@
-import { IsDateString } from 'class-validator';
+import { IsDateString, IsOptional, IsIn } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class GetStockMovementsDto {
@@ -9,4 +9,14 @@ export class GetStockMovementsDto {
   @ApiProperty({ example: '2024-01-31' })
   @IsDateString()
   endDate: string;
+
+  @ApiProperty({
+    example: 'day',
+    description: 'Granularidade do agrupamento: day ou month',
+    required: false,
+    enum: ['day', 'month'],
+  })
+  @IsOptional()
+  @IsIn(['day', 'month'])
+  groupBy?: 'day' | 'month' = 'day';
 }

@@ -101,4 +101,13 @@ export class AuthController {
   async googleAuthCallback(@Request() req: AuthRequest, @Res() res: Response) {
     return this.authService.googleAuthCallback(req, res);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('link-google')
+  async linkGoogleAccount(
+    @Request() req: AuthRequest,
+    @Body() googleData: any,
+  ) {
+    return this.authService.linkGoogleAccount(req.user.id, googleData);
+  }
 }

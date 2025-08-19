@@ -11,16 +11,17 @@ export function ProductsView() {
   const { ...methods } = useProductModel()
 
   return (
-    <div className="p-8 flex flex-col gap-4">
+    <div className="flex flex-col min-h-full">
+      {/* Modais */}
       <UpdateProductDialog />
-
       <DeleteProductDialog />
-
       <QuantityDialog />
-
       <CreateProductDialog />
 
-      <ProductMain {...methods} />
+      {/* Conteúdo principal */}
+      <div className="flex-1 p-4 md:p-6 lg:p-8">
+        <ProductMain {...methods} />
+      </div>
     </div>
   )
 }
