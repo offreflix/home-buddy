@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { MostConsumedResult, ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -20,6 +21,11 @@ import { GetStockMovementsDto } from './dto/get-stock-movements.dto';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { Public } from 'src/auth/auth.guard';
 import { InternalGuard } from 'src/auth/internal.guard';
+import {
+  PaginationQueryDto,
+  PaginatedResponseDto,
+} from 'src/common/dto/pagination.dto';
+import { Request } from 'express';
 
 @ApiTags('products')
 @ApiBearerAuth()
@@ -33,8 +39,12 @@ export class ProductsController {
   }
 
   @Get()
-  findAll(@User() user: UserEntity) {
-    return this.productsService.findAll(user);
+  async findAll(
+    @Query() query: PaginationQueryDto,
+    @User() user: UserEntity,
+    @Req() req: Request,
+  ): Promise<PaginatedResponseDto<any>> {
+    return this.productsService.findAll(user, query, req);
   }
 
   @Get('id/:id')

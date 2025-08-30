@@ -63,4 +63,11 @@ export class UsersService {
       },
     });
   }
+
+  async updateLastLogin(userId: number): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { lastLoginAt: new Date() },
+    });
+  }
 }

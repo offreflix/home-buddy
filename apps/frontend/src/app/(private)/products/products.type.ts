@@ -5,7 +5,7 @@ export type CreateProductSchema = z.infer<typeof createProductSchema>
 
 export type QuantitySchema = z.infer<typeof quantitySchema>
 
-export type ViewMode = 'card' | 'table'
+export type ViewMode = 'table' | 'grid'
 
 export type Status = 'success' | 'error' | 422
 
@@ -16,6 +16,72 @@ export interface ProductFilters {
   categoryId: string
   stockStatus: string
   unit: string
+}
+
+export interface Product {
+  id: number
+  name: string
+  description: string | null
+  unit: string
+  categoryId: number
+  userId: number
+  createdAt: string
+  updatedAt: string
+  category: {
+    id: number
+    name: string
+    createdAt: string
+    updatedAt: string
+  }
+  stock: {
+    id: number
+    productId: number
+    currentQuantity: number
+    desiredQuantity: number
+    updatedAt: string
+  } | null
+  movements: Array<{
+    id: number
+    productId: number
+    movementType: string
+    quantity: number
+    description: string | null
+    createdAt: string
+    stockId: number | null
+    updatedAt: string
+  }>
+}
+
+export interface PaginationMeta {
+  page: number
+  perPage: number
+  total: number
+  totalPages: number
+  hasNextPage: boolean
+  hasPrevPage: boolean
+  from: number
+  to: number
+}
+
+export interface PaginationLinks {
+  self: string
+  next: string | null
+  prev: string | null
+  first: string
+  last: string
+}
+
+export interface PaginatedResponse<T> {
+  data: T[]
+  meta: PaginationMeta
+  links: PaginationLinks
+}
+
+export interface PaginationParams {
+  page?: number
+  perPage?: number
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
 }
 
 export type CreateResult = {
@@ -37,19 +103,6 @@ export interface Category {
   name: string
   createdAt: string
   updatedAt: string
-}
-
-export interface Product {
-  id: number
-  name: string
-  description: string
-  unit: string
-  createdAt: string
-  updatedAt: string
-  categoryId: number
-  userId: number
-  category: Category
-  stock: Stock
 }
 
 export interface Stock {

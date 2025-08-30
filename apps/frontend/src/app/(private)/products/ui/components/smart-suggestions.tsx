@@ -333,7 +333,7 @@ export function SmartSuggestions({
       <Card>
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Lightbulb className="h-5 w-5 text-blue-600" />
+            <Lightbulb className="h-5 w-5 text-primary" />
             Insights da sua despensa
           </CardTitle>
           <CardDescription>
@@ -348,7 +348,7 @@ export function SmartSuggestions({
     <Card>
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-lg">
-          <Lightbulb className="h-5 w-5 text-blue-600" />
+          <Lightbulb className="h-5 w-5 text-primary" />
           Insights da sua despensa
         </CardTitle>
         <CardDescription>
@@ -407,9 +407,7 @@ export function SmartSuggestions({
                   <div className="p-3 bg-background rounded-lg border">
                     <div className="space-y-2 text-sm">
                       <div className="flex items-start gap-2">
-                        <span className="text-blue-600 dark:text-blue-400">
-                          💡
-                        </span>
+                        <span className="text-primary">💡</span>
                         <span>
                           <strong>Dica:</strong> {insight.action}
                         </span>

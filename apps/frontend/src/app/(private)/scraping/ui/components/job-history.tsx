@@ -3,14 +3,14 @@
 import { ScrapingJob } from '../../scraping.type'
 
 interface JobHistoryProps {
-  jobStatus: ScrapingJob
+  jobStatus?: ScrapingJob
 }
 
 export function JobHistory({ jobStatus }: JobHistoryProps) {
   return (
     <div className="bg-muted/30 rounded-lg p-4 space-y-3">
       <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-        Histórico
+        Histórico de Jobs
       </h4>
       <div className="space-y-2 text-sm">
         {jobStatus?.timestamp && (
@@ -35,6 +35,13 @@ export function JobHistory({ jobStatus }: JobHistoryProps) {
             <span className="font-mono text-xs">
               {new Date(jobStatus.finishedOn).toLocaleString()}
             </span>
+          </div>
+        )}
+        {!jobStatus && (
+          <div className="text-center py-4">
+            <p className="text-muted-foreground text-sm">
+              Nenhum job executado ainda
+            </p>
           </div>
         )}
       </div>

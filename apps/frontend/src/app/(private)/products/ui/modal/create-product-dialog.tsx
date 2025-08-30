@@ -1,3 +1,5 @@
+'use client'
+
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -16,7 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
+import { Input, NumberInput } from '@/components/ui/input'
 
 import {
   Select,
@@ -24,6 +26,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  NumberSelect,
 } from '@/components/ui/select'
 import { useModalStore } from '../../modal.store'
 import { useCreateProductModel } from './create-product.model'
@@ -85,7 +88,7 @@ export function CreateProductDialog() {
                   <FormItem>
                     <FormLabel>Quantidade Atual</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <NumberInput field={field} />
                     </FormControl>
                     <FormDescription>
                       A quantidade atual do produto em estoque.
@@ -102,7 +105,7 @@ export function CreateProductDialog() {
                   <FormItem>
                     <FormLabel>Quantidade Desejada</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <NumberInput field={field} />
                     </FormControl>
                     <FormDescription>
                       A quantidade desejada do produto em estoque.
@@ -124,7 +127,7 @@ export function CreateProductDialog() {
                     defaultValue={field.value?.toString()}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue />
                       </SelectTrigger>
                     </FormControl>
@@ -150,26 +153,25 @@ export function CreateProductDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Categoria</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value?.toString()}
-                  >
+                  <NumberSelect field={field}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {categoriesQuery?.data?.map((category: Category) => (
-                        <SelectItem
-                          key={category.id}
-                          value={category.id.toString()}
-                        >
-                          {category.name}
-                        </SelectItem>
-                      ))}
+                      {categoriesQuery?.data?.data?.map(
+                        (category: Category) => (
+                          <SelectItem
+                            key={category.id}
+                            value={category.id.toString()}
+                          >
+                            {category.name}
+                          </SelectItem>
+                        ),
+                      )}
                     </SelectContent>
-                  </Select>
+                  </NumberSelect>
                   <FormDescription>A categoria do produto.</FormDescription>
                   <FormMessage />
                 </FormItem>

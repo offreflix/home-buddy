@@ -34,22 +34,10 @@ export function ScrapingMain(props: ScrapingMainProps) {
     handleSelectExistingProduct,
   } = props
 
-  console.log(jobStatus?.result?.data)
-  console.log(jobStatus, hasMatchResult, jobStatus?.matchResult)
-
   return (
-    <div className="w-full flex flex-col gap-6 justify-center items-center">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Scraping de NFC-e</h1>
-          <p className="text-muted-foreground mt-1">
-            Extraia dados de notas fiscais eletrônicas automaticamente
-          </p>
-        </div>
-      </div>
-
-      <div className="grid gap-6 w-6/12">
-        {/* Formulário de Upload */}
+    <div className="space-y-6">
+      {/* Formulário de Scraping */}
+      <div className="w-full max-w-2xl">
         <ScrapingForm
           form={form}
           onSubmit={onSubmit}
@@ -60,24 +48,23 @@ export function ScrapingMain(props: ScrapingMainProps) {
           isCompleted={isCompleted}
           isFailed={isFailed}
         />
+      </div>
 
-        {/* Progresso do Job */}
-        {currentJobId && jobStatus && (
+      {/* Progresso do Job */}
+      {currentJobId && jobStatus && (
+        <div className="w-full max-w-2xl">
           <JobProgress
             jobStatus={jobStatus}
             isPolling={isPolling}
             isCompleted={isCompleted}
             isFailed={isFailed}
           />
-        )}
+        </div>
+      )}
 
-        {/* Result Summary */}
-        {jobStatus && jobStatus.result?.data && (
-          <ResultSummary data={jobStatus.result.data} />
-        )}
-
-        {/* Match Results */}
-        {jobStatus && hasMatchResult && jobStatus.matchResult && (
+      {/* Resultados */}
+      {jobStatus && hasMatchResult && jobStatus.matchResult && (
+        <div className="w-full max-w-4xl">
           <MatchResults
             matchResult={jobStatus.matchResult}
             onAcceptMatch={handleAcceptMatch}
@@ -90,21 +77,14 @@ export function ScrapingMain(props: ScrapingMainProps) {
             isCreatingProduct={createProductMutation?.isPending}
             scrapedData={jobStatus.result?.data}
             availableProducts={productsQuery.data || []}
-            availableCategories={categoriesQuery.data || []}
+            availableCategories={categoriesQuery.data?.data || []}
           />
-        )}
+        </div>
+      )}
 
-        {/* Resultado do Job (apenas se não houver match result) */}
-        {jobStatus &&
-          isCompleted &&
-          jobStatus.result?.success &&
-          jobStatus.result.data &&
-          !hasMatchResult && (
-            <ProductsList products={jobStatus.result.data.products} />
-          )}
-
-        {/* Histórico */}
-        {jobStatus && <JobHistory jobStatus={jobStatus} />}
+      {/* Histórico */}
+      <div className="w-full max-w-4xl">
+        <JobHistory />
       </div>
     </div>
   )

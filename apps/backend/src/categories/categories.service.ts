@@ -7,10 +7,19 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from 'src/prisma.service';
 import { UserEntity } from 'src/users/entities/user.entity';
+import {
+  PaginationQueryDto,
+  PaginationResult,
+} from 'src/common/dto/pagination.dto';
+import { PaginationService } from 'src/common/services/pagination.service';
+import { Request } from 'express';
 
 @Injectable()
 export class CategoriesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private paginationService: PaginationService,
+  ) {}
 
   async create(createCategoryDto: CreateCategoryDto) {
     const categoryAlreadyExists = await this.prisma.category.findFirst({
@@ -52,10 +61,54 @@ export class CategoriesService {
     return categories;
   }
 
-  findAll() {
-    const categories = this.prisma.category.findMany();
+  async findAll(
+    query: PaginationQueryDto,
+    req: Request,
+  ): Promise<PaginationResult<any>> {
+    const paginationOptions =
+      this.paginationService.createPaginationOptions(query);
 
-    return categories;
+    if (paginationOptions.perPage <= 0) {
+      const allCategories = await this.prisma.category.findMany({
+        orderBy: {
+          [paginationOptions.sortBy]: paginationOptions.sortOrder,
+        },
+      });
+
+      return {
+        data: allCategories,
+        meta: {
+          page: 1,
+          perPage: allCategories.length,
+          total: allCategories.length,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPrevPage: false,
+          from: 1,
+          to: allCategories.length,
+        },
+        links: {
+          self: `${req.protocol}://${req.get('host')}${req.path}`,
+          next: null,
+          prev: null,
+          first: `${req.protocol}://${req.get('host')}${req.path}`,
+          last: `${req.protocol}://${req.get('host')}${req.path}`,
+        },
+      };
+    }
+
+    const total = await this.prisma.category.count();
+
+    const categories = await this.prisma.category.findMany({
+      ...this.paginationService.getPrismaPaginationOptions(paginationOptions),
+    });
+
+    return this.paginationService.createPaginatedResponse(
+      categories,
+      total,
+      paginationOptions,
+      req,
+    );
   }
 
   async findOne(id: number, user: UserEntity) {

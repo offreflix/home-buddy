@@ -5,13 +5,14 @@ export const createProductSchema = z.object({
   name: z.string().nonempty('Nome é obrigatório'),
   description: z.string().optional(),
   unit: z.nativeEnum(Unit),
-  categoryId: z.coerce.number().int({ message: 'Categoria inválida' }),
-  currentQuantity: z.coerce
+  categoryId: z.number().int({ message: 'Categoria inválida' }),
+  currentQuantity: z
     .number()
     .min(0, 'Quantidade atual deve ser maior ou igual a 0'),
-  desiredQuantity: z.coerce
+  desiredQuantity: z
     .number()
-    .positive('Quantidade desejada deve ser um número positivo'),
+    .positive('Quantidade desejada deve ser um número positivo')
+    .min(1, 'Quantidade desejada deve ser maior ou igual a 1'),
 })
 
 export const quantitySchema = z.object({

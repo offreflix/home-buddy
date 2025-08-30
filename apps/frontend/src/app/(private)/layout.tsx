@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/app-sidebar'
+import { AppHeader } from '@/components/header/app-header'
 import { AuthProvider } from '@/context/auth/context'
 import { getAppVersion } from '../action/version'
+import { CreateProductDialog } from './products/ui/modal/create-product-dialog'
 
 export const metadata: Metadata = {
   title: 'Home Buddy',
@@ -19,13 +21,22 @@ export default async function RootLayout({
     <>
       <AuthProvider>
         <SidebarProvider>
-          <AppSidebar version={version} />
-          <main className="flex flex-col w-full min-h-screen">
-            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-              <SidebarTrigger />
+          <div className="flex h-screen overflow-hidden">
+            <AppSidebar version={version} />
+            <div className="flex flex-col flex-1 min-w-0">
+              <AppHeader />
+              <main className="flex-1 overflow-hidden">
+                <div className="h-full overflow-y-auto">
+                  <div className="container mx-auto px-4 py-6 max-w-7xl">
+                    {children}
+                  </div>
+                </div>
+              </main>
             </div>
-            <div className="flex-1 overflow-y-auto">{children}</div>
-          </main>
+          </div>
+
+          {/* Modal global para criação de produtos */}
+          <CreateProductDialog />
         </SidebarProvider>
       </AuthProvider>
     </>

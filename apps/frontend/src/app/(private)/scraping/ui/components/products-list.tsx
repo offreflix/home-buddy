@@ -7,9 +7,34 @@ import { ScrapedProduct } from '../../scraping.type'
 
 interface ProductsListProps {
   products: ScrapedProduct[]
+  onAcceptProduct?: (product: ScrapedProduct) => void
+  onRejectProduct?: (product: ScrapedProduct) => void
+  onCreateProduct?: (product: ScrapedProduct) => void
+  onSelectExistingProduct?: (
+    product: ScrapedProduct,
+    existingProductId: number,
+  ) => void
+  acceptedMatches?: ScrapedProduct[]
+  rejectedMatches?: ScrapedProduct[]
+  isAcceptingProduct?: boolean
+  isCreatingProduct?: boolean
+  availableProducts?: any[]
+  availableCategories?: any[]
 }
 
-export function ProductsList({ products }: ProductsListProps) {
+export function ProductsList({
+  products,
+  onAcceptProduct,
+  onRejectProduct,
+  onCreateProduct,
+  onSelectExistingProduct,
+  acceptedMatches = [],
+  rejectedMatches = [],
+  isAcceptingProduct = false,
+  isCreatingProduct = false,
+  availableProducts = [],
+  availableCategories = [],
+}: ProductsListProps) {
   return (
     <div className="space-y-4">
       {/* Products List */}
@@ -59,6 +84,37 @@ export function ProductsList({ products }: ProductsListProps) {
                       {product.unitPrice}
                     </span>
                   </div>
+                </div>
+
+                {/* Ações do produto */}
+                <div className="flex gap-2 mt-3 pt-3 border-t">
+                  {onAcceptProduct && (
+                    <button
+                      onClick={() => onAcceptProduct(product)}
+                      disabled={isAcceptingProduct}
+                      className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 disabled:opacity-50"
+                    >
+                      Aceitar
+                    </button>
+                  )}
+                  {onRejectProduct && (
+                    <button
+                      onClick={() => onRejectProduct(product)}
+                      disabled={isAcceptingProduct}
+                      className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50"
+                    >
+                      Rejeitar
+                    </button>
+                  )}
+                  {onCreateProduct && (
+                    <button
+                      onClick={() => onCreateProduct(product)}
+                      disabled={isCreatingProduct}
+                      className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50"
+                    >
+                      Criar Produto
+                    </button>
+                  )}
                 </div>
               </CardContent>
             </Card>

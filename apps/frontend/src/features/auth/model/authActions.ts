@@ -178,6 +178,13 @@ type User = {
   id: string
   username: string
   email: string
+  firstName?: string
+  lastName?: string
+  picture?: string
+  googleId?: string
+  lastLoginAt?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export async function getUserProfile(): Promise<

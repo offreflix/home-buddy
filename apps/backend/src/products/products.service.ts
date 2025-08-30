@@ -13,6 +13,12 @@ import { UpdateProductStockDto } from './dto/update-product-stock.dto';
 import { MostConsumedDto } from './dto/most-consumed.dto';
 import { GetStockMovementsDto } from './dto/get-stock-movements.dto';
 import { Unit } from '@prisma/client';
+import {
+  PaginationQueryDto,
+  PaginationResult,
+} from 'src/common/dto/pagination.dto';
+import { PaginationService } from 'src/common/services/pagination.service';
+import { Request } from 'express';
 
 export interface MostConsumedResult {
   product: string;
@@ -22,7 +28,10 @@ export interface MostConsumedResult {
 }
 @Injectable()
 export class ProductsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private paginationService: PaginationService,
+  ) {}
 
   async create(createProductDto: CreateProductDto, user: UserEntity) {
     try {
@@ -79,16 +88,30 @@ export class ProductsService {
     }
   }
 
-  async findAll(user: UserEntity) {
+  async findAll(
+    user: UserEntity,
+    query: PaginationQueryDto,
+    req: Request,
+  ): Promise<PaginationResult<any>> {
+    const paginationOptions =
+      this.paginationService.createPaginationOptions(query);
+
+    const total = await this.prisma.product.count({
+      where: { userId: user.id },
+    });
+
     const products = await this.prisma.product.findMany({
       where: { userId: user.id },
       include: { category: true, stock: true, movements: true },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      ...this.paginationService.getPrismaPaginationOptions(paginationOptions),
     });
 
-    return products;
+    return this.paginationService.createPaginatedResponse(
+      products,
+      total,
+      paginationOptions,
+      req,
+    );
   }
 
   async findAllByUserId(userId: number) {

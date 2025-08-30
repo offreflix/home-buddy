@@ -28,7 +28,8 @@ export function AdvancedFilters({
 }: AdvancedFiltersProps) {
   const categoriesQuery = useQuery({
     queryKey: ['categories'],
-    queryFn: () => apiClient.get('/categories').then((res) => res.data),
+    queryFn: () =>
+      apiClient.get('/categories?perPage=0').then((res) => res.data),
   })
 
   const hasActiveFilters =
@@ -71,7 +72,7 @@ export function AdvancedFilters({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas as categorias</SelectItem>
-            {categoriesQuery.data?.map((category: any) => (
+            {categoriesQuery.data?.data?.map((category: any) => (
               <SelectItem key={category.id} value={category.id.toString()}>
                 {category.name}
               </SelectItem>
@@ -156,7 +157,7 @@ export function AdvancedFilters({
             <Badge variant="secondary" className="gap-1">
               Categoria:{' '}
               {
-                categoriesQuery.data?.find(
+                categoriesQuery.data?.data?.find(
                   (c: any) => c.id.toString() === filters.categoryId,
                 )?.name
               }

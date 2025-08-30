@@ -61,16 +61,16 @@ function handleProductEditError(error: Error) {
 }
 
 const formSchema = z.object({
-  id: z.coerce.number().int({ message: 'ID inválido' }),
+  id: z.number().int({ message: 'ID inválido' }),
   name: z.string().nonempty('Nome é obrigatório'),
   description: z.string().optional(),
   unit: z.nativeEnum(Unit),
-  categoryId: z.coerce.number().int({ message: 'Categoria inválida' }),
+  categoryId: z.number().int({ message: 'Categoria inválida' }),
 
-  currentQuantity: z.coerce
+  currentQuantity: z
     .number()
     .min(0, 'Quantidade atual deve ser maior ou igual a 0'),
-  desiredQuantity: z.coerce
+  desiredQuantity: z
     .number()
     .positive('Quantidade desejada deve ser um número positivo'),
 })
@@ -82,7 +82,8 @@ export function UpdateProductDialog() {
 
   const categoriesQuery = useQuery({
     queryKey: ['categories'],
-    queryFn: () => apiClient.get('categories').then((res) => res.data),
+    queryFn: () =>
+      apiClient.get('categories?perPage=0').then((res) => res.data),
   })
 
   const form = useForm<FormSchema>({
@@ -254,14 +255,16 @@ export function UpdateProductDialog() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {categoriesQuery?.data?.map((category: Category) => (
-                        <SelectItem
-                          key={category.id}
-                          value={category.id.toString()}
-                        >
-                          {category.name}
-                        </SelectItem>
-                      ))}
+                      {categoriesQuery?.data?.data?.map(
+                        (category: Category) => (
+                          <SelectItem
+                            key={category.id}
+                            value={category.id.toString()}
+                          >
+                            {category.name}
+                          </SelectItem>
+                        ),
+                      )}
                     </SelectContent>
                   </Select>
                   <FormDescription>A categoria do produto.</FormDescription>

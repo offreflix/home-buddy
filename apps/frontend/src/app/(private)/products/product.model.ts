@@ -2,7 +2,6 @@ import {
   ColumnFiltersState,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   SortingState,
   useReactTable,
@@ -12,7 +11,13 @@ import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { columns } from './ui/components/columns'
 import { apiClient } from '@/api/client'
-import { ViewMode, ProductFilters, Product } from './products.type'
+import {
+  ViewMode,
+  ProductFilters,
+  Product,
+  PaginatedResponse,
+  PaginationParams,
+} from './products.type'
 import { filterProductsByStock } from './utils/stock-utils'
 
 export const useProductModel = () => {
@@ -31,23 +36,34 @@ export const useProductModel = () => {
     unit: 'all',
   })
 
+  const [pagination, setPagination] = useState<PaginationParams>({
+    page: 1,
+    perPage: 10,
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
+  })
+
   const productsQuery = useQuery({
-    queryKey: ['products'],
-    queryFn: () => apiClient.get('/products').then((res) => res.data),
+    queryKey: ['products', pagination],
+    queryFn: () =>
+      apiClient
+        .get('/products', { params: pagination })
+        .then((res) => res.data),
   })
 
   const filteredProducts = useMemo(() => {
-    if (!productsQuery.data) return []
+    if (!productsQuery.data?.data) return []
 
-    let filtered = productsQuery.data as Product[]
+    let filtered = productsQuery.data.data as Product[]
 
     if (filters.search) {
       filtered = filtered.filter(
         (product) =>
           product.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-          product.description
-            .toLowerCase()
-            .includes(filters.search.toLowerCase()),
+          (product.description &&
+            product.description
+              .toLowerCase()
+              .includes(filters.search.toLowerCase())),
       )
     }
 
@@ -74,7 +90,6 @@ export const useProductModel = () => {
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
@@ -103,6 +118,22 @@ export const useProductModel = () => {
       stockStatus: 'all',
       unit: 'all',
     })
+  }
+
+  function handlePaginationChange(newPagination: Partial<PaginationParams>) {
+    setPagination((prev) => ({ ...prev, ...newPagination }))
+  }
+
+  function handlePageChange(page: number) {
+    setPagination((prev) => ({ ...prev, page }))
+  }
+
+  function handlePerPageChange(perPage: number) {
+    setPagination((prev) => ({ ...prev, perPage, page: 1 }))
+  }
+
+  function handleSortingChange(sortBy: string, sortOrder: 'asc' | 'desc') {
+    setPagination((prev) => ({ ...prev, sortBy, sortOrder, page: 1 }))
   }
 
   const bulkDeleteMutation = useMutation({
@@ -153,11 +184,11 @@ export const useProductModel = () => {
   function handleBulkExport(products: Product[]) {
     const csvData = products.map((product) => ({
       Nome: product.name,
-      Descrição: product.description,
+      Descrição: product.description || '',
       Categoria: product.category.name,
       Unidade: product.unit,
-      'Quantidade Atual': product.stock.currentQuantity,
-      'Quantidade Desejada': product.stock.desiredQuantity,
+      'Quantidade Atual': product.stock?.currentQuantity || 0,
+      'Quantidade Desejada': product.stock?.desiredQuantity || 0,
       'Data de Criação': product.createdAt,
     }))
 
@@ -186,6 +217,10 @@ export const useProductModel = () => {
 
   const allSelected = table.getIsAllPageRowsSelected()
 
+  const paginationData = productsQuery.data as
+    | PaginatedResponse<Product>
+    | undefined
+
   return {
     table,
     productsQuery,
@@ -204,5 +239,11 @@ export const useProductModel = () => {
     handleBulkExport,
     bulkDeleteMutation,
     bulkCategoryChangeMutation,
+    pagination: paginationData?.meta,
+    paginationLinks: paginationData?.links,
+    handlePaginationChange,
+    handlePageChange,
+    handlePerPageChange,
+    handleSortingChange,
   }
 }

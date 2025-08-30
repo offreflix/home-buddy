@@ -8,20 +8,23 @@ import { CategoriesPieChart } from '@/app/(private)/(dashboard)/ui/categories-pi
 import { MovementsChart } from '@/app/(private)/(dashboard)/ui/movements-chart-card'
 import AppVersion from '@/components/version'
 
-export default async function Home() {
+export default async function DashboardPage() {
   return (
-    <>
-      <section className="grid gap-4 p-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-3 overflow-auto">
+    <section className="space-y-6">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">
+          Visão geral do seu estoque e produtos
+        </p>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <TotalProductsCard />
-
         <LowStockProductsCard />
-
         <MostConsumedProductCard />
-
         <MovementsChart />
-
         <CategoriesPieChart />
-      </section>
-    </>
+      </div>
+    </section>
   )
 }

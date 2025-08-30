@@ -6,22 +6,26 @@ import { ProductMain } from './ui/product-main'
 import { useProductModel } from './product.model'
 import { QuantityDialog } from './ui/modal/quantity-dialog'
 import { UpdateProductDialog } from './ui/update-product-dialog'
+import { useState } from 'react'
 
 export function ProductsView() {
   const { ...methods } = useProductModel()
 
   return (
-    <div className="flex flex-col min-h-full">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold tracking-tight">Produtos</h1>
+        <p className="text-muted-foreground">
+          Gerencie seu catálogo de produtos e estoque
+        </p>
+      </div>
+
+      <ProductMain {...methods} />
+
       {/* Modais */}
       <UpdateProductDialog />
       <DeleteProductDialog />
       <QuantityDialog />
-      <CreateProductDialog />
-
-      {/* Conteúdo principal */}
-      <div className="flex-1 p-4 md:p-6 lg:p-8">
-        <ProductMain {...methods} />
-      </div>
     </div>
   )
 }

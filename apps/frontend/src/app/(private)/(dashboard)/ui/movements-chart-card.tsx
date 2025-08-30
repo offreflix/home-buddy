@@ -10,7 +10,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart'
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
-import React from 'react'
+import React, { useState } from 'react'
 import { Movements } from '@/entities/product/types'
 import { apiClient } from '@/api/client'
 import dayjs from 'dayjs'
@@ -18,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { AxiosResponse } from 'axios'
 import { ArrowUp, ArrowDown, Info, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
 const chartConfig = {
   visitors: {
@@ -25,17 +26,59 @@ const chartConfig = {
   },
   IN: {
     label: 'Entrada',
-    color: 'hsl(var(--chart-5))',
+    color: 'var(--chart-5)',
   },
   OUT: {
     label: 'Saída',
-    color: 'hsl(var(--chart-2))',
+    color: 'var(--chart-2)',
   },
 } satisfies ChartConfig
 
+type PeriodFilter = 'last-3-months' | 'last-30-days' | 'last-7-days'
+
+const periodOptions = [
+  { value: 'last-3-months' as PeriodFilter, label: 'Últimos 3 Meses' },
+  { value: 'last-30-days' as PeriodFilter, label: 'Últimos 30 Dias' },
+  { value: 'last-7-days' as PeriodFilter, label: 'Últimos 7 Dias' },
+]
+
+const getDateRange = (period: PeriodFilter) => {
+  const now = dayjs()
+
+  switch (period) {
+    case 'last-3-months':
+      return {
+        startDate: now
+          .subtract(3, 'month')
+          .startOf('month')
+          .format('YYYY-MM-DD'),
+        endDate: now.endOf('month').format('YYYY-MM-DD'),
+      }
+    case 'last-30-days':
+      return {
+        startDate: now.subtract(30, 'day').format('YYYY-MM-DD'),
+        endDate: now.format('YYYY-MM-DD'),
+      }
+    case 'last-7-days':
+      return {
+        startDate: now.subtract(7, 'day').format('YYYY-MM-DD'),
+        endDate: now.format('YYYY-MM-DD'),
+      }
+    default:
+      return {
+        startDate: now
+          .subtract(3, 'month')
+          .startOf('month')
+          .format('YYYY-MM-DD'),
+        endDate: now.endOf('month').format('YYYY-MM-DD'),
+      }
+  }
+}
+
 export function MovementsChart() {
-  const startDate = dayjs().startOf('day').format('YYYY-MM-DD')
-  const endDate = dayjs().endOf('month').format('YYYY-MM-DD')
+  const [selectedPeriod, setSelectedPeriod] =
+    useState<PeriodFilter>('last-3-months')
+  const { startDate, endDate } = getDateRange(selectedPeriod)
 
   const movementsQuery = useQuery<Movements[]>({
     queryKey: ['movements', startDate, endDate],
@@ -56,9 +99,29 @@ export function MovementsChart() {
     return (
       <Card className="col-span-2">
         <CardHeader className="pb-0">
-          <CardTitle className="text-sm font-medium">
-            <Skeleton className="h-5 w-40" />
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm font-medium">
+              <Skeleton className="h-5 w-40" />
+            </CardTitle>
+            <ToggleGroup
+              type="single"
+              value={selectedPeriod}
+              onValueChange={(value: PeriodFilter) =>
+                value && setSelectedPeriod(value)
+              }
+              className="bg-muted rounded-md p-1"
+            >
+              {periodOptions.map((option) => (
+                <ToggleGroupItem
+                  key={option.value}
+                  value={option.value}
+                  className="px-3 py-1 text-xs font-medium data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm"
+                >
+                  {option.label}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </div>
         </CardHeader>
         <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
           <div className="space-y-3">
@@ -95,9 +158,29 @@ export function MovementsChart() {
   return (
     <Card className="col-span-2">
       <CardHeader className="pb-0">
-        <CardTitle className="text-sm font-medium">
-          Movimentações por Mês
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-medium">
+            Movimentações por Período
+          </CardTitle>
+          <ToggleGroup
+            type="single"
+            value={selectedPeriod}
+            onValueChange={(value: PeriodFilter) =>
+              value && setSelectedPeriod(value)
+            }
+            className="border"
+          >
+            {periodOptions.map((option) => (
+              <ToggleGroupItem
+                key={option.value}
+                value={option.value}
+                className="text-xs data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm"
+              >
+                {option.label}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </div>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         {!hasEnoughData ? (

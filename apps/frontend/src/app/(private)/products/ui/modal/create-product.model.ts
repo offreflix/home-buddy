@@ -14,7 +14,8 @@ export const useCreateProductModel = () => {
 
   const categoriesQuery = useQuery({
     queryKey: ['categories'],
-    queryFn: () => apiClient.get('categories').then((res) => res.data),
+    queryFn: () =>
+      apiClient.get('categories?perPage=0').then((res) => res.data),
   })
 
   const defaultValues = {

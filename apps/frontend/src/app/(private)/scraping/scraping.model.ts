@@ -36,7 +36,8 @@ export const useScrapingModel = () => {
 
   const categoriesQuery = useQuery({
     queryKey: ['categories'],
-    queryFn: () => apiClient.get('/categories').then((res) => res.data),
+    queryFn: () =>
+      apiClient.get('/categories?perPage=0').then((res) => res.data),
   })
 
   const jobStatusQuery = useQuery({
@@ -253,7 +254,8 @@ export const useScrapingModel = () => {
           name: scrap.title,
           description: `Produto criado via scraping`,
           unit: scrap.unit || mapUnitFromScraping(scrapedProduct.unit),
-          categoryId: scrap.categoryId || categoriesQuery.data?.[0]?.id || 1,
+          categoryId:
+            scrap.categoryId || categoriesQuery.data?.data?.[0]?.id || 1,
           desiredQuantity: 1,
           currentQuantity: parseInt(scrapedProduct.quantity || '0') || 0,
         }

@@ -47,6 +47,8 @@ export class AuthService {
       return null;
     }
 
+    await this.usersService.updateLastLogin(user.id);
+
     return {
       id: user.id,
       username: user.username,
@@ -83,6 +85,7 @@ export class AuthService {
   async signIn(
     user: AuthenticatedUser,
   ): Promise<{ access_token: string; refresh_token: string }> {
+    await this.usersService.updateLastLogin(user.id);
     return this.generateTokens(user);
   }
 

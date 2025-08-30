@@ -6,6 +6,8 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
+  Req,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -13,6 +15,11 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { User } from 'src/users/user.decorator';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  PaginationQueryDto,
+  PaginatedResponseDto,
+} from 'src/common/dto/pagination.dto';
+import { Request } from 'express';
 
 @ApiTags('categories')
 @ApiBearerAuth()
@@ -31,8 +38,11 @@ export class CategoriesController {
   }
 
   @Get()
-  findAll() {
-    return this.categoriesService.findAll();
+  async findAll(
+    @Query() query: PaginationQueryDto,
+    @Req() req: Request,
+  ): Promise<PaginatedResponseDto<any>> {
+    return this.categoriesService.findAll(query, req);
   }
 
   @Get(':id')

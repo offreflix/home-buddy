@@ -26,15 +26,15 @@ const chartConfig = {
   },
   graos: {
     label: 'Grãos e Cereais',
-    color: 'hsl(var(--chart-1))',
+    color: 'var(--chart-1)',
   },
   proteinas: {
     label: 'Proteínas',
-    color: 'hsl(var(--chart-2))',
+    color: 'var(--chart-2)',
   },
   laticinios: {
     label: 'Laticínios',
-    color: 'hsl(var(--chart-3))',
+    color: 'var(--chart-3)',
   },
 } satisfies ChartConfig
 
@@ -46,13 +46,13 @@ export function CategoriesPieChart() {
   })
 
   const COLORS = [
-    'hsl(var(--chart-1))',
-    'hsl(var(--chart-2))',
-    'hsl(var(--chart-3))',
-    'hsl(var(--chart-4))',
-    'hsl(var(--chart-5))',
-    'hsl(var(--chart-6))',
-    'hsl(var(--chart-7))',
+    'var(--chart-1)',
+    'var(--chart-2)',
+    'var(--chart-3)',
+    'var(--chart-4)',
+    'var(--chart-5)',
+    'var(--chart-6)',
+    'var(--chart-7)',
   ]
 
   if (countByCategoryQuery.isLoading) {

@@ -13,6 +13,8 @@ import { BullBoardModule } from './bull-board.module';
 import { JwtAuthGuard } from './auth/auth.guard';
 import { TrackingModule } from './tracking/tracking.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ExportModule } from './export/export.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -24,6 +26,7 @@ import { PrismaModule } from './prisma/prisma.module';
       },
     }),
     PrismaModule,
+    CommonModule,
     UsersModule,
     AuthModule,
     ProductsModule,
@@ -32,6 +35,7 @@ import { PrismaModule } from './prisma/prisma.module';
     ScrappingModule,
     BullBoardModule,
     TrackingModule,
+    ExportModule,
   ],
   controllers: [AppController],
   providers: [
