@@ -9,7 +9,7 @@ import {
 } from '@tanstack/react-table'
 import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { columns } from './ui/components/columns'
+import { createColumns } from './ui/components/columns'
 import { apiClient } from '@/api/client'
 import {
   ViewMode,
@@ -86,7 +86,11 @@ export const useProductModel = () => {
 
   const table = useReactTable({
     data: filteredProducts,
-    columns,
+    columns: createColumns({
+      onSortingChange: handleSortingChange,
+      currentSortBy: pagination.sortBy || 'createdAt',
+      currentSortOrder: pagination.sortOrder || 'desc',
+    }),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -132,8 +136,20 @@ export const useProductModel = () => {
     setPagination((prev) => ({ ...prev, perPage, page: 1 }))
   }
 
-  function handleSortingChange(sortBy: string, sortOrder: 'asc' | 'desc') {
-    setPagination((prev) => ({ ...prev, sortBy, sortOrder, page: 1 }))
+  function handleSortingChange(sortBy: string) {
+    setPagination((prev) => {
+      // Se já está ordenando por este campo, cicla entre os estados
+      if (prev.sortBy === sortBy) {
+        if (prev.sortOrder === 'asc') {
+          return { ...prev, sortOrder: 'desc', page: 1 }
+        } else if (prev.sortOrder === 'desc') {
+          // Remove a ordenação voltando para o padrão
+          return { ...prev, sortBy: 'createdAt', sortOrder: 'desc', page: 1 }
+        }
+      }
+      // Se é um novo campo, começa com ascendente
+      return { ...prev, sortBy, sortOrder: 'asc', page: 1 }
+    })
   }
 
   const bulkDeleteMutation = useMutation({

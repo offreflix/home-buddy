@@ -68,6 +68,7 @@ export function SmartSuggestions({
   }
 
   const getSuggestedRestockQuantity = (product: Product): number => {
+    if (!product.stock) return 1
     const deficit =
       product.stock.desiredQuantity - product.stock.currentQuantity
     return Math.max(deficit, 1)
@@ -80,6 +81,7 @@ export function SmartSuggestions({
       if (dismissedAlerts.has(product.id)) return false
       return (
         shouldShowAlert(product) &&
+        product.stock &&
         getStockStatus(
           product.stock.currentQuantity,
           product.stock.desiredQuantity,
@@ -110,6 +112,7 @@ export function SmartSuggestions({
       if (dismissedAlerts.has(product.id)) return false
       return (
         shouldShowAlert(product) &&
+        product.stock &&
         getStockStatus(
           product.stock.currentQuantity,
           product.stock.desiredQuantity,
@@ -137,6 +140,7 @@ export function SmartSuggestions({
     }
 
     const fastConsumingProducts = products.filter((product) => {
+      if (!product.stock) return false
       const percentage =
         (product.stock.currentQuantity / product.stock.desiredQuantity) * 100
       return percentage < 50 && product.stock.desiredQuantity > 5
@@ -156,6 +160,7 @@ export function SmartSuggestions({
     }
 
     const overstockedProducts = products.filter((product) => {
+      if (!product.stock) return false
       const percentage =
         (product.stock.currentQuantity / product.stock.desiredQuantity) * 100
       return percentage > 150
@@ -183,12 +188,14 @@ export function SmartSuggestions({
         acc[categoryName].total++
         acc[categoryName].products.push(product)
 
-        const status = getStockStatus(
-          product.stock.currentQuantity,
-          product.stock.desiredQuantity,
-        )
-        if (status === 'critical' || status === 'low') {
-          acc[categoryName].critical++
+        if (product.stock) {
+          const status = getStockStatus(
+            product.stock.currentQuantity,
+            product.stock.desiredQuantity,
+          )
+          if (status === 'critical' || status === 'low') {
+            acc[categoryName].critical++
+          }
         }
 
         return acc
@@ -218,6 +225,7 @@ export function SmartSuggestions({
     }
 
     const possiblyUnneededProducts = products.filter((product) => {
+      if (!product.stock) return false
       const percentage =
         (product.stock.currentQuantity / product.stock.desiredQuantity) * 100
       return percentage > 200 && product.stock.desiredQuantity <= 3
@@ -448,8 +456,9 @@ export function SmartSuggestions({
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-muted-foreground">
-                                {product.stock.currentQuantity}/
-                                {product.stock.desiredQuantity} {product.unit}
+                                {product.stock?.currentQuantity || 0}/
+                                {product.stock?.desiredQuantity || 0}{' '}
+                                {product.unit}
                               </span>
                               {(insight.type === 'critical_alert' ||
                                 insight.type === 'low_alert') &&

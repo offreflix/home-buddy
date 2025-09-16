@@ -100,10 +100,36 @@ export class ProductsService {
       where: { userId: user.id },
     });
 
+    // Configurar ordenação especial para campos aninhados
+    let orderBy: any = {};
+    
+    switch (paginationOptions.sortBy) {
+      case 'stock.currentQuantity':
+        orderBy = {
+          stock: {
+            currentQuantity: paginationOptions.sortOrder,
+          },
+        };
+        break;
+      case 'category.name':
+        orderBy = {
+          category: {
+            name: paginationOptions.sortOrder,
+          },
+        };
+        break;
+      default:
+        orderBy = {
+          [paginationOptions.sortBy]: paginationOptions.sortOrder,
+        };
+    }
+
     const products = await this.prisma.product.findMany({
       where: { userId: user.id },
       include: { category: true, stock: true, movements: true },
-      ...this.paginationService.getPrismaPaginationOptions(paginationOptions),
+      skip: (paginationOptions.page - 1) * paginationOptions.perPage,
+      take: paginationOptions.perPage,
+      orderBy,
     });
 
     return this.paginationService.createPaginatedResponse(

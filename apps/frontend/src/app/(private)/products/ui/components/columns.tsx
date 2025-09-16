@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type { ColumnDef } from '@tanstack/react-table'
-import { ArrowUpDown, Minus, MoreHorizontal, Plus } from 'lucide-react'
+import { Minus, MoreHorizontal, Plus } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -18,8 +18,19 @@ import { MovementType, useModalStore } from '../../modal.store'
 import { FormSchema } from '../update-product-dialog'
 import { Product, Unit } from '../../products.type'
 import { StockStatusBadge } from './stock-status-badge'
+import { SortableHeader } from './sortable-header'
 
-export const columns: ColumnDef<Product>[] = [
+interface ColumnsProps {
+  onSortingChange: (sortBy: string) => void
+  currentSortBy: string
+  currentSortOrder: 'asc' | 'desc'
+}
+
+export const createColumns = ({
+  onSortingChange,
+  currentSortBy,
+  currentSortOrder,
+}: ColumnsProps): ColumnDef<Product>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -44,28 +55,28 @@ export const columns: ColumnDef<Product>[] = [
   },
   {
     accessorKey: 'name',
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-      >
-        Nome
-        <ArrowUpDown className="ml-2" />
-      </Button>
+    header: () => (
+      <SortableHeader
+        label="Nome"
+        sortBy="name"
+        currentSortBy={currentSortBy}
+        currentSortOrder={currentSortOrder}
+        onSortingChange={onSortingChange}
+      />
     ),
     cell: ({ row }) => <div className="pl-4">{row.getValue('name')}</div>,
   },
   {
-    accessorFn: (row: Product) => row.stock.currentQuantity,
+    accessorFn: (row: Product) => row.stock?.currentQuantity || 0,
     id: 'quantity',
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-      >
-        Quantidade
-        <ArrowUpDown className="ml-2" />
-      </Button>
+    header: () => (
+      <SortableHeader
+        label="Quantidade"
+        sortBy="stock.currentQuantity"
+        currentSortBy={currentSortBy}
+        currentSortOrder={currentSortOrder}
+        onSortingChange={onSortingChange}
+      />
     ),
     cell: ({ row }) => {
       const stock = row.original.stock
@@ -130,14 +141,14 @@ export const columns: ColumnDef<Product>[] = [
   {
     accessorFn: (row: Product) => row.category.name,
     id: 'category',
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-      >
-        Categoria
-        <ArrowUpDown className="ml-2" />
-      </Button>
+    header: () => (
+      <SortableHeader
+        label="Categoria"
+        sortBy="category.name"
+        currentSortBy={currentSortBy}
+        currentSortOrder={currentSortOrder}
+        onSortingChange={onSortingChange}
+      />
     ),
     cell: ({ row }) => (
       <div className="pl-4">
@@ -196,10 +207,10 @@ export const transformProductToFormSchema = (product: Product): FormSchema => {
   return {
     id: product.id,
     name: product.name,
-    description: product.description,
+    description: product.description || undefined,
     unit: product.unit as Unit,
     categoryId: product.category.id,
-    currentQuantity: product.stock.currentQuantity,
-    desiredQuantity: product.stock.desiredQuantity,
+    currentQuantity: product.stock?.currentQuantity || 0,
+    desiredQuantity: product.stock?.desiredQuantity || 0,
   }
 }

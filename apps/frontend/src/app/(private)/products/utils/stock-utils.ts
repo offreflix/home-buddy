@@ -43,6 +43,7 @@ export function getStockStatusLabel(status: StockStatus): string {
 }
 
 export function shouldShowAlert(product: Product): boolean {
+  if (!product.stock) return false
   const status = getStockStatus(
     product.stock.currentQuantity,
     product.stock.desiredQuantity,
@@ -64,6 +65,7 @@ export function filterProductsByStock(
   if (!stockStatus || stockStatus === 'all') return products
 
   return products.filter((product) => {
+    if (!product.stock) return false
     const status = getStockStatus(
       product.stock.currentQuantity,
       product.stock.desiredQuantity,

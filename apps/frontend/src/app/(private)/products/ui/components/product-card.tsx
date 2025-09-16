@@ -82,10 +82,12 @@ function ProductCard({ data }: Props) {
                   <Badge variant="secondary" className="text-xs font-medium">
                     {product.category.name}
                   </Badge>
-                  <StockStatusBadge
-                    currentQuantity={product.stock.currentQuantity}
-                    desiredQuantity={product.stock.desiredQuantity}
-                  />
+                  {product.stock && (
+                    <StockStatusBadge
+                      currentQuantity={product.stock.currentQuantity}
+                      desiredQuantity={product.stock.desiredQuantity}
+                    />
+                  )}
                 </div>
               </div>
               <DropdownMenu modal={false}>
@@ -120,32 +122,40 @@ function ProductCard({ data }: Props) {
               <div className="flex justify-between items-center text-sm">
                 <span>Quantidade</span>
                 <span className="font-medium">
-                  {product.stock.currentQuantity} /{' '}
-                  {product.stock.desiredQuantity} {product.unit}
+                  {product.stock ? (
+                    <>
+                      {product.stock.currentQuantity} /{' '}
+                      {product.stock.desiredQuantity} {product.unit}
+                    </>
+                  ) : (
+                    'N/A'
+                  )}
                 </span>
               </div>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Progress
-                    value={
-                      (product.stock.currentQuantity /
-                        product.stock.desiredQuantity) *
-                      100
-                    }
-                    className="h-2"
-                  />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>
-                    {(
-                      (product.stock.currentQuantity /
-                        product.stock.desiredQuantity) *
-                      100
-                    ).toFixed()}
-                    % do desejado
-                  </p>
-                </TooltipContent>
-              </Tooltip>
+              {product.stock && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Progress
+                      value={
+                        (product.stock.currentQuantity /
+                          product.stock.desiredQuantity) *
+                        100
+                      }
+                      className="h-2"
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>
+                      {(
+                        (product.stock.currentQuantity /
+                          product.stock.desiredQuantity) *
+                        100
+                      ).toFixed()}
+                      % do desejado
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </div>
           </CardContent>
           <CardFooter className="pt-2">
@@ -161,7 +171,7 @@ function ProductCard({ data }: Props) {
                 <Minus className="h-4 w-4" />
               </Button>
               <span className="text-lg font-semibold">
-                {product.stock.currentQuantity}
+                {product.stock?.currentQuantity || 0}
               </span>
               <Button
                 variant="outline"

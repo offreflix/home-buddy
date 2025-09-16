@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/table'
 import { flexRender, type Table as TableType } from '@tanstack/react-table'
 import React from 'react'
-import { columns } from '../components/columns'
+import { createColumns } from '../components/columns'
 import { EmptyState } from '@/components/empty-state'
 import { useModalStore } from '../../modal.store'
 import { Product } from '../../products.type'
@@ -64,10 +64,7 @@ function ProductTable({ table, isLoading }: Props) {
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
+                <TableCell colSpan={6} className="h-24 text-center">
                   <EmptyState onClick={toggleAddModal} />
                 </TableCell>
               </TableRow>

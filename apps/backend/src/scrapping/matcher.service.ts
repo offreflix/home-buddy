@@ -7,7 +7,7 @@ import {
   ProductScrapDto,
 } from './dto/match-result.dto';
 import { ScrapedData } from './scrapping.service';
-import { AxiosError } from 'axios';
+// import { AxiosError } from 'axios';
 import { TrackingService } from '../tracking/tracking.service';
 
 @Injectable()
@@ -108,7 +108,12 @@ export class MatcherService {
     } catch (error) {
       this.logger.error('Erro ao chamar serviço de matching:', error);
 
-      if (error instanceof AxiosError && error.response?.status === 401) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'response' in error &&
+        (error.response as any)?.status === 401
+      ) {
         throw new HttpException(
           'Token de autenticação inválido para o serviço de matching',
           500,
