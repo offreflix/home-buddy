@@ -10,7 +10,12 @@ import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { McpJwtStrategy } from './strategies/mcp-jwt.strategy';
 import { InternalGuard } from './internal.guard';
+import { McpGuard } from './mcp.guard';
+import { PatController } from './pat.controller';
+import { PatService } from './pat.service';
+import { PatGuard } from './pat.guard';
 
 @Module({
   imports: [
@@ -22,7 +27,7 @@ import { InternalGuard } from './internal.guard';
     }),
     RedisModule,
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, PatController],
   providers: [
     AuthService,
     PrismaService,
@@ -30,8 +35,12 @@ import { InternalGuard } from './internal.guard';
     LocalStrategy,
     JwtStrategy,
     GoogleStrategy,
+    McpJwtStrategy,
     InternalGuard,
+    McpGuard,
+    PatService,
+    PatGuard,
   ],
-  exports: [AuthService],
+  exports: [AuthService, PatService, PatGuard],
 })
 export class AuthModule {}

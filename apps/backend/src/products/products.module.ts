@@ -4,9 +4,10 @@ import { ProductsController } from './products.controller';
 import { PrismaService } from 'src/prisma.service';
 import { StocksService } from 'src/stocks/stocks.service';
 import { CommonModule } from 'src/common/common.module';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports: [CommonModule],
+  imports: [CommonModule, AuthModule],
   controllers: [ProductsController],
   providers: [ProductsService, PrismaService, StocksService],
 })

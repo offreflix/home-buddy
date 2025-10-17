@@ -102,7 +102,7 @@ export class ProductsService {
 
     // Configurar ordenação especial para campos aninhados
     let orderBy: any = {};
-    
+
     switch (paginationOptions.sortBy) {
       case 'stock.currentQuantity':
         orderBy = {

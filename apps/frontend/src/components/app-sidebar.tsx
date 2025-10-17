@@ -17,6 +17,7 @@ import {
   Sparkles,
   User,
   Upload,
+  Zap,
 } from 'lucide-react'
 
 import {
@@ -65,6 +66,11 @@ const items = [
     title: 'Scraping',
     url: '/scraping',
     icon: Upload,
+  },
+  {
+    title: 'MCP',
+    url: '/mcp',
+    icon: Zap,
   },
 ]
 

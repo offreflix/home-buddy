@@ -347,4 +347,42 @@ export class AuthService {
       `);
     }
   }
+
+  /**
+   * Gera um token JWT específico para MCP
+   * @param user Usuário autenticado
+   * @returns Token MCP válido por 30 dias
+   */
+  async generateMcpToken(user: AuthenticatedUser): Promise<string> {
+    const payload = {
+      sub: user.id,
+      username: user.username,
+      type: 'mcp',
+      permissions: ['read:products', 'read:categories', 'read:stock'],
+      iat: Math.floor(Date.now() / 1000),
+    };
+
+    return this.jwtService.sign(payload, {
+      expiresIn: '30d', // 30 dias
+    });
+  }
+
+  /**
+   * Valida se um token MCP é válido
+   * @param token Token MCP
+   * @returns Dados do usuário se válido
+   */
+  async validateMcpToken(token: string): Promise<any> {
+    try {
+      const payload = this.jwtService.verify(token);
+
+      if (payload.type !== 'mcp') {
+        throw new UnauthorizedException('Token não é válido para MCP');
+      }
+
+      return payload;
+    } catch (error) {
+      throw new UnauthorizedException('Token MCP inválido');
+    }
+  }
 }

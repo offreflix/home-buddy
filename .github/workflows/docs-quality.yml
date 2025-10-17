@@ -1,0 +1,108 @@
+name: Documentation Quality Check
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+    paths:
+      - 'apps/docs/**'
+
+jobs:
+  quality-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: |
+          yarn install --frozen-lockfile
+
+      - name: Check documentation build
+        run: |
+          cd apps/docs
+          yarn build
+
+      - name: Check for broken links
+        run: |
+          cd apps/docs
+          yarn build
+          npx docusaurus build --out-dir build-check
+          npx broken-link-checker http://localhost:3000 --recursive --exclude-external
+
+      - name: Lint documentation
+        run: |
+          cd apps/docs
+          yarn lint
+
+      - name: Check markdown formatting
+        run: |
+          cd apps/docs
+          npx markdownlint docs/**/*.md --fix
+
+      - name: Validate Docusaurus config
+        run: |
+          cd apps/docs
+          node -e "console.log('Config is valid:', require('./docusaurus.config.ts').default)"
+
+  spell-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: |
+          yarn install --frozen-lockfile
+
+      - name: Spell check documentation
+        run: |
+          cd apps/docs
+          npx cspell "docs/**/*.md" --config .cspell.json
+
+  accessibility-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: |
+          yarn install --frozen-lockfile
+
+      - name: Build documentation
+        run: |
+          cd apps/docs
+          yarn build
+
+      - name: Start documentation server
+        run: |
+          cd apps/docs
+          yarn serve &
+          sleep 10
+
+      - name: Run accessibility tests
+        run: |
+          npx pa11y-ci --sitemap http://localhost:3000/sitemap.xml

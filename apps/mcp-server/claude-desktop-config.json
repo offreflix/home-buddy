@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "home-buddy": {
+      "command": "node",
+      "args": ["/path/to/home-buddy-monorepo/apps/mcp-server/dist/index.js"],
+      "env": {
+        "BACKEND_URL": "http://localhost:3000",
+        "MATCHER_URL": "http://localhost:8000",
+        "INTERNAL_TOKEN": "your-secure-internal-token",
+        "OPENAI_API_KEY": "sk-your-openai-key",
+        "REDIS_URL": "redis://localhost:6379",
+        "DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/home_buddy"
+      }
+    }
+  }
+}

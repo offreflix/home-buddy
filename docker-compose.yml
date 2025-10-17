@@ -16,7 +16,7 @@ services:
       context: apps/backend
       dockerfile: Dockerfile
     ports:
-      - "3001:3000"
+      - "3000:3000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/home_buddy
       - REDIS_HOST=redis
@@ -41,6 +41,28 @@ services:
       - "8000:8000"
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+    networks:
+      - home-buddy-network
+    restart: always
+
+  mcp-server:
+    build:
+      context: apps/mcp-server
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - BACKEND_URL=http://backend:3000
+      - MATCHER_URL=http://matcher:8000
+      - INTERNAL_TOKEN=${INTERNAL_TOKEN}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/home_buddy
+    depends_on:
+      - backend
+      - matcher
+      - redis
+      - postgres
     networks:
       - home-buddy-network
     restart: always

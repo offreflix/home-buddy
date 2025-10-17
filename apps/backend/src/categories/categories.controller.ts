@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -15,6 +16,9 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { User } from 'src/users/user.decorator';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { Public } from 'src/auth/auth.guard';
+import { PatGuard } from 'src/auth/pat.guard';
+import { RequirePermissions } from 'src/auth/permissions.decorator';
 import {
   PaginationQueryDto,
   PaginatedResponseDto,
@@ -61,5 +65,14 @@ export class CategoriesController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.categoriesService.remove(+id);
+  }
+
+  @Public()
+  @UseGuards(PatGuard)
+  @RequirePermissions('read:categories')
+  @Get('mcp')
+  findAllForMcp(@Req() req: Request) {
+    // Para categorias, retornamos todas (são globais)
+    return this.categoriesService.findAll({} as PaginationQueryDto, req);
   }
 }

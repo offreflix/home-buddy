@@ -14,7 +14,11 @@
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "docs:dev": "cd apps/docs && yarn start",
+    "docs:build": "cd apps/docs && yarn build",
+    "docs:serve": "cd apps/docs && yarn serve",
+    "docs:clear": "cd apps/docs && yarn clear"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.12",

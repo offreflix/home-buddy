@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "name": "home-buddy-docs",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "buildCommand": "yarn build",
+  "outputDirectory": "build",
+  "installCommand": "yarn install",
+  "framework": "docusaurus",
+  "regions": ["iad1"],
+  "functions": {
+    "apps/docs/build/**": {
+      "maxDuration": 30
+    }
+  }
+}

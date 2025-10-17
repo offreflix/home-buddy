@@ -110,4 +110,25 @@ export class AuthController {
   ) {
     return this.authService.linkGoogleAccount(req.user.id, googleData);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('mcp/token')
+  async generateMcpToken(@Request() req: AuthRequest) {
+    const token = await this.authService.generateMcpToken(req.user);
+    return {
+      token,
+      expiresIn: 30 * 24 * 60 * 60, // 30 dias em segundos
+      permissions: ['read:products', 'read:categories', 'read:stock'],
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('mcp/status')
+  async getMcpStatus(@Request() req: AuthRequest) {
+    return {
+      userId: req.user.id,
+      username: req.user.username,
+      mcpEnabled: true,
+    };
+  }
 }
