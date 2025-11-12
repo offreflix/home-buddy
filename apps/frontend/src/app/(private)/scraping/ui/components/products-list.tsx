@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ScrapedProduct } from '../../scraping.type'
+import { Product, Category } from '../../../products/products.type'
 
 interface ProductsListProps {
   products: ScrapedProduct[]
@@ -18,8 +19,8 @@ interface ProductsListProps {
   rejectedMatches?: ScrapedProduct[]
   isAcceptingProduct?: boolean
   isCreatingProduct?: boolean
-  availableProducts?: any[]
-  availableCategories?: any[]
+  availableProducts?: Product[]
+  availableCategories?: Category[]
 }
 
 export function ProductsList({

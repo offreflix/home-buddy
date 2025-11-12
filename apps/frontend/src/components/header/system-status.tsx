@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { apiClient } from '@/api/client'
+import { getErrorCode } from '@/lib/api-error'
 
 interface SystemStatus {
   id: string
@@ -131,10 +132,11 @@ export function SystemStatus({ className }: SystemStatusProps) {
         }
       }
       return { status: 'warning', details: `Status: ${response.status}` }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorCode = getErrorCode(error)
       return {
         status: 'offline',
-        details: error.code === 'ECONNABORTED' ? 'Timeout' : 'Erro de conexão',
+        details: errorCode === 'ECONNABORTED' ? 'Timeout' : 'Erro de conexão',
       }
     }
   }
@@ -162,10 +164,11 @@ export function SystemStatus({ className }: SystemStatusProps) {
         }
       }
       return { status: 'warning', details: `Status: ${response.status}` }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorCode = getErrorCode(error)
       return {
         status: 'offline',
-        details: error.code === 'ECONNABORTED' ? 'Timeout' : 'Erro de conexão',
+        details: errorCode === 'ECONNABORTED' ? 'Timeout' : 'Erro de conexão',
       }
     }
   }
@@ -198,10 +201,11 @@ export function SystemStatus({ className }: SystemStatusProps) {
         }
       }
       return { status: 'warning', details: `Status: ${response.status}` }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorCode = getErrorCode(error)
       return {
         status: 'offline',
-        details: error.code === 'ECONNABORTED' ? 'Timeout' : 'Erro de conexão',
+        details: errorCode === 'ECONNABORTED' ? 'Timeout' : 'Erro de conexão',
       }
     }
   }

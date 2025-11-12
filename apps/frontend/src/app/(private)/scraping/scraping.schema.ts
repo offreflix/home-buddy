@@ -49,7 +49,7 @@ export const jobStatusSchema = z.object({
   ]),
   result: scrapingJobResultSchema.optional(),
   failedReason: z.string().optional(),
-  data: z.any().optional(),
+  data: z.unknown().optional(),
   timestamp: z.number().optional(),
   processedOn: z.number().optional(),
   finishedOn: z.number().optional(),

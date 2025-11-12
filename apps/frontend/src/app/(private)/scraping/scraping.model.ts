@@ -7,12 +7,15 @@ import {
   ScrapingFormValues,
   ProductMatch,
   ProductScrap,
+  ScrapedProduct,
 } from './scraping.type'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { createScrapingJobSchema } from './scraping.schema'
 import { useAuth } from '@/context/auth/context'
 import { toast } from 'sonner'
+import { getErrorMessage } from '@/lib/api-error'
+import { CreateProductSchema, Unit } from '../products/products.type'
 
 export const useScrapingModel = () => {
   const { user } = useAuth()
@@ -71,13 +74,18 @@ export const useScrapingModel = () => {
     },
   })
 
+  interface StockUpdateData {
+    quantity: number
+    type: 'IN' | 'OUT'
+  }
+
   const updateStockMutation = useMutation({
     mutationFn: ({
       productId,
       stockData,
     }: {
       productId: string
-      stockData: any
+      stockData: StockUpdateData
     }) =>
       apiClient
         .patch(`/products/update-stock/${productId}`, stockData)
@@ -113,7 +121,7 @@ export const useScrapingModel = () => {
         userId: user?.id ? parseInt(user.id) : undefined,
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro desconhecido')
+      setError(getErrorMessage(err))
     }
   }
 
@@ -133,7 +141,7 @@ export const useScrapingModel = () => {
         }
 
         const scrapedProduct = jobStatus?.result?.data?.products?.find(
-          (product: any) => product.title === match.scrap_title,
+          (product: ScrapedProduct) => product.title === match.scrap_title,
         )
 
         if (!scrapedProduct) {
@@ -167,11 +175,8 @@ export const useScrapingModel = () => {
         console.log(
           `Estoque atualizado com sucesso: +${quantityToAdd} para produto ${match.product_id}`,
         )
-      } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          'Erro ao aceitar produto'
+      } catch (err: unknown) {
+        const errorMessage = getErrorMessage(err)
         setError(errorMessage)
 
         toast.error('Erro ao aceitar produto', {
@@ -201,7 +206,7 @@ export const useScrapingModel = () => {
         })
 
         console.log('Match rejeitado:', match.scrap_title)
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Erro ao rejeitar match:', err)
       }
     },
@@ -209,31 +214,31 @@ export const useScrapingModel = () => {
   )
 
   const createProductMutation = useMutation({
-    mutationFn: (productData: any) =>
+    mutationFn: (productData: CreateProductSchema) =>
       apiClient.post('/products', productData).then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
     },
   })
 
-  const mapUnitFromScraping = (scrapedUnit?: string): string => {
-    if (!scrapedUnit) return 'unidade'
+  const mapUnitFromScraping = (scrapedUnit?: string): Unit => {
+    if (!scrapedUnit) return Unit.unidade
 
-    const unitMap: Record<string, string> = {
-      kg: 'kg',
-      g: 'g',
-      l: 'L',
-      ml: 'L',
-      lata: 'lata',
-      pacote: 'pacote',
-      pct: 'pacote',
-      un: 'unidade',
-      und: 'unidade',
-      unidade: 'unidade',
+    const unitMap: Record<string, Unit> = {
+      kg: Unit.kg,
+      g: Unit.g,
+      l: Unit.L,
+      ml: Unit.L,
+      lata: Unit.lata,
+      pacote: Unit.pacote,
+      pct: Unit.pacote,
+      un: Unit.unidade,
+      und: Unit.unidade,
+      unidade: Unit.unidade,
     }
 
     const normalizedUnit = scrapedUnit.toLowerCase().trim()
-    return unitMap[normalizedUnit] || 'unidade'
+    return unitMap[normalizedUnit] || Unit.unidade
   }
 
   const handleCreateProduct = useCallback(
@@ -242,7 +247,7 @@ export const useScrapingModel = () => {
         setError(null)
 
         const scrapedProduct = jobStatus?.result?.data?.products?.find(
-          (product: any) => product.title === scrap.title,
+          (product: ScrapedProduct) => product.title === scrap.title,
         )
 
         if (!scrapedProduct) {
@@ -250,10 +255,16 @@ export const useScrapingModel = () => {
           return
         }
 
-        const productData = {
+        const unitValue = scrap.unit
+          ? Object.values(Unit).includes(scrap.unit as Unit)
+            ? (scrap.unit as Unit)
+            : Unit.unidade
+          : mapUnitFromScraping(scrapedProduct.unit)
+
+        const productData: CreateProductSchema = {
           name: scrap.title,
           description: `Produto criado via scraping`,
-          unit: scrap.unit || mapUnitFromScraping(scrapedProduct.unit),
+          unit: unitValue,
           categoryId:
             scrap.categoryId || categoriesQuery.data?.data?.[0]?.id || 1,
           desiredQuantity: 1,
@@ -269,9 +280,8 @@ export const useScrapingModel = () => {
         })
 
         console.log('Produto criado com sucesso:', scrap.title)
-      } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message || err.message || 'Erro ao criar produto'
+      } catch (err: unknown) {
+        const errorMessage = getErrorMessage(err)
         setError(errorMessage)
 
         toast.error('Erro ao criar produto', {
@@ -296,7 +306,7 @@ export const useScrapingModel = () => {
         setError(null)
 
         const scrapedProduct = jobStatus?.result?.data?.products?.find(
-          (product: any) => product.title === scrap.title,
+          (product: ScrapedProduct) => product.title === scrap.title,
         )
 
         if (!scrapedProduct) {
@@ -330,11 +340,8 @@ export const useScrapingModel = () => {
         console.log(
           `Produto vinculado com sucesso: +${quantityToAdd} para produto ${selectedProductId}`,
         )
-      } catch (err: any) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.message ||
-          'Erro ao vincular produto'
+      } catch (err: unknown) {
+        const errorMessage = getErrorMessage(err)
         setError(errorMessage)
 
         toast.error('Erro ao vincular produto', {

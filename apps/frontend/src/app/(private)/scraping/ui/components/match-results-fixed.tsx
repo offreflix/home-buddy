@@ -27,7 +27,8 @@ import {
   AlertCircle,
   Loader2,
 } from 'lucide-react'
-import { ProductMatch, ProductScrap } from '../../scraping.type'
+import { ProductMatch, ProductScrap, ScrapedProduct, ScrapedData } from '../../scraping.type'
+import { Product, Category } from '../../../products/products.type'
 
 interface MatchResultsProps {
   matchResult: {
@@ -42,9 +43,9 @@ interface MatchResultsProps {
   rejectedMatches?: Set<string>
   isAcceptingProduct?: boolean
   isCreatingProduct?: boolean
-  scrapedData?: any
-  availableProducts?: any[]
-  availableCategories?: any[]
+  scrapedData?: ScrapedData
+  availableProducts?: Product[]
+  availableCategories?: Category[]
 }
 
 export function MatchResults({
@@ -73,9 +74,9 @@ export function MatchResults({
     return 'Baixo'
   }
 
-  const getScrapedProduct = (scrapTitle: string) => {
+  const getScrapedProduct = (scrapTitle: string): ScrapedProduct | undefined => {
     return scrapedData?.products?.find(
-      (product: any) => product.title === scrapTitle,
+      (product: ScrapedProduct) => product.title === scrapTitle,
     )
   }
 
@@ -310,7 +311,7 @@ export function MatchResults({
 }
 
 interface ProductInfoProps {
-  product: any
+  product: ScrapedProduct | undefined
   formatPrice: (price: string | number) => string
   formatQuantity: (quantity: string, unit?: string) => string
   title?: string
@@ -400,15 +401,15 @@ function StatusBadge({ type, confidence, children }: StatusBadgeProps) {
 
 interface UnmatchedProductCardProps {
   product: ProductScrap
-  scrapedProduct: any
+  scrapedProduct: ScrapedProduct | undefined
   isProcessed: boolean
   isRejected?: boolean
   onCreateProduct: (product: ProductScrap) => void
   onSelectExistingProduct: (product: ProductScrap, productId: string) => void
   formatPrice: (price: string | number) => string
   formatQuantity: (quantity: string, unit?: string) => string
-  availableProducts: any[]
-  availableCategories: any[]
+  availableProducts: Product[]
+  availableCategories: Category[]
   isCreatingProduct?: boolean
 }
 

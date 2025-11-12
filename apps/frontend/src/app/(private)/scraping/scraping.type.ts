@@ -28,7 +28,7 @@ export interface ScrapingJob {
   result?: ScrapingJobResult
   matchResult?: MatchResult
   failedReason?: string
-  data?: any
+  data?: unknown
   timestamp?: number
   processedOn?: number
   finishedOn?: number

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { ScrapingJobResult } from '@/app/(private)/scraping/scraping.type'
 
 export interface JobStatus {
   jobId: string
@@ -6,7 +7,7 @@ export interface JobStatus {
   progress: number
   message: string
   phase: 'queued' | 'scraping' | 'completed' | 'failed'
-  result?: any
+  result?: ScrapingJobResult
   matchResult?: {
     match: Array<{
       scrap_title: string
@@ -23,7 +24,7 @@ export interface JobStatus {
     }>
   }
   failedReason?: string
-  data?: any
+  data?: unknown
   timestamp?: number
   processedOn?: number
   finishedOn?: number

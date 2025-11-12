@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { X, Filter } from 'lucide-react'
-import { ProductFilters, Unit } from '../../products.type'
+import { ProductFilters, Unit, Category } from '../../products.type'
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/api/client'
 
@@ -72,7 +72,7 @@ export function AdvancedFilters({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas as categorias</SelectItem>
-            {categoriesQuery.data?.data?.map((category: any) => (
+            {categoriesQuery.data?.data?.map((category: Category) => (
               <SelectItem key={category.id} value={category.id.toString()}>
                 {category.name}
               </SelectItem>
@@ -158,7 +158,7 @@ export function AdvancedFilters({
               Categoria:{' '}
               {
                 categoriesQuery.data?.data?.find(
-                  (c: any) => c.id.toString() === filters.categoryId,
+                  (c: Category) => c.id.toString() === filters.categoryId,
                 )?.name
               }
               <X
