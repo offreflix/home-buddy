@@ -1,5 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsPositive, Min, Max } from 'class-validator';
+import {
+  IsOptional,
+  IsPositive,
+  Min,
+  Max,
+  ValidateIf,
+  IsString,
+  Matches,
+  MaxLength,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class PaginationQueryDto {
@@ -15,26 +24,36 @@ export class PaginationQueryDto {
   page?: number = 1;
 
   @ApiProperty({
-    description: 'Quantidade de itens por página',
+    description: 'Quantidade de itens por página. Use 0 para retornar todos os itens',
     example: 10,
     default: 10,
     required: false,
-    minimum: 1,
+    minimum: 0,
     maximum: 100,
   })
   @IsOptional()
   @Type(() => Number)
-  @IsPositive()
-  @Min(1)
+  @Min(0)
   @Max(100)
+  @ValidateIf((o) => o.perPage !== 0)
+  @IsPositive()
   perPage?: number = 10;
 
   @ApiProperty({
-    description: 'Campo para ordenação',
+    description:
+      'Campo para ordenação. Permite apenas letras, números, pontos e underscores (ex: createdAt, category.name)',
     example: 'createdAt',
     required: false,
   })
   @IsOptional()
+  @IsString()
+  @Matches(/^[a-zA-Z0-9._]+$/, {
+    message:
+      'sortBy deve conter apenas letras, números, pontos e underscores',
+  })
+  @MaxLength(50, {
+    message: 'sortBy deve ter no máximo 50 caracteres',
+  })
   sortBy?: string = 'createdAt';
 
   @ApiProperty({

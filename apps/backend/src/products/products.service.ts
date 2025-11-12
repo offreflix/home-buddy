@@ -19,7 +19,10 @@ import {
 } from 'src/common/dto/pagination.dto';
 import { PaginationService } from 'src/common/services/pagination.service';
 import { Request } from 'express';
-import { ProductWithRelations, ProductOrderBy } from 'src/common/types/prisma.types';
+import {
+  ProductWithRelations,
+  ProductOrderBy,
+} from 'src/common/types/prisma.types';
 
 export interface MostConsumedResult {
   product: string;
@@ -103,7 +106,7 @@ export class ProductsService {
 
     // Configurar ordenação especial para campos aninhados
     let orderBy: ProductOrderBy = {};
-    
+
     switch (paginationOptions.sortBy) {
       case 'stock.currentQuantity':
         orderBy = {
@@ -125,11 +128,13 @@ export class ProductsService {
         };
     }
 
+    const paginationOpts =
+      this.paginationService.getPrismaPaginationOptions(paginationOptions);
+
     const products = await this.prisma.product.findMany({
       where: { userId: user.id },
       include: { category: true, stock: true, movements: true },
-      skip: (paginationOptions.page - 1) * paginationOptions.perPage,
-      take: paginationOptions.perPage,
+      ...paginationOpts,
       orderBy,
     });
 

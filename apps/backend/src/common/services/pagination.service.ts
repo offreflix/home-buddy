@@ -10,12 +10,11 @@ import {
 
 @Injectable()
 export class PaginationService {
-  /**
-   * Cria opções de paginação a partir dos query parameters
-   */
+  private readonly MAX_UNLIMITED_ITEMS = 1000;
   createPaginationOptions(query: PaginationQueryDto): PaginationOptions {
     const page = Math.max(1, query.page || 1);
-    const perPage = Math.min(100, Math.max(1, query.perPage || 10));
+    const perPage =
+      query.perPage === 0 ? 0 : Math.min(100, Math.max(1, query.perPage || 10));
     const sortBy = query.sortBy || 'createdAt';
     const sortOrder = query.sortOrder === 'asc' ? 'asc' : 'desc';
 
@@ -27,14 +26,28 @@ export class PaginationService {
     };
   }
 
-  /**
-   * Calcula os metadados da paginação
-   */
+  getMaxUnlimitedItems(): number {
+    return this.MAX_UNLIMITED_ITEMS;
+  }
+
   createPaginationMeta(
     page: number,
     perPage: number,
     total: number,
   ): PaginationMetaDto {
+    if (perPage === 0) {
+      return {
+        page: 1,
+        perPage: total,
+        total,
+        totalPages: 1,
+        hasNextPage: false,
+        hasPrevPage: false,
+        from: total > 0 ? 1 : 0,
+        to: total,
+      };
+    }
+
     const totalPages = Math.ceil(total / perPage);
     const hasNextPage = page < totalPages;
     const hasPrevPage = page > 1;
@@ -53,9 +66,6 @@ export class PaginationService {
     };
   }
 
-  /**
-   * Cria os links de navegação
-   */
   createPaginationLinks(
     req: Request,
     page: number,
@@ -145,16 +155,32 @@ export class PaginationService {
     };
   }
 
-  getPrismaPaginationOptions(options: PaginationOptions) {
+  getPrismaPaginationOptions(options: PaginationOptions): {
+    skip?: number;
+    take: number;
+    orderBy: Record<string, 'asc' | 'desc'>;
+  } {
     const { page, perPage, sortBy, sortOrder } = options;
+
+    const baseOptions = {
+      orderBy: {
+        [sortBy]: sortOrder,
+      } as Record<string, 'asc' | 'desc'>,
+    };
+
+    if (perPage === 0) {
+      return {
+        ...baseOptions,
+        take: this.MAX_UNLIMITED_ITEMS,
+      };
+    }
+
     const skip = (page - 1) * perPage;
 
     return {
+      ...baseOptions,
       skip,
       take: perPage,
-      orderBy: {
-        [sortBy]: sortOrder,
-      },
     };
   }
 }

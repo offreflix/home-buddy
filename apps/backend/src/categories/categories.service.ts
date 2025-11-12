@@ -69,35 +69,6 @@ export class CategoriesService {
     const paginationOptions =
       this.paginationService.createPaginationOptions(query);
 
-    if (paginationOptions.perPage <= 0) {
-      const allCategories = await this.prisma.category.findMany({
-        orderBy: {
-          [paginationOptions.sortBy]: paginationOptions.sortOrder,
-        },
-      });
-
-      return {
-        data: allCategories,
-        meta: {
-          page: 1,
-          perPage: allCategories.length,
-          total: allCategories.length,
-          totalPages: 1,
-          hasNextPage: false,
-          hasPrevPage: false,
-          from: 1,
-          to: allCategories.length,
-        },
-        links: {
-          self: `${req.protocol}://${req.get('host')}${req.path}`,
-          next: null,
-          prev: null,
-          first: `${req.protocol}://${req.get('host')}${req.path}`,
-          last: `${req.protocol}://${req.get('host')}${req.path}`,
-        },
-      };
-    }
-
     const total = await this.prisma.category.count();
 
     const categories = await this.prisma.category.findMany({
