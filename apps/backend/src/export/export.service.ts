@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { ExportProductsDto } from './dto/export-products.dto';
+import { ProductWhereInput } from 'src/common/types/prisma.types';
 
 @Injectable()
 export class ExportService {
@@ -11,7 +12,7 @@ export class ExportService {
     user: UserEntity,
     dto: ExportProductsDto,
   ): Promise<string> {
-    let whereClause: any = {
+    const whereClause: ProductWhereInput = {
       userId: user.id,
     };
 

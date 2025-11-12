@@ -7,6 +7,8 @@ import {
   IsNumberString,
 } from 'class-validator';
 import { MatchResultDto } from './match-result.dto';
+import { ScrapingJobResult } from '../scrapping-queue.processor';
+import { ScrapingJobData } from '../scrapping-queue.processor';
 
 export class AddToQueueDto {
   @ApiProperty({
@@ -49,17 +51,23 @@ export class AddMultipleToQueueDto {
 }
 
 export class JobStatusResponseDto {
-  @ApiProperty({ description: 'ID do job' })
-  jobId: string;
+  @ApiProperty({ description: 'ID do job', required: false })
+  jobId?: string;
 
-  @ApiProperty({ description: 'Estado atual do job' })
-  state: string;
+  @ApiProperty({ description: 'Estado atual do job', required: false })
+  state?: string;
 
-  @ApiProperty({ description: 'Progresso do job (0-100)' })
-  progress: number;
+  @ApiProperty({ description: 'Progresso do job (0-100)', required: false })
+  progress?: number;
 
-  @ApiProperty({ description: 'Resultado do job (se concluído)' })
-  result?: any;
+  @ApiProperty({ description: 'Mensagem de status', required: false })
+  message?: string;
+
+  @ApiProperty({ description: 'Fase do processamento', required: false })
+  phase?: string;
+
+  @ApiProperty({ description: 'Resultado do job (se concluído)', required: false })
+  result?: ScrapingJobResult;
 
   @ApiProperty({
     description: 'Resultado do matching (se disponível)',
@@ -67,6 +75,21 @@ export class JobStatusResponseDto {
   })
   matchResult?: MatchResultDto;
 
-  @ApiProperty({ description: 'Dados do job' })
-  data: any;
+  @ApiProperty({ description: 'Razão da falha (se falhou)', required: false })
+  failedReason?: string;
+
+  @ApiProperty({ description: 'Dados do job', required: false })
+  data?: ScrapingJobData;
+
+  @ApiProperty({ description: 'Timestamp do job', required: false })
+  timestamp?: number;
+
+  @ApiProperty({ description: 'Data de processamento', required: false })
+  processedOn?: number | null;
+
+  @ApiProperty({ description: 'Data de finalização', required: false })
+  finishedOn?: number | null;
+
+  @ApiProperty({ description: 'Mensagem de erro (se houver)', required: false })
+  error?: string;
 }

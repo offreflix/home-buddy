@@ -1,33 +1,43 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { OperationType, OperationStatus, Prisma } from '@prisma/client';
+import {
+  OperationMetadataJson,
+  ScrapingInputDataJson,
+  ScrapingOutputDataJson,
+  MatchingInputProductsJson,
+  MatchingRequestJson,
+  MatchingResponseJson,
+  ErrorDetailsJson,
+  LLMErrorDetailsJson,
+} from './types/tracking.types';
 
 export interface CreateOperationLogData {
   jobId: string;
   userId?: number;
   operationType: OperationType;
-  metadata?: any;
+  metadata?: OperationMetadataJson;
 }
 
 export interface CreateScrapingLogData {
   operationId: number;
   url: string;
-  inputData: any;
-  outputData?: any;
+  inputData: ScrapingInputDataJson;
+  outputData?: ScrapingOutputDataJson;
   httpStatus?: number;
   responseTime?: number;
-  errorDetails?: any;
+  errorDetails?: ErrorDetailsJson;
 }
 
 export interface CreateMatchingLogData {
   operationId: number;
-  inputProducts: any;
-  matcherRequest: any;
-  matcherResponse?: any;
+  inputProducts: MatchingInputProductsJson;
+  matcherRequest: MatchingRequestJson;
+  matcherResponse?: MatchingResponseJson;
   matchCount?: number;
   unmatchCount?: number;
   responseTime?: number;
-  errorDetails?: any;
+  errorDetails?: ErrorDetailsJson;
 }
 
 export interface CreateLLMLogData {
@@ -42,7 +52,7 @@ export interface CreateLLMLogData {
   cost?: number;
   temperature?: number;
   responseTime?: number;
-  errorDetails?: any;
+  errorDetails?: LLMErrorDetailsJson;
 }
 
 @Injectable()

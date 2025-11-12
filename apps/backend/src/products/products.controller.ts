@@ -26,6 +26,7 @@ import {
   PaginatedResponseDto,
 } from 'src/common/dto/pagination.dto';
 import { Request } from 'express';
+import { ProductWithRelations } from 'src/common/types/prisma.types';
 
 @ApiTags('products')
 @ApiBearerAuth()
@@ -43,7 +44,7 @@ export class ProductsController {
     @Query() query: PaginationQueryDto,
     @User() user: UserEntity,
     @Req() req: Request,
-  ): Promise<PaginatedResponseDto<any>> {
+  ): Promise<PaginatedResponseDto<ProductWithRelations>> {
     return this.productsService.findAll(user, query, req);
   }
 

@@ -21,6 +21,8 @@ import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { SignInDto } from 'src/users/dto/sign-in.dto';
+import { RequestWithCookies } from './types/express.types';
+import { LinkGoogleDto } from './dto/link-google.dto';
 
 export interface AuthenticatedUser {
   id: number;
@@ -68,10 +70,9 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
-  async logout(@Request() req: AuthRequest) {
-    const authHeader = (req.headers as any)['authorization'];
-    const token =
-      authHeader?.split(' ')[1] || (req as any).cookies?.access_token;
+  async logout(@Request() req: AuthRequest & RequestWithCookies) {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(' ')[1] || req.cookies?.access_token;
 
     await this.authService.logout(req.user.id, token);
 
@@ -106,7 +107,7 @@ export class AuthController {
   @Post('link-google')
   async linkGoogleAccount(
     @Request() req: AuthRequest,
-    @Body() googleData: any,
+    @Body() googleData: LinkGoogleDto,
   ) {
     return this.authService.linkGoogleAccount(req.user.id, googleData);
   }

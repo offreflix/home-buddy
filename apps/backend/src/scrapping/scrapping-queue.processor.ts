@@ -5,7 +5,7 @@ import { ScrappingService, ScrapedResponse } from './scrapping.service';
 import { MatcherService } from './matcher.service';
 import { MatchResultDto } from './dto/match-result.dto';
 import { TrackingService } from '../tracking/tracking.service';
-import { OperationType, OperationStatus } from '@prisma/client';
+import { OperationType, OperationStatus, Prisma } from '@prisma/client';
 
 export interface ScrapingJobData {
   url: string;
@@ -80,11 +80,11 @@ export class ScrapingQueueProcessor {
           await this.trackingService.createScrapingLog({
             operationId: operationLog.id,
             url: job.data.url,
-            inputData: { url: job.data.url, userId: job.data.userId },
+            inputData: { url: job.data.url, userId: job.data.userId } as unknown as Prisma.JsonValue,
             outputData: {
               productsCount: result.products.length,
               products: result.products,
-            },
+            } as unknown as Prisma.JsonValue,
             httpStatus: 200,
             responseTime: scrapingResponseTime,
           });
@@ -129,12 +129,12 @@ export class ScrapingQueueProcessor {
               );
               await this.trackingService.createMatchingLog({
                 operationId: operationLog.id,
-                inputProducts: result.products,
+                inputProducts: result.products as unknown as Prisma.JsonValue,
                 matcherRequest: {
                   user_id: job.data.userId.toString(),
                   products_scrap: result.products,
-                },
-                matcherResponse: matchResult,
+                } as unknown as Prisma.JsonValue,
+                matcherResponse: matchResult as unknown as Prisma.JsonValue,
                 matchCount: matchResult.match.length,
                 unmatchCount: matchResult.unmatch.length,
                 responseTime: matchingResponseTime,
@@ -160,18 +160,18 @@ export class ScrapingQueueProcessor {
             try {
               await this.trackingService.createMatchingLog({
                 operationId: operationLog.id,
-                inputProducts: result.products,
+                inputProducts: result.products as unknown as Prisma.JsonValue,
                 matcherRequest: {
                   user_id: job.data.userId.toString(),
                   products_scrap: result.products,
-                },
+                } as unknown as Prisma.JsonValue,
                 errorDetails: {
                   message:
                     error instanceof Error
                       ? error.message
                       : 'Erro desconhecido',
                   stack: error instanceof Error ? error.stack : undefined,
-                },
+                } as unknown as Prisma.JsonValue,
               });
             } catch (trackingError) {
               this.logger.warn(

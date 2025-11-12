@@ -20,6 +20,7 @@ import {
   PaginatedResponseDto,
 } from 'src/common/dto/pagination.dto';
 import { Request } from 'express';
+import { CategoryBasic } from 'src/common/types/prisma.types';
 
 @ApiTags('categories')
 @ApiBearerAuth()
@@ -41,7 +42,7 @@ export class CategoriesController {
   async findAll(
     @Query() query: PaginationQueryDto,
     @Req() req: Request,
-  ): Promise<PaginatedResponseDto<any>> {
+  ): Promise<PaginatedResponseDto<CategoryBasic>> {
     return this.categoriesService.findAll(query, req);
   }
 

@@ -5,6 +5,7 @@ import {
   PaginationResult,
   PaginationMetaDto,
   PaginationLinksDto,
+  PaginationQueryDto,
 } from '../dto/pagination.dto';
 
 @Injectable()
@@ -12,9 +13,9 @@ export class PaginationService {
   /**
    * Cria opções de paginação a partir dos query parameters
    */
-  createPaginationOptions(query: any): PaginationOptions {
-    const page = Math.max(1, parseInt(query.page) || 1);
-    const perPage = Math.min(100, Math.max(1, parseInt(query.perPage) || 10));
+  createPaginationOptions(query: PaginationQueryDto): PaginationOptions {
+    const page = Math.max(1, query.page || 1);
+    const perPage = Math.min(100, Math.max(1, query.perPage || 10));
     const sortBy = query.sortBy || 'createdAt';
     const sortOrder = query.sortOrder === 'asc' ? 'asc' : 'desc';
 
@@ -92,9 +93,9 @@ export class PaginationService {
 
     let sortedData = [...data];
     if (sortBy && typeof data[0] === 'object' && data[0] !== null) {
-      sortedData.sort((a: any, b: any) => {
-        const aValue = a[sortBy];
-        const bValue = b[sortBy];
+      sortedData.sort((a: T, b: T) => {
+        const aValue = (a as Record<string, unknown>)[sortBy];
+        const bValue = (b as Record<string, unknown>)[sortBy];
 
         if (aValue === null || aValue === undefined) return 1;
         if (bValue === null || bValue === undefined) return -1;

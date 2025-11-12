@@ -5,6 +5,7 @@ import { jwtConstants } from '../constants';
 import { Request } from 'express';
 import { RedisService } from '../../redis/redis.service';
 import { createHash } from 'crypto';
+import { JwtPayload } from '../types/jwt.types';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -22,7 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(req: Request, payload: any) {
+  async validate(req: Request, payload: JwtPayload) {
     const token =
       ExtractJwt.fromAuthHeaderAsBearerToken()(req) ||
       req.cookies?.access_token;

@@ -63,7 +63,7 @@ export class LLMInfoDto {
   cost?: number; // em USD
 
   @ApiProperty({ required: false })
-  error_details?: any;
+  error_details?: Record<string, unknown>;
 }
 
 export class MatchResultDto {

@@ -13,6 +13,7 @@ import { Response } from 'express';
 import { AuthenticatedUser, AuthRequest } from './auth.controller';
 import { jwtConstants } from './constants';
 import { randomUUID } from 'crypto';
+import { LinkGoogleDto } from './dto/link-google.dto';
 
 interface GoogleUser {
   email: string;
@@ -22,6 +23,8 @@ interface GoogleUser {
   picture?: string;
   googleId: string;
 }
+
+type GoogleUserInput = GoogleUser | LinkGoogleDto;
 
 @Injectable()
 export class AuthService {
@@ -246,7 +249,7 @@ export class AuthService {
     }
   }
 
-  async linkGoogleAccount(userId: number, googleUser: GoogleUser) {
+  async linkGoogleAccount(userId: number, googleUser: GoogleUserInput) {
     try {
       const user = await this.usersService.updateUser({
         where: { id: userId },

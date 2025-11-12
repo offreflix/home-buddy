@@ -5,6 +5,8 @@ import {
   ScrapingJobData,
   ScrapingJobResult,
 } from './scrapping-queue.processor';
+import { JobStatusResponseDto } from './dto/scraping-queue.dto';
+import { QueueStatsDto } from './dto/queue-stats.dto';
 
 @Injectable()
 export class ScrapingQueueService {
@@ -52,7 +54,7 @@ export class ScrapingQueueService {
     return job;
   }
 
-  async getJobStatus(jobId: string): Promise<any> {
+  async getJobStatus(jobId: string): Promise<JobStatusResponseDto> {
     const job = await this.scrapingQueue.getJob(jobId);
 
     if (!job) {
@@ -108,7 +110,7 @@ export class ScrapingQueueService {
     };
   }
 
-  async getQueueStats(): Promise<any> {
+  async getQueueStats(): Promise<QueueStatsDto> {
     const waiting = await this.scrapingQueue.getWaiting();
     const active = await this.scrapingQueue.getActive();
     const completed = await this.scrapingQueue.getCompleted();

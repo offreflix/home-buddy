@@ -13,6 +13,7 @@ import {
 } from 'src/common/dto/pagination.dto';
 import { PaginationService } from 'src/common/services/pagination.service';
 import { Request } from 'express';
+import { CategoryBasic, CategoryOrderBy } from 'src/common/types/prisma.types';
 
 @Injectable()
 export class CategoriesService {
@@ -64,7 +65,7 @@ export class CategoriesService {
   async findAll(
     query: PaginationQueryDto,
     req: Request,
-  ): Promise<PaginationResult<any>> {
+  ): Promise<PaginationResult<CategoryBasic>> {
     const paginationOptions =
       this.paginationService.createPaginationOptions(query);
 

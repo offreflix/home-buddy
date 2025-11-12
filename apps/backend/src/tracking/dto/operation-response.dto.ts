@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { OperationType, OperationStatus } from '@prisma/client';
+import { OperationType, OperationStatus, Prisma } from '@prisma/client';
 
 export class UserSummaryDto {
   @ApiProperty()
@@ -20,10 +20,10 @@ export class ScrapingLogResponseDto {
   url: string;
 
   @ApiProperty()
-  inputData: any;
+  inputData: Prisma.JsonValue;
 
   @ApiProperty({ required: false })
-  outputData?: any;
+  outputData?: Prisma.JsonValue;
 
   @ApiProperty({ required: false })
   httpStatus?: number;
@@ -32,7 +32,7 @@ export class ScrapingLogResponseDto {
   responseTime?: number;
 
   @ApiProperty({ required: false })
-  errorDetails?: any;
+  errorDetails?: Prisma.JsonValue;
 
   @ApiProperty()
   createdAt: Date;
@@ -43,13 +43,13 @@ export class MatchingLogResponseDto {
   id: number;
 
   @ApiProperty()
-  inputProducts: any;
+  inputProducts: Prisma.JsonValue;
 
   @ApiProperty()
-  matcherRequest: any;
+  matcherRequest: Prisma.JsonValue;
 
   @ApiProperty({ required: false })
-  matcherResponse?: any;
+  matcherResponse?: Prisma.JsonValue;
 
   @ApiProperty({ required: false })
   matchCount?: number;
@@ -61,7 +61,7 @@ export class MatchingLogResponseDto {
   responseTime?: number;
 
   @ApiProperty({ required: false })
-  errorDetails?: any;
+  errorDetails?: Prisma.JsonValue;
 
   @ApiProperty()
   createdAt: Date;
@@ -102,7 +102,7 @@ export class LLMLogResponseDto {
   cost?: number;
 
   @ApiProperty({ required: false })
-  errorDetails?: any;
+  errorDetails?: Prisma.JsonValue;
 
   @ApiProperty()
   createdAt: Date;
@@ -137,7 +137,7 @@ export class OperationLogResponseDto {
   errorMessage?: string;
 
   @ApiProperty({ required: false })
-  metadata?: any;
+  metadata?: Prisma.JsonValue;
 
   @ApiProperty()
   createdAt: Date;
