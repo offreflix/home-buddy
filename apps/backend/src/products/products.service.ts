@@ -304,10 +304,9 @@ export class ProductsService {
     dto: GetStockMovementsDto,
     user: UserEntity,
   ): Promise<{ date: string; IN: number; OUT: number }[] | []> {
-    const startDate = new Date(dto.startDate);
-    const endDate = new Date(dto.endDate);
-    console.log('startDate', startDate);
-    console.log('endDate', endDate);
+    const startDate = new Date(dto.startDate + 'T00:00:00.000Z');
+
+    const endDate = new Date(dto.endDate + 'T23:59:59.999Z');
 
     const movements = await this.prisma.stockMovement.findMany({
       where: {
