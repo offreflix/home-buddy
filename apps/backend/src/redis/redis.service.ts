@@ -6,19 +6,23 @@ import { Redis } from 'ioredis';
 export class RedisService {
   constructor(@InjectRedis() private readonly redis: Redis) {}
 
-  async setToken(
-    userId: string,
-    token: string,
-    expiresIn: number,
-  ): Promise<void> {
-    await this.redis.set(`auth:${userId}`, token, 'EX', expiresIn);
+  async setToken(key: string, token: string, expiresIn: number): Promise<void> {
+    await this.redis.set(`auth:${key}`, token, 'EX', expiresIn);
   }
 
-  async getToken(userId: string): Promise<string | null> {
-    return await this.redis.get(`auth:${userId}`);
+  async getToken(key: string): Promise<string | null> {
+    return await this.redis.get(`auth:${key}`);
   }
 
-  async removeToken(userId: string): Promise<void> {
-    await this.redis.del(`auth:${userId}`);
+  async removeToken(key: string): Promise<void> {
+    await this.redis.del(`auth:${key}`);
+  }
+
+  async addUserSession(userId: number, jti: string): Promise<void> {
+    await this.redis.sadd(`auth:userSessions:${userId}`, jti);
+  }
+
+  async removeUserSession(userId: number, jti: string): Promise<void> {
+    await this.redis.srem(`auth:userSessions:${userId}`, jti);
   }
 }

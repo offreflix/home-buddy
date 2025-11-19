@@ -1,10 +1,30 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { createHash } from 'crypto';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { SignInDto } from 'src/users/dto/sign-in.dto';
 import { RedisService } from '../redis/redis.service';
+import { Response } from 'express';
+import { AuthenticatedUser, AuthRequest } from './auth.controller';
+import { jwtConstants } from './constants';
+import { randomUUID } from 'crypto';
+import { LinkGoogleDto } from './dto/link-google.dto';
+
+interface GoogleUser {
+  email: string;
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  picture?: string;
+  googleId: string;
+}
+
+type GoogleUserInput = GoogleUser | LinkGoogleDto;
 
 @Injectable()
 export class AuthService {
@@ -14,10 +34,35 @@ export class AuthService {
     private redisService: RedisService,
   ) {}
 
+  async validateUser(
+    username: string,
+    password: string,
+  ): Promise<{ id: number; username: string; email: string }> {
+    const user = await this.usersService.findByUsername(username);
+
+    if (!user) {
+      return null;
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return null;
+    }
+
+    await this.usersService.updateLastLogin(user.id);
+
+    return {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+    };
+  }
+
   async signUp(
     createUserDto: CreateUserDto,
   ): Promise<{ access_token: string; refresh_token: string }> {
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
 
     const existingUsername = await this.usersService.findByUsername(
       createUserDto.username,
@@ -28,7 +73,7 @@ export class AuthService {
     );
 
     if (existingUsername || existingEmail) {
-      throw new UnauthorizedException('User already exists');
+      throw new ConflictException('User already exists');
     }
 
     const user = await this.usersService.createUser({
@@ -37,56 +82,47 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    const payload = { username: user.username, sub: user.id };
-
-    const accessToken = await this.jwtService.signAsync(payload, {
-      expiresIn: '15m',
-    });
-
-    const refreshToken = await this.jwtService.signAsync(payload, {
-      expiresIn: '7d',
-    });
-
-    return {
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    };
+    return this.generateTokens(user);
   }
 
   async signIn(
-    signInDto: SignInDto,
+    user: AuthenticatedUser,
   ): Promise<{ access_token: string; refresh_token: string }> {
-    const user = await this.usersService.findByUsername(signInDto.username);
+    await this.usersService.updateLastLogin(user.id);
+    return this.generateTokens(user);
+  }
 
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const isMatch = await bcrypt.compare(signInDto.password, user.password);
-
-    if (!isMatch) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const payload = { username: user.username, sub: user.id };
+  private async generateTokens(user: AuthenticatedUser) {
+    const jti = randomUUID();
+    const payload = { username: user.username, sub: user.id, jti };
 
     const accessToken = this.jwtService.sign(payload, {
       expiresIn: '15m',
+      secret: jwtConstants.accessSecret,
     });
     const refreshToken = this.jwtService.sign(payload, {
       expiresIn: '7d',
+      secret: jwtConstants.refreshSecret,
     });
 
+    const hashToken = (token: string) =>
+      createHash('sha256').update(token).digest('hex');
+
+    const accessTokenHash = hashToken(accessToken);
+    const refreshTokenHash = hashToken(refreshToken);
+
     await this.redisService.setToken(
-      `accessToken:${user.id.toString()}`,
-      accessToken,
+      `accessToken:${jti}`,
+      accessTokenHash,
       900,
     );
     await this.redisService.setToken(
-      `refreshToken:${user.id.toString()}`,
-      refreshToken,
+      `refreshToken:${jti}`,
+      refreshTokenHash,
       604800,
     );
+
+    await this.redisService.addUserSession(user.id, jti);
 
     return {
       access_token: accessToken,
@@ -94,32 +130,23 @@ export class AuthService {
     };
   }
 
-  async logout(userId: number): Promise<void> {
-    await this.redisService.removeToken(`accessToken:${userId.toString()}`);
-    await this.redisService.removeToken(`refreshToken:${userId.toString()}`);
-  }
+  async logout(userId: number, accessToken: string): Promise<void> {
+    if (!accessToken) return;
 
-  async decodeToken(token: string) {
     try {
-      return await this.jwtService.verifyAsync(token);
-    } catch {
-      throw new UnauthorizedException();
-    }
-  }
+      const decoded = this.jwtService.verify(accessToken, {
+        secret: jwtConstants.accessSecret,
+        ignoreExpiration: true,
+      });
 
-  async validateToken(token: string): Promise<boolean> {
-    try {
-      const payload = await this.jwtService.verifyAsync(token);
-      const userId = payload.sub;
+      const jti = decoded?.jti;
 
-      const redisToken = await this.redisService.getToken(
-        `accessToken:${userId.toString()}`,
-      );
-
-      return redisToken === token;
-    } catch {
-      return false;
-    }
+      if (jti) {
+        await this.redisService.removeToken(`accessToken:${jti}`);
+        await this.redisService.removeToken(`refreshToken:${jti}`);
+        await this.redisService.removeUserSession(userId, jti);
+      }
+    } catch {}
   }
 
   async getProfile(userId: number) {
@@ -128,64 +155,202 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    return user;
-  }
-
-  async removeToken(userId: number): Promise<void> {
-    await this.redisService.removeToken(userId.toString());
+    const { ...result } = user;
+    return result;
   }
 
   async refreshToken(
     refreshToken: string,
   ): Promise<{ access_token: string; refresh_token: string }> {
     try {
-      const decoded = this.jwtService.verify(refreshToken);
+      const decoded = this.jwtService.verify(refreshToken, {
+        secret: jwtConstants.refreshSecret,
+      });
 
       const userId = decoded?.sub;
+      const jti = decoded?.jti;
 
       const redisToken = await this.redisService.getToken(
-        `refreshToken:${userId.toString()}`,
+        `refreshToken:${jti}`,
       );
 
-      if (redisToken !== refreshToken) {
-        throw new UnauthorizedException('Refresh token inválido.');
+      const refreshTokenHash = createHash('sha256')
+        .update(refreshToken)
+        .digest('hex');
+
+      if (redisToken !== refreshTokenHash) {
+        throw new UnauthorizedException('Invalid refresh token');
       }
 
       if (!userId) {
-        throw new UnauthorizedException('Refresh token inválido.');
+        throw new UnauthorizedException('Invalid refresh token');
       }
 
       const user = await this.usersService.findById(userId);
       if (!user) {
-        throw new UnauthorizedException('Usuário não encontrado.');
+        throw new UnauthorizedException('User not found');
       }
 
-      const payload = { username: user.username, sub: user.id };
+      return this.generateTokens(user);
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+  }
 
-      const newAccessToken = this.jwtService.sign(payload, {
-        expiresIn: '15m',
-      });
-      const newRefreshToken = this.jwtService.sign(payload, {
-        expiresIn: '7d',
-      });
+  async validateOrCreateGoogleUser(googleUser: GoogleUser) {
+    try {
+      let user = await this.usersService.findByGoogleId(googleUser.googleId);
 
-      await this.redisService.setToken(
-        `accessToken:${userId.toString()}`,
-        newAccessToken,
-        900,
-      );
-      await this.redisService.setToken(
-        `refreshToken:${userId.toString()}`,
-        newRefreshToken,
-        604800,
-      );
+      if (!user) {
+        user = await this.usersService.findByEmail(googleUser.email);
+
+        if (user) {
+          if (user.password) {
+            return { error: 'user_conflict' };
+          } else {
+            user = await this.usersService.updateUser({
+              where: { id: user.id },
+              data: {
+                googleId: googleUser.googleId,
+                firstName: googleUser.firstName || user.firstName,
+                lastName: googleUser.lastName || user.lastName,
+                picture: googleUser.picture || user.picture,
+              },
+            });
+          }
+        } else {
+          let username = googleUser.username;
+          const existingUsername =
+            await this.usersService.findByUsername(username);
+
+          if (existingUsername) {
+            username = `${username}${Math.floor(Math.random() * 1000)}`;
+          }
+
+          user = await this.usersService.createUser({
+            username: username,
+            email: googleUser.email,
+            googleId: googleUser.googleId,
+            firstName: googleUser.firstName,
+            lastName: googleUser.lastName,
+            picture: googleUser.picture,
+          });
+        }
+      }
 
       return {
-        access_token: newAccessToken,
-        refresh_token: newRefreshToken,
+        id: user.id,
+        username: user.username,
+        email: user.email,
       };
     } catch (error) {
-      throw new UnauthorizedException('Refresh token inválido ou expirado.');
+      console.error('Erro ao validar/criar usuário Google:', error);
+      throw error;
+    }
+  }
+
+  async linkGoogleAccount(userId: number, googleUser: GoogleUserInput) {
+    try {
+      const user = await this.usersService.updateUser({
+        where: { id: userId },
+        data: {
+          googleId: googleUser.googleId,
+          firstName: googleUser.firstName,
+          lastName: googleUser.lastName,
+          picture: googleUser.picture,
+        },
+      });
+
+      return {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      };
+    } catch (error) {
+      console.error('Erro ao vincular conta Google:', error);
+      throw error;
+    }
+  }
+
+  async googleAuthCallback(req: AuthRequest, res: Response) {
+    try {
+      if (req.user && typeof req.user === 'object' && 'error' in req.user) {
+        if (req.user.error === 'user_conflict') {
+          res.send(`
+            <script>
+              window.opener.postMessage(
+                { 
+                  error: 'user_conflict',
+                  message: 'Email já cadastrado com login local. Entre com usuário e senha ou vincule sua conta.' 
+                },
+                '${process.env.FRONTEND_URL}'
+              );
+              window.close();
+            </script>
+          `);
+          return;
+        }
+      }
+
+      const tokens = await this.signIn(req.user);
+
+      const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite:
+          process.env.NODE_ENV === 'production'
+            ? ('strict' as const)
+            : ('lax' as const),
+        path: '/',
+        domain:
+          process.env.NODE_ENV === 'production'
+            ? process.env.COOKIE_DOMAIN
+            : undefined,
+      };
+
+      res.cookie('access_token', tokens.access_token, {
+        ...cookieOptions,
+        maxAge: 15 * 60 * 1000, // 15 minutos
+      });
+
+      res.cookie('refresh_token', tokens.refresh_token, {
+        ...cookieOptions,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias
+      });
+
+      res.send(`
+        <script>
+          window.opener.postMessage(
+            { 
+              success: true,
+              user: {
+                id: '${req.user.id}',
+                username: '${req.user.username}',
+                email: '${req.user.email}'
+              }
+            },
+            '${process.env.FRONTEND_URL}'
+          );
+          window.close();
+        </script>
+      `);
+    } catch (error) {
+      console.error('Erro no callback do Google:', error);
+      res.send(`
+        <script>
+          window.opener.postMessage(
+            { 
+              error: 'auth_failed',
+              message: 'Erro interno do servidor. Tente novamente.' 
+            },
+            '${process.env.FRONTEND_URL}'
+          );
+          window.close();
+        </script>
+      `);
     }
   }
 }

@@ -100,7 +100,7 @@ export class ScrappingService {
       throw new Error('Erro no scraping da página');
     } finally {
       await page.close();
-      await browser.close(); // Fecha o navegador no final
+      await browser.close();
     }
   }
 }

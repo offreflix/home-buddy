@@ -1,6 +1,8 @@
 {
   "dependencies": {
-    "@nestjs/mapped-types": "*"
+    "@nestjs/mapped-types": "*",
+    "dayjs": "^1.11.13",
+    "openai": "^4.95.0"
   },
   "name": "home-buddy-monorepo",
   "private": true,
@@ -15,6 +17,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.12",
     "prettier": "^3.4.2",
     "turbo": "^2.4.0",
     "typescript": "5.7.3"

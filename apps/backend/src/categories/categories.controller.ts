@@ -6,13 +6,24 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
+  Req,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { User } from 'src/users/user.decorator';
 import { UserEntity } from 'src/users/entities/user.entity';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  PaginationQueryDto,
+  PaginatedResponseDto,
+} from 'src/common/dto/pagination.dto';
+import { Request } from 'express';
+import { CategoryBasic } from 'src/common/types/prisma.types';
 
+@ApiTags('categories')
+@ApiBearerAuth()
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
@@ -22,9 +33,17 @@ export class CategoriesController {
     return this.categoriesService.create(createCategoryDto);
   }
 
+  @Post('create-many')
+  async createMany(@Body() createCategoryDto: CreateCategoryDto[]) {
+    return this.categoriesService.createMany(createCategoryDto);
+  }
+
   @Get()
-  findAll() {
-    return this.categoriesService.findAll();
+  async findAll(
+    @Query() query: PaginationQueryDto,
+    @Req() req: Request,
+  ): Promise<PaginatedResponseDto<CategoryBasic>> {
+    return this.categoriesService.findAll(query, req);
   }
 
   @Get(':id')
