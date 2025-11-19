@@ -7,6 +7,7 @@ import { useProductModel } from './product.model'
 import { QuantityDialog } from './ui/modal/quantity-dialog'
 import { UpdateProductDialog } from './ui/update-product-dialog'
 import { useState } from 'react'
+import { ViewProductDialog } from './ui/modal/view-product-dialog'
 
 export function ProductsView() {
   const { ...methods } = useProductModel()
@@ -26,6 +27,7 @@ export function ProductsView() {
       <UpdateProductDialog />
       <DeleteProductDialog />
       <QuantityDialog />
+      <ViewProductDialog />
     </div>
   )
 }

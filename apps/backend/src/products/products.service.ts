@@ -100,10 +100,6 @@ export class ProductsService {
     const paginationOptions =
       this.paginationService.createPaginationOptions(query);
 
-    const total = await this.prisma.product.count({
-      where: { userId: user.id },
-    });
-
     // Configurar ordenação especial para campos aninhados
     let orderBy: ProductOrderBy = {};
 
@@ -131,8 +127,21 @@ export class ProductsService {
     const paginationOpts =
       this.paginationService.getPrismaPaginationOptions(paginationOptions);
 
+    const where: any = { userId: user.id };
+
+    if (query.search) {
+      where.OR = [
+        { name: { contains: query.search, mode: 'insensitive' } },
+        { description: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+
+    const total = await this.prisma.product.count({
+      where,
+    });
+
     const products = await this.prisma.product.findMany({
-      where: { userId: user.id },
+      where,
       include: { category: true, stock: true, movements: true },
       ...paginationOpts,
       orderBy,
@@ -283,6 +292,7 @@ export class ProductsService {
         },
       },
       select: {
+        id: true,
         name: true,
         _count: {
           select: {
@@ -293,6 +303,7 @@ export class ProductsService {
     });
 
     const result = categories.map((category) => ({
+      id: category.id,
       name: category.name,
       count: category._count.products,
     }));

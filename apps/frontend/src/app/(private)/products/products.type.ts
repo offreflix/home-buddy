@@ -82,6 +82,7 @@ export interface PaginationParams {
   perPage?: number
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
+  search?: string
 }
 
 export type CreateResult = {

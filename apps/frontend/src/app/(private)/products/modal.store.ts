@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { FormSchema } from './ui/update-product-dialog'
+import { Product } from './products.type'
 
 type ProductModalStore = {
   isAddModalOpen: boolean
@@ -21,6 +22,11 @@ type ProductModalStore = {
 
   selectedProductId: number | null
   setSelectedProductId: (id: number) => void
+
+  isViewModalOpen: boolean
+  toggleViewModal: () => void
+  viewingProduct: Product | null
+  setViewingProduct: (product: Product | null) => void
 }
 
 export const useModalStore = create<ProductModalStore>((set) => ({
@@ -48,6 +54,12 @@ export const useModalStore = create<ProductModalStore>((set) => ({
 
   selectedProductId: null,
   setSelectedProductId: (id) => set({ selectedProductId: id }),
+
+  isViewModalOpen: false,
+  toggleViewModal: () =>
+    set((state) => ({ isViewModalOpen: !state.isViewModalOpen })),
+  viewingProduct: null,
+  setViewingProduct: (product) => set({ viewingProduct: product }),
 }))
 
 export enum MovementType {

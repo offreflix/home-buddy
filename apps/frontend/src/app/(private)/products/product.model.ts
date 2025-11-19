@@ -44,10 +44,15 @@ export const useProductModel = () => {
   })
 
   const productsQuery = useQuery({
-    queryKey: ['products', pagination],
+    queryKey: ['products', pagination, filters.search],
     queryFn: () =>
       apiClient
-        .get('/products', { params: pagination })
+        .get('/products', {
+          params: {
+            ...pagination,
+            search: filters.search,
+          },
+        })
         .then((res) => res.data),
   })
 
@@ -55,17 +60,6 @@ export const useProductModel = () => {
     if (!productsQuery.data?.data) return []
 
     let filtered = productsQuery.data.data as Product[]
-
-    if (filters.search) {
-      filtered = filtered.filter(
-        (product) =>
-          product.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-          (product.description &&
-            product.description
-              .toLowerCase()
-              .includes(filters.search.toLowerCase())),
-      )
-    }
 
     if (filters.categoryId !== 'all') {
       filtered = filtered.filter(

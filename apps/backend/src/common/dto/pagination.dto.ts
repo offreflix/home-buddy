@@ -65,6 +65,15 @@ export class PaginationQueryDto {
   })
   @IsOptional()
   sortOrder?: 'asc' | 'desc' = 'desc';
+
+  @ApiProperty({
+    description: 'Termo de busca',
+    example: 'Arroz',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
 }
 
 export class PaginationMetaDto {

@@ -1,223 +1,186 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import * as React from 'react'
+import { Calculator, Calendar, CreditCard, Settings, Smile, User, Search } from 'lucide-react'
+
 import {
-  Search,
-  X,
-  Clock,
-  ShoppingBasket,
-  Upload,
-  LayoutDashboard,
-} from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import {
-  Command,
+  CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
+  CommandShortcut,
 } from '@/components/ui/command'
+import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
+import { useModalStore } from '@/app/(private)/products/modal.store'
+import { apiClient } from '@/api/client'
+import { Product } from '@/app/(private)/products/products.type'
+import { useQuery } from '@tanstack/react-query'
+import { useDebounce } from '@/hooks/use-debounce'
+
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
 
-interface SearchResult {
-  id: string
-  title: string
-  description: string
-  type: 'product' | 'category' | 'page'
-  url: string
-  icon: React.ComponentType<{ className?: string }>
-}
+export function GlobalSearch() {
+  const [open, setOpen] = React.useState(false)
+  const [search, setSearch] = React.useState('')
+  const [selectedCategory, setSelectedCategory] = React.useState<{name: string, count: number} | null>(null)
+  const debouncedSearch = useDebounce(search, 300)
+  const router = useRouter()
+  const { toggleViewModal, setViewingProduct, toggleAddModal } = useModalStore()
 
-const mockSearchResults: SearchResult[] = [
-  {
-    id: '1',
-    title: 'Arroz Integral',
-    description: 'Produto com estoque baixo (5 unidades)',
-    type: 'product',
-    url: '/products',
-    icon: ShoppingBasket,
-  },
-  {
-    id: '2',
-    title: 'Cereais',
-    description: 'Categoria de produtos',
-    type: 'category',
-    url: '/products?category=cereais',
-    icon: ShoppingBasket,
-  },
-  {
-    id: '3',
-    title: 'Dashboard',
-    description: 'Visão geral do sistema',
-    type: 'page',
-    url: '/',
-    icon: LayoutDashboard,
-  },
-  {
-    id: '4',
-    title: 'Scraping',
-    description: 'Gerenciar scraping de produtos',
-    type: 'page',
-    url: '/scraping',
-    icon: Upload,
-  },
-]
+  React.useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        setOpen((open) => !open)
+      }
+    }
 
-interface GlobalSearchProps {
-  className?: string
-}
+    document.addEventListener('keydown', down)
+    return () => document.removeEventListener('keydown', down)
+  }, [])
 
-export function GlobalSearch({ className }: GlobalSearchProps) {
-  const [open, setOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [recentSearches] = useState(['arroz', 'cereais', 'dashboard'])
-  const inputRef = useRef<HTMLInputElement>(null)
+  const { data: searchResults, isLoading } = useQuery({
+    queryKey: ['global-search', debouncedSearch],
+    queryFn: async () => {
+      if (!debouncedSearch) return { products: [], categories: [] }
+      
+      const [productsRes, categoriesRes] = await Promise.all([
+        apiClient.get('/products', {
+          params: { search: debouncedSearch, perPage: 5 },
+        }),
+        apiClient.get('/products/count-by-category')
+      ])
 
-  const filteredResults = mockSearchResults.filter(
-    (result) =>
-      result.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      result.description.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+      const allCategories = categoriesRes.data as { id: number, name: string, count: number }[]
+      const filteredCategories = allCategories.filter(c => 
+        c.name.toLowerCase().includes(debouncedSearch.toLowerCase())
+      )
+      
+      return {
+        products: productsRes.data.data as Product[],
+        categories: filteredCategories
+      }
+    },
+    enabled: open && debouncedSearch.length > 0,
+  })
 
-  const handleSelect = (result: SearchResult) => {
+  const handleSelectProduct = (product: Product) => {
     setOpen(false)
-    setSearchQuery('')
-    console.log('Navegar para:', result.url)
+    router.push('/products')
+    setTimeout(() => {
+      setViewingProduct(product)
+      toggleViewModal()
+    }, 100)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (searchQuery.trim()) {
-      console.log('Buscar:', searchQuery)
-      setOpen(false)
-    }
+  const handleSelectCategory = (category: { name: string, count: number }) => {
+    setOpen(false)
+    setSelectedCategory(category)
   }
-
-  useEffect(() => {
-    if (open && inputRef.current) {
-      inputRef.current.focus()
-    }
-  }, [open])
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn(
-            'justify-start text-sm text-muted-foreground w-full max-w-sm lg:max-w-md',
-            className,
-          )}
-        >
-          <Search className="mr-2 h-4 w-4" />
-          <span className="hidden sm:inline">
-            Buscar produtos, categorias...
-          </span>
-          <span className="sm:hidden">Buscar...</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            ⌘K
-          </Badge>
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[350px] lg:w-[400px] p-0" align="start">
-        <Command>
-          <form onSubmit={handleSubmit}>
-            <CommandInput
-              ref={inputRef}
-              placeholder="Digite para buscar..."
-              value={searchQuery}
-              onValueChange={setSearchQuery}
-              className="border-0 focus:ring-0"
-            />
-          </form>
-          <CommandList>
-            {searchQuery === '' && (
-              <>
-                <CommandGroup heading="Buscas recentes">
-                  {recentSearches.map((search, index) => (
+    <>
+      <Button
+        variant="outline"
+        className="relative h-9 w-full justify-start rounded-[0.5rem] text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64"
+        onClick={() => setOpen(true)}
+      >
+        <span className="hidden lg:inline-flex">Buscar produtos...</span>
+        <span className="inline-flex lg:hidden">Buscar...</span>
+        <kbd className="pointer-events-none absolute right-1.5 top-1.5 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+          <span className="text-xs">⌘</span>K
+        </kbd>
+      </Button>
+      <CommandDialog open={open} onOpenChange={setOpen}>
+        <CommandInput 
+          placeholder="Digite o nome do produto ou categoria..." 
+          value={search}
+          onValueChange={setSearch}
+        />
+        <CommandList>
+          <CommandEmpty>
+            <div className="flex flex-col items-center gap-2 p-4">
+              <p className="text-sm text-muted-foreground">Nenhum resultado encontrado.</p>
+              <div className="flex gap-2 mt-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    setOpen(false)
+                    router.push('/products')
+                    setTimeout(() => toggleAddModal(), 100)
+                  }}
+                >
+                  Criar Produto
+                </Button>
+              </div>
+            </div>
+          </CommandEmpty>
+          
+          {isLoading ? (
+             <div className="p-4 text-sm text-center text-muted-foreground">Buscando...</div>
+          ) : (
+            <>
+              {searchResults?.products && searchResults.products.length > 0 && (
+                <CommandGroup heading="Produtos">
+                  {searchResults.products.map((product) => (
                     <CommandItem
-                      key={index}
-                      onSelect={() => setSearchQuery(search)}
-                      className="flex items-center gap-2"
+                      key={product.id}
+                      value={`product-${product.id}-${product.name}`}
+                      onSelect={() => handleSelectProduct(product)}
                     >
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span>{search}</span>
+                      <Search className="mr-2 h-4 w-4" />
+                      <span>{product.name}</span>
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        ({product.category.name})
+                      </span>
                     </CommandItem>
                   ))}
                 </CommandGroup>
-                <CommandGroup heading="Navegação rápida">
-                  {mockSearchResults.slice(0, 3).map((result) => (
-                    <CommandItem
-                      key={result.id}
-                      onSelect={() => handleSelect(result)}
-                      className="flex items-center gap-2"
-                    >
-                      <result.icon className="h-4 w-4 text-muted-foreground" />
-                      <div className="flex flex-col">
-                        <span className="font-medium">{result.title}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {result.description}
-                        </span>
-                      </div>
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </>
-            )}
+              )}
 
-            {searchQuery !== '' && (
-              <>
-                {filteredResults.length > 0 ? (
-                  <CommandGroup heading="Resultados da busca">
-                    {filteredResults.map((result) => (
-                      <CommandItem
-                        key={result.id}
-                        onSelect={() => handleSelect(result)}
-                        className="flex items-center gap-2"
-                      >
-                        <result.icon className="h-4 w-4 text-muted-foreground" />
-                        <div className="flex flex-col">
-                          <span className="font-medium">{result.title}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {result.description}
-                          </span>
-                        </div>
-                        <Badge variant="outline" className="ml-auto text-xs">
-                          {result.type === 'product'
-                            ? 'Produto'
-                            : result.type === 'category'
-                              ? 'Categoria'
-                              : 'Página'}
-                        </Badge>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                ) : (
-                  <CommandEmpty>
-                    <div className="flex flex-col items-center gap-2 py-6 text-center">
-                      <Search className="h-8 w-8 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">
-                        Nenhum resultado encontrado para "{searchQuery}"
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Tente usar termos diferentes ou verifique a ortografia
-                      </p>
-                    </div>
-                  </CommandEmpty>
-                )}
-              </>
-            )}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+              {searchResults?.categories && searchResults.categories.length > 0 && (
+                <CommandGroup heading="Categorias">
+                  {searchResults.categories.map((category) => (
+                    <CommandItem
+                      key={category.id}
+                      value={`category-${category.id}-${category.name}`}
+                      onSelect={() => handleSelectCategory(category)}
+                    >
+                      <Search className="mr-2 h-4 w-4" />
+                      <span>{category.name}</span>
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        ({category.count} produtos)
+                      </span>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+            </>
+          )}
+        </CommandList>
+      </CommandDialog>
+
+      <Dialog open={!!selectedCategory} onOpenChange={(open) => !open && setSelectedCategory(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Categoria: {selectedCategory?.name}</DialogTitle>
+            <DialogDescription>
+              Esta categoria possui atualmente <strong>{selectedCategory?.count}</strong> produtos cadastrados.
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

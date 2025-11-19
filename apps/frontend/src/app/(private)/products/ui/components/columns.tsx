@@ -167,6 +167,8 @@ export const createColumns = ({
         setEditingProduct,
         toggleDeleteModal,
         setSelectedProductId,
+        toggleViewModal,
+        setViewingProduct,
       } = useModalStore()
 
       return (
@@ -180,6 +182,14 @@ export const createColumns = ({
           <DropdownMenuContent align="start">
             <DropdownMenuLabel>Ações</DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                toggleViewModal()
+                setViewingProduct(row.original)
+              }}
+            >
+              Visualizar
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
                 toggleEditModal()

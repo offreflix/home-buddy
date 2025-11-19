@@ -698,15 +698,18 @@ describe('ProductsService', () => {
 
     it('deve retornar contagem de produtos por categoria', async () => {
       type CategoryWithCount = {
+        id: number;
         name: string;
         _count: { products: number };
       };
       const mockCategories: CategoryWithCount[] = [
         {
+          id: 1,
           name: 'Categoria 1',
           _count: { products: 5 },
         },
         {
+          id: 2,
           name: 'Categoria 2',
           _count: { products: 3 },
         },
@@ -719,8 +722,8 @@ describe('ProductsService', () => {
       const result = await service.countByCategory(mockUser);
 
       expect(result).toEqual([
-        { name: 'Categoria 1', count: 5 },
-        { name: 'Categoria 2', count: 3 },
+        { id: 1, name: 'Categoria 1', count: 5 },
+        { id: 2, name: 'Categoria 2', count: 3 },
       ]);
       expect(prismaService.category.findMany).toHaveBeenCalledWith({
         where: {
@@ -731,6 +734,7 @@ describe('ProductsService', () => {
           },
         },
         select: {
+          id: true,
           name: true,
           _count: {
             select: {
