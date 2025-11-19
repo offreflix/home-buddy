@@ -17,7 +17,7 @@ import { UserEntity } from 'src/users/entities/user.entity';
 import {
   createMockPrismaService,
   createMockPaginationService,
-  createMockUser,
+  createMockUserEntity,
 } from 'src/common/test-helpers/mock-factories';
 
 describe('ProductsService', () => {
@@ -60,7 +60,7 @@ describe('ProductsService', () => {
       desiredQuantity: 10,
     };
 
-    const mockUser = createMockUser({ id: 1 });
+    const mockUser = createMockUserEntity({ id: 1 });
 
     it('deve criar um produto com sucesso', async () => {
       // Arrange
@@ -156,7 +156,7 @@ describe('ProductsService', () => {
   });
 
   describe('findOne', () => {
-    const mockUser = createMockUser({ id: 1 });
+    const mockUser = createMockUserEntity({ id: 1 });
 
     it('deve retornar um produto quando encontrado', async () => {
       // Arrange
@@ -179,7 +179,7 @@ describe('ProductsService', () => {
         updatedAt: new Date(),
       };
 
-      prismaService.product.findUnique.mockResolvedValue(mockProduct as any);
+      (prismaService.product.findUnique as jest.Mock).mockResolvedValue(mockProduct as any);
 
       // Act
       const result = await service.findOne(productId, mockUser);
@@ -196,7 +196,7 @@ describe('ProductsService', () => {
     it('deve lançar NotFoundException quando produto não encontrado', async () => {
       // Arrange
       const productId = 999;
-      prismaService.product.findUnique.mockResolvedValue(null);
+      (prismaService.product.findUnique as jest.Mock).mockResolvedValue(null);
 
       // Act & Assert
       await expect(service.findOne(productId, mockUser)).rejects.toThrow(
@@ -206,7 +206,7 @@ describe('ProductsService', () => {
   });
 
   describe('updateStock', () => {
-    const mockUser = createMockUser({ id: 1 });
+    const mockUser = createMockUserEntity({ id: 1 });
     const productId = 1;
 
     it('deve adicionar estoque corretamente (tipo IN)', async () => {
@@ -366,12 +366,12 @@ describe('ProductsService', () => {
   });
 
   describe('count', () => {
-    const mockUser = createMockUser({ id: 1 });
+    const mockUser = createMockUserEntity({ id: 1 });
 
     it('deve retornar a contagem de produtos do usuário', async () => {
       // Arrange
       const expectedCount = 5;
-      prismaService.product.count.mockResolvedValue(expectedCount);
+      (prismaService.product.count as jest.Mock).mockResolvedValue(expectedCount);
 
       // Act
       const result = await service.count(mockUser);
@@ -385,7 +385,7 @@ describe('ProductsService', () => {
   });
 
   describe('lowStock', () => {
-    const mockUser = createMockUser({ id: 1 });
+    const mockUser = createMockUserEntity({ id: 1 });
 
     it('deve retornar produtos com estoque baixo', async () => {
       // Arrange
@@ -410,7 +410,7 @@ describe('ProductsService', () => {
         },
       ];
 
-      prismaService.product.findMany.mockResolvedValue(mockProducts as any);
+      (prismaService.product.findMany as jest.Mock).mockResolvedValue(mockProducts as any);
 
       // Act
       const result = await service.lowStock(mockUser);
