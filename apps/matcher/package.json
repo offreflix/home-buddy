@@ -1,0 +1,8 @@
+{
+  "name": "home-buddy-matcher",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "python -m uvicorn app.main:app --reload --port 8000 || echo \"[Matcher] uvicorn não encontrado. Execute 'pip install -r requirements.txt' em apps/matcher.\""
+  }
+}

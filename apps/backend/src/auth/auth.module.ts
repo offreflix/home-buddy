@@ -6,18 +6,32 @@ import { UsersService } from 'src/users/users.service';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 import { RedisModule } from '../redis/redis.module';
+import { PassportModule } from '@nestjs/passport';
+import { LocalStrategy } from './strategies/local.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { InternalGuard } from './internal.guard';
 
 @Module({
   imports: [
+    PassportModule,
     JwtModule.register({
       global: true,
-      secret: jwtConstants.secret,
+      secret: jwtConstants.accessSecret,
       signOptions: { expiresIn: '15m' },
     }),
     RedisModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, PrismaService, UsersService],
+  providers: [
+    AuthService,
+    PrismaService,
+    UsersService,
+    LocalStrategy,
+    JwtStrategy,
+    GoogleStrategy,
+    InternalGuard,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

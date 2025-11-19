@@ -12,13 +12,35 @@ import { UserEntity } from 'src/users/entities/user.entity';
 import { UpdateProductStockDto } from './dto/update-product-stock.dto';
 import { MostConsumedDto } from './dto/most-consumed.dto';
 import { GetStockMovementsDto } from './dto/get-stock-movements.dto';
+import { Unit } from '@prisma/client';
+import {
+  PaginationQueryDto,
+  PaginationResult,
+} from 'src/common/dto/pagination.dto';
+import { PaginationService } from 'src/common/services/pagination.service';
+import { Request } from 'express';
+import {
+  ProductWithRelations,
+  ProductOrderBy,
+} from 'src/common/types/prisma.types';
 
+export interface MostConsumedResult {
+  product: string;
+  quantity: number;
+  unit: Unit;
+  percentageChange: number;
+}
 @Injectable()
 export class ProductsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private paginationService: PaginationService,
+  ) {}
 
   async create(createProductDto: CreateProductDto, user: UserEntity) {
     try {
+      console.log('createProductDto', createProductDto);
+      console.log('user', user);
       return await this.prisma.$transaction(async (trx) => {
         const categoryExists = await trx.category.findFirst({
           where: { id: createProductDto.categoryId },
@@ -70,16 +92,75 @@ export class ProductsService {
     }
   }
 
-  async findAll(user: UserEntity) {
-    const products = await this.prisma.product.findMany({
-      where: { userId: user.id },
-      include: { category: true, stock: true, movements: true },
-      orderBy: {
-        createdAt: 'desc',
-      },
+  async findAll(
+    user: UserEntity,
+    query: PaginationQueryDto,
+    req: Request,
+  ): Promise<PaginationResult<ProductWithRelations>> {
+    const paginationOptions =
+      this.paginationService.createPaginationOptions(query);
+
+    // Configurar ordenação especial para campos aninhados
+    let orderBy: ProductOrderBy = {};
+
+    switch (paginationOptions.sortBy) {
+      case 'stock.currentQuantity':
+        orderBy = {
+          stock: {
+            currentQuantity: paginationOptions.sortOrder,
+          },
+        };
+        break;
+      case 'category.name':
+        orderBy = {
+          category: {
+            name: paginationOptions.sortOrder,
+          },
+        };
+        break;
+      default:
+        orderBy = {
+          [paginationOptions.sortBy]: paginationOptions.sortOrder,
+        };
+    }
+
+    const paginationOpts =
+      this.paginationService.getPrismaPaginationOptions(paginationOptions);
+
+    const where: any = { userId: user.id };
+
+    if (query.search) {
+      where.OR = [
+        { name: { contains: query.search, mode: 'insensitive' } },
+        { description: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+
+    const total = await this.prisma.product.count({
+      where,
     });
 
-    return products;
+    const products = await this.prisma.product.findMany({
+      where,
+      include: { category: true, stock: true, movements: true },
+      ...paginationOpts,
+      orderBy,
+    });
+
+    return this.paginationService.createPaginatedResponse(
+      products,
+      total,
+      paginationOptions,
+      req,
+    );
+  }
+
+  async findAllByUserId(userId: number) {
+    return this.prisma.product.findMany({
+      where: { userId },
+      include: { category: true, stock: true, movements: true },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async findOne(id: number, user: UserEntity) {
@@ -122,7 +203,10 @@ export class ProductsService {
     return filteredProducts;
   }
 
-  async mostConsumed(dto: MostConsumedDto, user: UserEntity) {
+  async mostConsumed(
+    dto: MostConsumedDto,
+    user: UserEntity,
+  ): Promise<MostConsumedResult | []> {
     const { month, year } = dto;
 
     const startDate = new Date(year, month - 1, 1);
@@ -143,7 +227,7 @@ export class ProductsService {
         });
 
         if (mostConsumed.length === 0) {
-          throw new NotFoundException('Nenhum produto encontrado neste mês.');
+          return [];
         }
 
         const productId = mostConsumed[0].productId;
@@ -208,6 +292,7 @@ export class ProductsService {
         },
       },
       select: {
+        id: true,
         name: true,
         _count: {
           select: {
@@ -218,6 +303,7 @@ export class ProductsService {
     });
 
     const result = categories.map((category) => ({
+      id: category.id,
       name: category.name,
       count: category._count.products,
     }));
@@ -225,9 +311,13 @@ export class ProductsService {
     return result;
   }
 
-  async getMovementsByDate(dto: GetStockMovementsDto, user: UserEntity) {
-    const startDate = new Date(dto.startDate);
-    const endDate = new Date(dto.endDate);
+  async getMovementsByDate(
+    dto: GetStockMovementsDto,
+    user: UserEntity,
+  ): Promise<{ date: string; IN: number; OUT: number }[] | []> {
+    const startDate = new Date(dto.startDate + 'T00:00:00.000Z');
+
+    const endDate = new Date(dto.endDate + 'T23:59:59.999Z');
 
     const movements = await this.prisma.stockMovement.findMany({
       where: {
@@ -245,9 +335,7 @@ export class ProductsService {
     });
 
     if (!movements.length) {
-      throw new NotFoundException(
-        'Nenhum movimento encontrado para o período informado.',
-      );
+      return [];
     }
 
     const groupedData: Record<
@@ -256,7 +344,13 @@ export class ProductsService {
     > = {};
 
     movements.forEach((movement) => {
-      const dateKey = movement.createdAt.toISOString().split('T')[0];
+      let dateKey: string;
+      if (dto.groupBy === 'month') {
+        dateKey = movement.createdAt.toISOString().substring(0, 7);
+      } else {
+        dateKey = movement.createdAt.toISOString().split('T')[0];
+      }
+
       if (!groupedData[dateKey]) {
         groupedData[dateKey] = { date: dateKey, IN: 0, OUT: 0 };
       }
