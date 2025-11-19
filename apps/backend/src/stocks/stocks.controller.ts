@@ -12,7 +12,10 @@ import { CreateStockDto } from './dto/create-stock.dto';
 import { UpdateStockDto } from './dto/update-stock.dto';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { User } from 'src/users/user.decorator';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiTags('stocks')
+@ApiBearerAuth()
 @Controller('stocks')
 export class StocksController {
   constructor(private readonly stocksService: StocksService) {}

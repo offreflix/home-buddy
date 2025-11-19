@@ -1,10 +1,10 @@
 services:
   frontend:
     build:
-      context: .
-      dockerfile: apps/frontend/Dockerfile
+      context: apps/frontend
+      dockerfile: Dockerfile
     ports:
-      - "5173:5173"
+      - "3000:3000"
     environment:
       - API_BASE_URL=http://backend:3000
     networks:
@@ -13,22 +13,34 @@ services:
 
   backend:
     build:
-      context: .
-      dockerfile: apps/backend/Dockerfile
+      context: apps/backend
+      dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/home_buddy
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - JWT_SECRET=your-secret-key
+      - NODE_ENV=production
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    volumes:
-      - ./apps/backend:/app/apps/backend
+    command: sh -c "npx prisma migrate deploy && npm run prod"
+    networks:
+      - home-buddy-network
+    restart: always
+
+  matcher:
+    build:
+      context: apps/matcher
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     networks:
       - home-buddy-network
     restart: always

@@ -2,14 +2,17 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package.json .
+# Copiar apenas os arquivos necessários do frontend
+COPY package.json ./
+COPY yarn.lock* ./
 
-RUN npm install
+# Instalar dependências usando npm com --legacy-peer-deps
+RUN npm install --legacy-peer-deps
 
-COPY . .
+# Copiar código fonte
+COPY . ./
 
-WORKDIR /app/apps/frontend
-
+# Build da aplicação
 ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_API_BASE_URL
 ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
@@ -18,5 +21,5 @@ RUN npm run build
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["npm", "run", "start"]
 

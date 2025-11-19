@@ -17,11 +17,21 @@ type User = {
   id: string
   username: string
   email: string
+  picture?: string
+  firstName?: string
+  lastName?: string
+  bio?: string
+  phone?: string
+  provider?: string
+  createdAt?: string
+  lastLoginAt?: string
+  updatedAt?: string
 }
 
 type AuthContextType = {
   user: User | null
   setUser: Dispatch<SetStateAction<User | null>>
+  updateUser: (userData: Partial<User>) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -61,6 +71,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [fetchUser])
 
+  const updateUser = useCallback((userData: Partial<User>) => {
+    setUser((prevUser) =>
+      prevUser
+        ? {
+            ...prevUser,
+            ...userData,
+          }
+        : null,
+    )
+  }, [])
+
   useEffect(() => {
     fetchUser()
   }, [fetchUser])
@@ -70,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, setUser }}>
+    <AuthContext.Provider value={{ user, setUser, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

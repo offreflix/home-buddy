@@ -1,26 +1,38 @@
 FROM node:20-alpine
 
-WORKDIR /app
-
+# Instalar dependências do sistema para Puppeteer e Chromium
 RUN apk add --no-cache \
     chromium \
     harfbuzz \
     ca-certificates \
-    ttf-freefont
+    ttf-freefont \
+    nss \
+    freetype \
+    freetype-dev
 
-COPY package.json .
+WORKDIR /app
 
-RUN npm install
+# Copiar apenas os arquivos necessários do backend
+COPY package.json ./
+COPY yarn.lock* ./
 
-COPY . .
+# Instalar dependências usando npm com --legacy-peer-deps
+RUN npm install --legacy-peer-deps
 
-RUN npx prisma generate
+# Copiar código fonte
+COPY . ./
 
-WORKDIR /app/apps/backend
-
+# Configurar ambiente
 ENV NODE_ENV=production
 ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium-browser"
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+# Gerar cliente Prisma
+RUN npx prisma generate
+
+# Build da aplicação
+RUN npm run build
 
 EXPOSE 3000
 
-CMD ["yarn", "start"]
+CMD ["npm", "run", "prod"]
