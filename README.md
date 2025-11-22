@@ -62,6 +62,21 @@ _Organize seus produtos, automatize compras e tenha controle total do seu lar_
 - ✅ Análise de performance e tempos de resposta
 - ✅ Logs detalhados para debugging
 
+#### Exportação e Relatórios
+
+- ✅ Exportação de produtos em formato CSV
+- ✅ Filtros avançados para exportação (estoque baixo, etc.)
+- ✅ Relatórios resumidos de estoque
+- ✅ Estatísticas por categoria e período
+
+#### Dashboard Analítico
+
+- ✅ Cards informativos (total de produtos, estoque baixo, etc.)
+- ✅ Gráfico de produtos mais consumidos
+- ✅ Gráfico de distribuição por categorias (pizza chart)
+- ✅ Gráfico de movimentações de estoque ao longo do tempo
+- ✅ Visualização em tempo real do status do sistema
+
 ---
 
 ## 🏗️ Arquitetura da Aplicação
@@ -71,11 +86,13 @@ home-buddy-monorepo/
 ├── apps/
 │   ├── frontend/          # 🖥️  Interface Web (Next.js)
 │   ├── backend/           # 🚀 API Principal (NestJS)
-│   └── matcher/           # 🤖 Serviço de IA (FastAPI)
+│   ├── matcher/           # 🤖 Serviço de IA (FastAPI)
+│   ├── mcp-server/        # 🔌 Servidor MCP (Model Context Protocol)
+│   └── docs/              # 📚 Documentação adicional
 ├── packages/              # 📦 Componentes Compartilhados
-│   ├── eslint-config/
-│   ├── typescript-config/
-│   └── ui/                # 🎨 Biblioteca de UI
+│   ├── eslint-config/     # Configurações ESLint compartilhadas
+│   ├── typescript-config/  # Configurações TypeScript compartilhadas
+│   └── ui/                # 🎨 Biblioteca de componentes UI (Shadcn/ui)
 └── docker-compose.yml     # 🐳 Orquestração de Serviços
 ```
 
@@ -85,21 +102,28 @@ home-buddy-monorepo/
 
 - **Framework**: Next.js 15.1.5 com App Router
 - **Linguagem**: TypeScript 5.x
-- **UI/UX**: Tailwind CSS + Shadcn/ui + Radix UI
-- **Estado**: Zustand + React Query (TanStack)
+- **UI/UX**: Tailwind CSS 4.0 + Shadcn/ui + Radix UI
+- **Estado**: Zustand + React Query (TanStack Query)
 - **Formulários**: React Hook Form + Zod
 - **Gráficos**: Recharts
+- **Tabelas**: TanStack Table
 - **Tema**: next-themes (Dark/Light mode)
+- **Notificações**: Sonner (Toast)
+- **Testes**: Vitest + Testing Library
 
 #### Backend (NestJS)
 
 - **Framework**: NestJS 10.x
 - **Linguagem**: TypeScript 5.x
 - **Banco**: PostgreSQL 15+ com Prisma ORM
-- **Cache/Sessões**: Redis 7+
-- **Autenticação**: JWT + Google OAuth 2.0
-- **Filas**: BullMQ para processamento assíncrono
+- **Cache/Sessões**: Redis 7+ (ioredis)
+- **Autenticação**: JWT + Google OAuth 2.0 (Passport)
+- **Filas**: BullMQ (Bull) para processamento assíncrono
+- **Monitoramento**: Bull Board Dashboard
+- **Web Scraping**: Puppeteer Core
 - **Documentação**: Swagger/OpenAPI
+- **Validação**: class-validator + class-transformer
+- **Testes**: Jest (unitários e E2E)
 
 #### Serviço de IA (FastAPI)
 
@@ -114,7 +138,10 @@ home-buddy-monorepo/
 - **Orquestração**: Docker Compose com redes isoladas
 - **Banco**: PostgreSQL com healthchecks
 - **Cache**: Redis com persistência
-- **Monorepo**: Yarn Workspaces + Turbo
+- **Monorepo**: Yarn Workspaces 4.6.0 + Turbo
+- **Build System**: Turbo para builds incrementais
+- **Linting**: ESLint com configurações compartilhadas
+- **Formatação**: Prettier
 
 ### 🔄 Fluxos de Dados
 
@@ -186,9 +213,10 @@ docker-compose exec backend yarn prisma migrate deploy
 
 #### 5. Acesse a aplicação
 
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:3000
-- **Documentação API**: http://localhost:3000/api
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:3001
+- **Documentação API**: http://localhost:3001/api
+- **Bull Board Dashboard**: http://localhost:3001/queues (Monitoramento de filas)
 
 ### 🔧 Configuração Manual (Desenvolvimento)
 
@@ -207,6 +235,7 @@ yarn start:dev
 cd apps/frontend
 yarn install
 yarn dev
+# Acesse: http://localhost:1598 (porta padrão em desenvolvimento)
 ```
 
 #### Serviço de IA (FastAPI)
@@ -222,13 +251,15 @@ uvicorn app.main:app --reload --port 8000
 
 ### 🐳 Serviços Docker
 
-| Serviço        | Porta | Descrição             |
-| -------------- | ----- | --------------------- |
-| **Frontend**   | 5173  | Interface web Next.js |
-| **Backend**    | 3000  | API NestJS            |
-| **Matcher**    | 8000  | Serviço de IA FastAPI |
-| **PostgreSQL** | 5432  | Banco de dados        |
-| **Redis**      | 6379  | Cache e sessões       |
+| Serviço        | Porta Externa | Porta Interna | Descrição             |
+| -------------- | ------------- | ------------- | --------------------- |
+| **Frontend**   | 3000          | 3000          | Interface web Next.js |
+| **Backend**    | 3001          | 3000          | API NestJS            |
+| **Matcher**    | 8000          | 8000          | Serviço de IA FastAPI |
+| **PostgreSQL** | 5432          | 5432          | Banco de dados        |
+| **Redis**      | 6379          | 6379          | Cache e sessões       |
+
+**Nota**: Em desenvolvimento local (sem Docker), o frontend roda na porta **1598** por padrão.
 
 ---
 
@@ -236,11 +267,41 @@ uvicorn app.main:app --reload --port 8000
 
 ### 🎯 Primeiros Passos
 
-1. **Acesse** http://localhost:5173
+1. **Acesse** http://localhost:3000 (Docker) ou http://localhost:1598 (desenvolvimento)
 2. **Registre-se** ou faça login com Google
 3. **Crie categorias** para seus produtos
 4. **Adicione produtos** ao seu catálogo
 5. **Configure estoques** desejados
+6. **Explore o Dashboard** para visualizar estatísticas e gráficos
+
+### 🖥️ Interface do Frontend
+
+#### Dashboard Principal
+
+O dashboard oferece uma visão completa do seu estoque:
+
+- **Total de Produtos**: Card com contagem total de produtos cadastrados
+- **Estoque Baixo**: Lista de produtos que estão abaixo da quantidade desejada
+- **Produtos Mais Consumidos**: Ranking dos produtos com maior movimentação
+- **Gráfico de Movimentações**: Visualização temporal das entradas e saídas
+- **Gráfico de Categorias**: Distribuição de produtos por categoria (pizza chart)
+
+#### Página de Produtos
+
+- **Tabela de Produtos**: Visualização em tabela com filtros avançados
+- **Cards de Produtos**: Visualização em cards com informações resumidas
+- **Filtros Avançados**: Por categoria, estoque, unidade, etc.
+- **Busca Inteligente**: Busca em tempo real com debounce
+- **Ações em Lote**: Operações múltiplas em produtos selecionados
+- **Sugestões Inteligentes**: Sugestões baseadas em padrões de uso
+
+#### Página de Scraping
+
+- **Formulário de Scraping**: Interface para adicionar URLs de notas fiscais
+- **Histórico de Jobs**: Lista de todos os scrapings realizados
+- **Progresso em Tempo Real**: Acompanhamento do status dos jobs
+- **Resultados de Matching**: Visualização dos matches sugeridos pela IA
+- **Aprovação de Matches**: Interface para aprovar ou rejeitar matches
 
 ### 📦 Gerenciamento de Produtos
 
@@ -276,12 +337,29 @@ POST /products
 
 ```bash
 # Scraping assíncrono
-curl -X POST http://localhost:3000/scrapping/queue \
+curl -X POST http://localhost:3001/scrapping/queue \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
   -d '{
     "url": "https://exemplo.com/nota-fiscal",
-    "userId": "user123"
+    "userId": 1
   }'
+
+# Múltiplos scrapings
+curl -X POST http://localhost:3001/scrapping/queue/multiple \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{
+    "urls": [
+      "https://exemplo.com/nota-fiscal-1",
+      "https://exemplo.com/nota-fiscal-2"
+    ],
+    "userId": 1
+  }'
+
+# Verificar status do job
+curl -H "Authorization: Bearer <token>" \
+  "http://localhost:3001/scrapping/queue/status/job-12345"
 ```
 
 ### 🤖 Matching Inteligente
@@ -307,21 +385,74 @@ BACKEND_BASE_URL=http://backend:3000
 #### Métricas Disponíveis
 
 - Tempo de resposta de cada operação
-- Custo total com OpenAI
+- Custo total com OpenAI (por período)
 - Taxa de sucesso de matching
 - Performance do scraping
+- Contagem de operações por tipo e status
+- Estatísticas agregadas por período
 
 #### Consultar Estatísticas
 
 ```bash
 # Custos da última semana
 curl -H "Authorization: Bearer <token>" \
-  "http://localhost:3000/tracking/llm-costs?days=7"
+  "http://localhost:3001/tracking/llm-costs?days=7"
 
 # Operações em andamento
 curl -H "Authorization: Bearer <token>" \
-  "http://localhost:3000/tracking/running"
+  "http://localhost:3001/tracking/running"
+
+# Estatísticas gerais do último mês
+curl -H "Authorization: Bearer <token>" \
+  "http://localhost:3001/tracking/stats?days=30"
+
+# Operações com filtros
+curl -H "Authorization: Bearer <token>" \
+  "http://localhost:3001/tracking/operations?operationType=SCRAPING_MATCHING&status=COMPLETED&limit=10"
 ```
+
+### 📤 Exportação de Dados
+
+#### Exportar Produtos
+
+```bash
+# Exportar todos os produtos em CSV
+curl -H "Authorization: Bearer <token>" \
+  "http://localhost:3001/export/products" \
+  --output produtos.csv
+
+# Exportar apenas produtos com estoque baixo
+curl -H "Authorization: Bearer <token>" \
+  "http://localhost:3001/export/products?lowStock=true" \
+  --output produtos_estoque_baixo.csv
+
+# Gerar relatório resumido
+curl -H "Authorization: Bearer <token>" \
+  "http://localhost:3001/export/reports/stock-summary"
+```
+
+---
+
+## 📊 Modelo de Dados
+
+### Entidades Principais
+
+- **User**: Usuários do sistema (com suporte a Google OAuth)
+- **Category**: Categorias de produtos
+- **Product**: Produtos cadastrados pelos usuários
+- **Stock**: Controle de estoque (quantidade atual vs desejada)
+- **StockMovement**: Histórico de movimentações de estoque (entrada/saída)
+- **OperationLog**: Log principal de todas as operações
+- **ScrapingLog**: Logs específicos de operações de scraping
+- **MatchingLog**: Logs de operações de matching com IA
+- **LLMLog**: Logs detalhados de chamadas à OpenAI (tokens, custos, etc.)
+
+### Enums
+
+- **Unit**: kg, g, L, lata, pacote, unidade
+- **MovementType**: IN, OUT
+- **OperationType**: SCRAPING_ONLY, SCRAPING_MATCHING, MATCHING_ONLY
+- **OperationStatus**: RUNNING, COMPLETED, FAILED, CANCELLED
 
 ---
 
@@ -330,23 +461,39 @@ curl -H "Authorization: Bearer <token>" \
 ### Autenticação
 
 ```
-POST /auth/login       - Login tradicional
-POST /auth/register    - Registro de usuário
-GET  /auth/google      - Login com Google
-POST /auth/refresh     - Refresh token
-POST /auth/logout      - Logout
+POST /auth/login           - Login tradicional (email/senha)
+POST /auth/register         - Registro de usuário
+GET  /auth/google           - Login com Google OAuth
+POST /auth/refresh          - Refresh token JWT
+POST /auth/logout           - Logout (invalida tokens)
+POST /auth/link-google      - Vincular conta Google a usuário existente
 ```
+
+**Nota**: A maioria dos endpoints requer autenticação via Bearer Token (JWT).
 
 ### Produtos
 
 ```
-GET    /products              - Listar produtos
-POST   /products              - Criar produto
-GET    /products/:id          - Buscar produto
-PUT    /products/:id          - Atualizar produto
-DELETE /products/:id          - Deletar produto
-POST   /products/:id/stock    - Atualizar estoque
+GET    /products                      - Listar produtos (com paginação)
+POST   /products                      - Criar produto
+GET    /products/id/:id               - Buscar produto por ID
+GET    /products/count                - Contar total de produtos
+GET    /products/low-stock            - Listar produtos com estoque baixo
+GET    /products/most-consumed        - Produtos mais consumidos
+GET    /products/count-by-category    - Contagem de produtos por categoria
+GET    /products/movements            - Histórico de movimentações de estoque
+PATCH  /products/id/:id               - Atualizar produto
+PATCH  /products/update-stock/:id     - Atualizar estoque do produto
+DELETE /products/:id                  - Deletar produto
 ```
+
+**Parâmetros de Paginação** (para `/products`):
+
+- `page`: Número da página (padrão: 1)
+- `limit`: Itens por página (padrão: 10)
+- `search`: Busca por nome/descrição
+- `categoryId`: Filtrar por categoria
+- `lowStock`: true/false - Filtrar apenas produtos com estoque baixo
 
 ### Scraping
 
@@ -356,18 +503,31 @@ POST   /scrapping/queue             - Scraping assíncrono
 POST   /scrapping/queue/multiple    - Múltiplos scrapings
 GET    /scrapping/queue/status/:id  - Status do job
 GET    /scrapping/queue/stats       - Estatísticas da fila
+POST   /scrapping/queue/clean       - Limpar jobs completados/falhados
+POST   /scrapping/queue/pause       - Pausar fila de processamento
+POST   /scrapping/queue/resume      - Retomar fila de processamento
 ```
 
 ### Tracking
 
 ```
-GET    /tracking/operations         - Histórico de operações
-GET    /tracking/operations/:id     - Detalhes da operação
-GET    /tracking/stats              - Estatísticas gerais
-GET    /tracking/llm-costs         - Custos com IA
-GET    /tracking/running           - Operações ativas
-GET    /tracking/failed            - Operações com erro
+GET    /tracking/operations         - Histórico de operações (com filtros)
+GET    /tracking/operations/:jobId - Detalhes da operação por Job ID
+GET    /tracking/stats              - Estatísticas gerais (por período)
+GET    /tracking/llm-costs         - Custos com IA (por período)
+GET    /tracking/running           - Operações ativas em execução
+GET    /tracking/failed            - Operações que falharam
 ```
+
+**Parâmetros de Filtro** (para `/tracking/operations`):
+
+- `operationType`: SCRAPING_ONLY | SCRAPING_MATCHING | MATCHING_ONLY
+- `status`: RUNNING | COMPLETED | FAILED | CANCELLED
+- `startDate`: Data inicial (ISO 8601)
+- `endDate`: Data final (ISO 8601)
+- `limit`: Limite de resultados (padrão: 50)
+- `offset`: Offset para paginação (padrão: 0)
+- `allUsers`: true/false - Incluir operações de todos os usuários (admin)
 
 ### Categorias
 
@@ -376,6 +536,35 @@ GET    /categories       - Listar categorias
 POST   /categories       - Criar categoria
 PUT    /categories/:id   - Atualizar categoria
 DELETE /categories/:id   - Deletar categoria
+```
+
+### Exportação
+
+```
+GET    /export/products              - Exportar produtos em CSV
+GET    /export/reports/stock-summary - Gerar relatório resumido do estoque
+```
+
+**Parâmetros de Exportação** (para `/export/products`):
+
+- `lowStock`: true/false - Filtrar apenas produtos com estoque baixo
+
+### Estoque (Stocks)
+
+```
+GET    /stocks              - Listar todos os estoques
+POST   /stocks              - Criar novo estoque
+GET    /stocks/:id          - Buscar estoque por ID
+PATCH  /stocks/:id          - Atualizar estoque
+DELETE /stocks/:id          - Deletar estoque
+```
+
+**Nota**: O estoque é geralmente gerenciado através dos endpoints de produtos (`/products/update-stock/:id`).
+
+### Usuários
+
+```
+POST   /users/user       - Criar novo usuário (registro)
 ```
 
 ---
@@ -415,6 +604,10 @@ GET /scrapping/queue/stats
 
 # Status específico
 GET /scrapping/queue/status/{jobId}
+
+# Dashboard visual Bull Board
+# Acesse: http://localhost:3001/queues
+# Visualize jobs em tempo real, estatísticas e histórico
 ```
 
 ---
@@ -467,15 +660,15 @@ GET /scrapping/queue/status/{jobId}
 ```bash
 # Monitorar custos semanais
 curl -H "Authorization: Bearer <token>" \
-  "/tracking/llm-costs?days=7"
+  "http://localhost:3001/tracking/llm-costs?days=7"
 
 # Investigar operação específica
 curl -H "Authorization: Bearer <token>" \
-  "/tracking/operations/job-12345"
+  "http://localhost:3001/tracking/operations/job-12345"
 
-# Estatísticas gerais
+# Estatísticas gerais (últimos 30 dias)
 curl -H "Authorization: Bearer <token>" \
-  "/tracking/stats?period=month"
+  "http://localhost:3001/tracking/stats?days=30"
 ```
 
 ---
@@ -529,6 +722,68 @@ cd apps/matcher
 pytest -q               # Testes unitários
 pytest --cov=app        # Cobertura
 ```
+
+---
+
+## ⚙️ Variáveis de Ambiente
+
+### Backend (NestJS)
+
+Crie um arquivo `.env` no diretório `apps/backend/`:
+
+```env
+# Banco de Dados
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/home_buddy
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# JWT
+JWT_SECRET=your-secret-key-change-in-production
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
+
+# Google OAuth (opcional)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Frontend URL (para CORS)
+FRONTEND_URL=http://localhost:1598
+
+# Ambiente
+NODE_ENV=development
+PORT=3000
+```
+
+### Frontend (Next.js)
+
+Crie um arquivo `.env.local` no diretório `apps/frontend/`:
+
+```env
+# URL da API Backend
+# Em desenvolvimento local: http://localhost:3000
+# Com Docker: http://localhost:3001
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
+```
+
+### Matcher (FastAPI)
+
+Crie um arquivo `.env` no diretório `apps/matcher/`:
+
+```env
+# OpenAI
+OPENAI_API_KEY=sk-your-openai-api-key
+
+# Token interno para autenticação service-to-service
+INTERNAL_TOKEN=secure-service-token-change-in-production
+
+# URL do Backend (interno no Docker)
+BACKEND_BASE_URL=http://backend:3000
+```
+
+**Nota**: Para produção, use variáveis de ambiente seguras e nunca commite arquivos `.env` com credenciais reais.
 
 ---
 

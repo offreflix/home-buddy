@@ -15,6 +15,7 @@ import { TrackingModule } from './tracking/tracking.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ExportModule } from './export/export.module';
 import { CommonModule } from './common/common.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { CommonModule } from './common/common.module';
     BullBoardModule,
     TrackingModule,
     ExportModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

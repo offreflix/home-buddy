@@ -1,13 +1,13 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/api/client'
 import {
-  ScrapingJob,
   CreateScrapingJobSchema,
   ScrapingFormValues,
   ProductMatch,
   ProductScrap,
   ScrapedProduct,
+  ScrapedData,
 } from './scraping.type'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -20,17 +20,9 @@ import { CreateProductSchema, Unit } from '../products/products.type'
 export const useScrapingModel = () => {
   const { user } = useAuth()
   const queryClient = useQueryClient()
-  const [currentJobId, setCurrentJobId] = useState<string | null>(null)
-  const [isPolling, setIsPolling] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [acceptedMatches, setAcceptedMatches] = useState<Set<string>>(new Set())
   const [rejectedMatches, setRejectedMatches] = useState<Set<string>>(new Set())
-
-  const jobsQuery = useQuery({
-    queryKey: ['scraping-jobs'],
-    queryFn: () =>
-      apiClient.get('/scrapping/queue/stats').then((res) => res.data),
-  })
 
   const productsQuery = useQuery({
     queryKey: ['products'],
@@ -43,34 +35,12 @@ export const useScrapingModel = () => {
       apiClient.get('/categories?perPage=0').then((res) => res.data),
   })
 
-  const jobStatusQuery = useQuery({
-    queryKey: ['scraping-job-status', currentJobId],
-    queryFn: () =>
-      currentJobId
-        ? apiClient
-            .get(`/scrapping/queue/status/${currentJobId}`)
-            .then((res) => res.data)
-        : null,
-    enabled: !!currentJobId,
-    refetchInterval: isPolling ? 2000 : false,
-  })
-
-  useEffect(() => {
-    if (jobStatusQuery.data && isPolling) {
-      const jobStatus = jobStatusQuery.data as ScrapingJob
-
-      if (jobStatus.state === 'completed' || jobStatus.state === 'failed') {
-        setIsPolling(false)
-      }
-    }
-  }, [jobStatusQuery.data, isPolling])
-
   const createJobMutation = useMutation({
     mutationFn: (data: CreateScrapingJobSchema) =>
       apiClient.post('/scrapping/queue', data).then((res) => res.data),
-    onSuccess: (data) => {
-      setCurrentJobId(data.jobId)
-      setIsPolling(true)
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['scraping-operations'] })
+      toast.success('Job de scraping iniciado!')
     },
   })
 
@@ -95,14 +65,8 @@ export const useScrapingModel = () => {
     },
   })
 
-  const stopPolling = useCallback(() => {
-    setIsPolling(false)
-    setCurrentJobId(null)
-  }, [])
-
   const startNewJob = useCallback(() => {
-    setCurrentJobId(null)
-    setIsPolling(false)
+    setError(null)
   }, [])
 
   const form = useForm<ScrapingFormValues>({
@@ -120,18 +84,14 @@ export const useScrapingModel = () => {
         url: data.url.trim(),
         userId: user?.id ? parseInt(user.id) : undefined,
       })
+      form.reset()
     } catch (err) {
       setError(getErrorMessage(err))
     }
   }
 
-  const jobStatus = jobStatusQuery.data as ScrapingJob | null
-  const isCompleted = jobStatus?.state === 'completed'
-  const isFailed = jobStatus?.state === 'failed'
-  const hasMatchResult = Boolean(jobStatus?.matchResult)
-
   const handleAcceptMatch = useCallback(
-    async (match: ProductMatch) => {
+    async (match: ProductMatch, scrapedData?: ScrapedData) => {
       try {
         setError(null)
 
@@ -140,7 +100,7 @@ export const useScrapingModel = () => {
           return
         }
 
-        const scrapedProduct = jobStatus?.result?.data?.products?.find(
+        const scrapedProduct = scrapedData?.products?.find(
           (product: ScrapedProduct) => product.title === match.scrap_title,
         )
 
@@ -171,10 +131,6 @@ export const useScrapingModel = () => {
         toast.success('Produto aceito com sucesso!', {
           description: `Adicionado ${quantityToAdd} unidades ao estoque do produto ${match.product_id}`,
         })
-
-        console.log(
-          `Estoque atualizado com sucesso: +${quantityToAdd} para produto ${match.product_id}`,
-        )
       } catch (err: unknown) {
         const errorMessage = getErrorMessage(err)
         setError(errorMessage)
@@ -182,11 +138,9 @@ export const useScrapingModel = () => {
         toast.error('Erro ao aceitar produto', {
           description: errorMessage,
         })
-
-        console.error('Erro ao aceitar match:', err)
       }
     },
-    [jobStatus, setError, acceptedMatches, updateStockMutation],
+    [setError, acceptedMatches, updateStockMutation],
   )
 
   const handleRejectMatch = useCallback(
@@ -204,8 +158,6 @@ export const useScrapingModel = () => {
         toast.info('Produto rejeitado', {
           description: `${match.scrap_title} foi movido para produtos não identificados`,
         })
-
-        console.log('Match rejeitado:', match.scrap_title)
       } catch (err: unknown) {
         console.error('Erro ao rejeitar match:', err)
       }
@@ -242,11 +194,11 @@ export const useScrapingModel = () => {
   }
 
   const handleCreateProduct = useCallback(
-    async (scrap: ProductScrap) => {
+    async (scrap: ProductScrap, scrapedData?: ScrapedData) => {
       try {
         setError(null)
 
-        const scrapedProduct = jobStatus?.result?.data?.products?.find(
+        const scrapedProduct = scrapedData?.products?.find(
           (product: ScrapedProduct) => product.title === scrap.title,
         )
 
@@ -278,8 +230,6 @@ export const useScrapingModel = () => {
         toast.success('Produto criado com sucesso!', {
           description: `${scrap.title} foi adicionado aos seus produtos`,
         })
-
-        console.log('Produto criado com sucesso:', scrap.title)
       } catch (err: unknown) {
         const errorMessage = getErrorMessage(err)
         setError(errorMessage)
@@ -287,25 +237,21 @@ export const useScrapingModel = () => {
         toast.error('Erro ao criar produto', {
           description: errorMessage,
         })
-
-        console.error('Erro ao criar produto:', err)
       }
     },
-    [
-      jobStatus,
-      setError,
-      categoriesQuery.data,
-      createProductMutation,
-      setAcceptedMatches,
-    ],
+    [setError, categoriesQuery.data, createProductMutation, setAcceptedMatches],
   )
 
   const handleSelectExistingProduct = useCallback(
-    async (scrap: ProductScrap, selectedProductId: string) => {
+    async (
+      scrap: ProductScrap,
+      selectedProductId: string,
+      scrapedData?: ScrapedData,
+    ) => {
       try {
         setError(null)
 
-        const scrapedProduct = jobStatus?.result?.data?.products?.find(
+        const scrapedProduct = scrapedData?.products?.find(
           (product: ScrapedProduct) => product.title === scrap.title,
         )
 
@@ -336,10 +282,6 @@ export const useScrapingModel = () => {
         toast.success('Produto vinculado com sucesso!', {
           description: `Adicionado ${quantityToAdd} unidades ao estoque do produto ${selectedProductId}`,
         })
-
-        console.log(
-          `Produto vinculado com sucesso: +${quantityToAdd} para produto ${selectedProductId}`,
-        )
       } catch (err: unknown) {
         const errorMessage = getErrorMessage(err)
         setError(errorMessage)
@@ -347,26 +289,15 @@ export const useScrapingModel = () => {
         toast.error('Erro ao vincular produto', {
           description: errorMessage,
         })
-
-        console.error('Erro ao vincular produto:', err)
       }
     },
-    [jobStatus, setError, updateStockMutation, setAcceptedMatches],
+    [setError, updateStockMutation, setAcceptedMatches],
   )
 
   return {
-    currentJobId,
-    isPolling,
-    jobsQuery,
-    jobStatusQuery,
-    jobStatus,
-    isCompleted,
-    isFailed,
-    hasMatchResult,
     createJobMutation,
     updateStockMutation,
     createProductMutation,
-    stopPolling,
     startNewJob,
     error,
     setError,
@@ -380,5 +311,8 @@ export const useScrapingModel = () => {
     handleRejectMatch,
     handleCreateProduct,
     handleSelectExistingProduct,
+    // Legacy flags for compatibility if needed, though mostly unused now
+    isCompleted: false,
+    isFailed: false,
   }
 }

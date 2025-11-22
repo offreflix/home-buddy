@@ -7,6 +7,7 @@ import { ScrapingQueueProcessor } from './scrapping-queue.processor';
 import { ScrapingQueueService } from './scrapping-queue.service';
 import { MatcherService } from './matcher.service';
 import { TrackingModule } from '../tracking/tracking.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { TrackingModule } from '../tracking/tracking.module';
     }),
     HttpModule,
     TrackingModule,
+    NotificationsModule,
   ],
   controllers: [ScrappingController],
   providers: [

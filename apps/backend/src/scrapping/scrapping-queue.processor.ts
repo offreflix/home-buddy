@@ -6,6 +6,7 @@ import { MatcherService } from './matcher.service';
 import { MatchResultDto } from './dto/match-result.dto';
 import { TrackingService } from '../tracking/tracking.service';
 import { OperationType, OperationStatus, Prisma } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service';
 
 export interface ScrapingJobData {
   url: string;
@@ -28,6 +29,7 @@ export class ScrapingQueueProcessor {
     private readonly scrappingService: ScrappingService,
     private readonly matcherService: MatcherService,
     private readonly trackingService: TrackingService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   @Process('scrape-nfc')
@@ -80,7 +82,10 @@ export class ScrapingQueueProcessor {
           await this.trackingService.createScrapingLog({
             operationId: operationLog.id,
             url: job.data.url,
-            inputData: { url: job.data.url, userId: job.data.userId } as unknown as Prisma.JsonValue,
+            inputData: {
+              url: job.data.url,
+              userId: job.data.userId,
+            } as unknown as Prisma.JsonValue,
             outputData: {
               productsCount: result.products.length,
               products: result.products,
@@ -211,6 +216,19 @@ export class ScrapingQueueProcessor {
         `Scraping${matchResult ? ' e matching' : ''} concluído com sucesso para URL: ${job.data.url}`,
       );
 
+      if (job.data.userId) {
+        this.notificationsService.emitEvent(
+          job.data.userId,
+          'scraping.completed',
+          {
+            jobId,
+            url: job.data.url,
+            success: true,
+            matchResult,
+          },
+        );
+      }
+
       return {
         success: true,
         data: result,
@@ -235,6 +253,19 @@ export class ScrapingQueueProcessor {
       }
 
       await job.progress(0);
+
+      if (job.data.userId) {
+        this.notificationsService.emitEvent(
+          job.data.userId,
+          'scraping.failed',
+          {
+            jobId,
+            url: job.data.url,
+            success: false,
+            error: error instanceof Error ? error.message : 'Erro desconhecido',
+          },
+        );
+      }
 
       return {
         success: false,

@@ -5,6 +5,7 @@ import {
   IsDateString,
   IsNumberString,
   IsString,
+  IsInt,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { OperationType, OperationStatus } from '@prisma/client';
@@ -32,13 +33,13 @@ export class GetOperationsDto {
 
   @ApiProperty({ example: '50', required: false, default: 50 })
   @IsOptional()
-  @IsNumberString()
+  @IsInt()
   @Transform(({ value }) => parseInt(value, 10))
   limit?: number;
 
   @ApiProperty({ example: '0', required: false, default: 0 })
   @IsOptional()
-  @IsNumberString()
+  @IsInt()
   @Transform(({ value }) => parseInt(value, 10))
   offset?: number;
 

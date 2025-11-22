@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsNumberString, IsString } from 'class-validator';
+import { IsOptional, IsInt, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class GetStatsDto {
   @ApiProperty({ example: '30', required: false, default: 30 })
   @IsOptional()
-  @IsNumberString()
+  @IsInt()
   @Transform(({ value }) => parseInt(value, 10))
   days?: number;
 

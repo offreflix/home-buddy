@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/app-sidebar'
 import { AppHeader } from '@/components/header/app-header'
+import { NotificationListener } from '@/components/notification-listener'
 import { AuthProvider } from '@/context/auth/context'
 import { getAppVersion } from '../action/version'
 import { CreateProductDialog } from './products/ui/modal/create-product-dialog'
@@ -37,6 +38,7 @@ export default async function RootLayout({
 
           {/* Modal global para criação de produtos */}
           <CreateProductDialog />
+          <NotificationListener />
         </SidebarProvider>
       </AuthProvider>
     </>
