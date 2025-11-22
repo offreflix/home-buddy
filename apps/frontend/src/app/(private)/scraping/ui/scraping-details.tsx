@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/api/client'
 import { MatchResults } from './components/match-results'
@@ -21,6 +23,8 @@ export function ScrapingDetails({ jobId, onBack }: ScrapingDetailsProps) {
     handleSelectExistingProduct,
     acceptedMatches,
     rejectedMatches,
+    setAcceptedMatches,
+    setRejectedMatches,
     updateStockMutation,
     createProductMutation,
     productsQuery,
@@ -34,6 +38,34 @@ export function ScrapingDetails({ jobId, onBack }: ScrapingDetailsProps) {
       return response.data
     },
   })
+
+  useEffect(() => {
+    if (operation?.matchingLog?.matcherResponse) {
+      const response = operation.matchingLog.matcherResponse
+      const accepted = new Set<string>()
+      const rejected = new Set<string>()
+
+      const processList = (
+        list: (ProductMatch | ProductScrap)[] | undefined,
+      ) => {
+        if (!list) return
+        list.forEach((item) => {
+          const title = 'scrap_title' in item ? item.scrap_title : item.title
+          const itemStatus = item as ProductMatch &
+            ProductScrap & { status?: string }
+
+          if (itemStatus.status === 'ACCEPTED') accepted.add(title)
+          if (itemStatus.status === 'REJECTED') rejected.add(title)
+        })
+      }
+
+      processList(response.match)
+      processList(response.unmatch)
+
+      setAcceptedMatches(accepted)
+      setRejectedMatches(rejected)
+    }
+  }, [operation, setAcceptedMatches, setRejectedMatches])
 
   if (isLoading) {
     return (
@@ -91,14 +123,14 @@ export function ScrapingDetails({ jobId, onBack }: ScrapingDetailsProps) {
       <MatchResults
         matchResult={matchResult}
         onAcceptMatch={(match: ProductMatch) =>
-          handleAcceptMatch(match, scrapedData)
+          handleAcceptMatch(match, scrapedData, jobId)
         }
-        onRejectMatch={handleRejectMatch}
+        onRejectMatch={(match: ProductMatch) => handleRejectMatch(match, jobId)}
         onCreateProduct={(scrap: ProductScrap) =>
-          handleCreateProduct(scrap, scrapedData)
+          handleCreateProduct(scrap, scrapedData, jobId)
         }
         onSelectExistingProduct={(scrap: ProductScrap, productId: string) =>
-          handleSelectExistingProduct(scrap, productId, scrapedData)
+          handleSelectExistingProduct(scrap, productId, scrapedData, jobId)
         }
         acceptedMatches={acceptedMatches}
         rejectedMatches={rejectedMatches}

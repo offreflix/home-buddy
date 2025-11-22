@@ -18,7 +18,14 @@ import {
   OperationLogResponseDto,
   OperationStatsResponseDto,
   LLMCostStatsDto,
+  UpdateMatchStatusDto,
 } from './dto';
+import {
+  Patch,
+  Body,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 
 @ApiTags('tracking')
 @Controller('tracking')
@@ -136,5 +143,29 @@ export class TrackingController {
       status: OperationStatus.FAILED,
       limit: query.limit || 20,
     });
+  }
+  @Patch('operations/:jobId/match-status')
+  @ApiOperation({ summary: 'Atualiza status de um match' })
+  async updateMatchStatus(
+    @Param('jobId') jobId: string,
+    @Body() body: UpdateMatchStatusDto,
+    @Request() req: AuthRequest,
+  ) {
+    const operation = await this.trackingService.getOperationLogByJobId(jobId);
+
+    if (!operation) {
+      throw new NotFoundException('Operação não encontrada');
+    }
+
+    if (operation.userId !== req.user.id) {
+      throw new ForbiddenException('Acesso negado');
+    }
+
+    return await this.trackingService.updateMatchStatus(
+      jobId,
+      body.scrapTitle,
+      body.status,
+      body.productId,
+    );
   }
 }

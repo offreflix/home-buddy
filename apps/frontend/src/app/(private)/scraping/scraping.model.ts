@@ -90,8 +90,29 @@ export const useScrapingModel = () => {
     }
   }
 
+  const updateMatchStatusMutation = useMutation({
+    mutationFn: ({
+      jobId,
+      scrapTitle,
+      status,
+      productId,
+    }: {
+      jobId: string
+      scrapTitle: string
+      status: 'ACCEPTED' | 'REJECTED'
+      productId?: string
+    }) =>
+      apiClient
+        .patch(`/tracking/operations/${jobId}/match-status`, {
+          scrapTitle,
+          status,
+          productId,
+        })
+        .then((res) => res.data),
+  })
+
   const handleAcceptMatch = useCallback(
-    async (match: ProductMatch, scrapedData?: ScrapedData) => {
+    async (match: ProductMatch, scrapedData?: ScrapedData, jobId?: string) => {
       try {
         setError(null)
 
@@ -126,6 +147,15 @@ export const useScrapingModel = () => {
           stockData: stockUpdateData,
         })
 
+        if (jobId) {
+          await updateMatchStatusMutation.mutateAsync({
+            jobId,
+            scrapTitle: match.scrap_title,
+            status: 'ACCEPTED',
+            productId: match.product_id,
+          })
+        }
+
         setAcceptedMatches((prev) => new Set([...prev, match.scrap_title]))
 
         toast.success('Produto aceito com sucesso!', {
@@ -140,17 +170,25 @@ export const useScrapingModel = () => {
         })
       }
     },
-    [setError, acceptedMatches, updateStockMutation],
+    [setError, acceptedMatches, updateStockMutation, updateMatchStatusMutation],
   )
 
   const handleRejectMatch = useCallback(
-    async (match: ProductMatch) => {
+    async (match: ProductMatch, jobId?: string) => {
       try {
         setError(null)
 
         if (rejectedMatches.has(match.scrap_title)) {
           setError('Este produto já foi rejeitado')
           return
+        }
+
+        if (jobId) {
+          await updateMatchStatusMutation.mutateAsync({
+            jobId,
+            scrapTitle: match.scrap_title,
+            status: 'REJECTED',
+          })
         }
 
         setRejectedMatches((prev) => new Set([...prev, match.scrap_title]))
@@ -162,7 +200,7 @@ export const useScrapingModel = () => {
         console.error('Erro ao rejeitar match:', err)
       }
     },
-    [rejectedMatches, setError],
+    [rejectedMatches, setError, updateMatchStatusMutation],
   )
 
   const createProductMutation = useMutation({
@@ -194,7 +232,7 @@ export const useScrapingModel = () => {
   }
 
   const handleCreateProduct = useCallback(
-    async (scrap: ProductScrap, scrapedData?: ScrapedData) => {
+    async (scrap: ProductScrap, scrapedData?: ScrapedData, jobId?: string) => {
       try {
         setError(null)
 
@@ -223,7 +261,16 @@ export const useScrapingModel = () => {
           currentQuantity: parseInt(scrapedProduct.quantity || '0') || 0,
         }
 
-        await createProductMutation.mutateAsync(productData)
+        const newProduct = await createProductMutation.mutateAsync(productData)
+
+        if (jobId && newProduct?.id) {
+          await updateMatchStatusMutation.mutateAsync({
+            jobId,
+            scrapTitle: scrap.title,
+            status: 'ACCEPTED',
+            productId: newProduct.id.toString(),
+          })
+        }
 
         setAcceptedMatches((prev) => new Set([...prev, scrap.title]))
 
@@ -239,7 +286,13 @@ export const useScrapingModel = () => {
         })
       }
     },
-    [setError, categoriesQuery.data, createProductMutation, setAcceptedMatches],
+    [
+      setError,
+      categoriesQuery.data,
+      createProductMutation,
+      setAcceptedMatches,
+      updateMatchStatusMutation,
+    ],
   )
 
   const handleSelectExistingProduct = useCallback(
@@ -247,6 +300,7 @@ export const useScrapingModel = () => {
       scrap: ProductScrap,
       selectedProductId: string,
       scrapedData?: ScrapedData,
+      jobId?: string,
     ) => {
       try {
         setError(null)
@@ -277,6 +331,15 @@ export const useScrapingModel = () => {
           stockData: stockUpdateData,
         })
 
+        if (jobId) {
+          await updateMatchStatusMutation.mutateAsync({
+            jobId,
+            scrapTitle: scrap.title,
+            status: 'ACCEPTED',
+            productId: selectedProductId,
+          })
+        }
+
         setAcceptedMatches((prev) => new Set([...prev, scrap.title]))
 
         toast.success('Produto vinculado com sucesso!', {
@@ -291,7 +354,12 @@ export const useScrapingModel = () => {
         })
       }
     },
-    [setError, updateStockMutation, setAcceptedMatches],
+    [
+      setError,
+      updateStockMutation,
+      setAcceptedMatches,
+      updateMatchStatusMutation,
+    ],
   )
 
   return {
@@ -311,6 +379,8 @@ export const useScrapingModel = () => {
     handleRejectMatch,
     handleCreateProduct,
     handleSelectExistingProduct,
+    setAcceptedMatches,
+    setRejectedMatches,
     // Legacy flags for compatibility if needed, though mostly unused now
     isCompleted: false,
     isFailed: false,

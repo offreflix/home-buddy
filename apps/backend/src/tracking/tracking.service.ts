@@ -311,4 +311,82 @@ export class TrackingService {
       throw error;
     }
   }
+
+  async updateMatchStatus(
+    jobId: string,
+    scrapTitle: string,
+    status: 'ACCEPTED' | 'REJECTED',
+    productId?: string,
+  ) {
+    try {
+      const operationLog = await this.prisma.operationLog.findUnique({
+        where: { jobId },
+        include: { matchingLog: true },
+      });
+
+      if (!operationLog || !operationLog.matchingLog) {
+        throw new Error('MatchingLog não encontrado para este JobID');
+      }
+
+      const matchingLog = operationLog.matchingLog;
+      const matcherResponse = matchingLog.matcherResponse as any; // Cast to any to manipulate JSON
+
+      if (!matcherResponse) {
+        throw new Error('MatcherResponse vazio');
+      }
+
+      // Helper to update item in list
+      const updateList = (list: any[]) => {
+        if (!list) return false;
+        const index = list.findIndex(
+          (item) =>
+            item.scrap_title === scrapTitle || item.title === scrapTitle,
+        );
+        if (index !== -1) {
+          list[index] = {
+            ...list[index],
+            status,
+            ...(productId && { product_id: productId }),
+          };
+          return true;
+        }
+        return false;
+      };
+
+      // Try to find and update in 'match' list
+      let updated = updateList(matcherResponse.match);
+
+      // If not found, try 'unmatch' list
+      if (!updated) {
+        updated = updateList(matcherResponse.unmatch);
+      }
+
+      if (!updated) {
+        this.logger.warn(
+          `Item '${scrapTitle}' não encontrado no MatchingLog do Job ${jobId}`,
+        );
+        // Optional: Add to a new list or throw error? For now, just warn.
+        return null;
+      }
+
+      // Update database
+      await this.prisma.matchingLog.update({
+        where: { id: matchingLog.id },
+        data: {
+          matcherResponse: matcherResponse as Prisma.JsonValue,
+        },
+      });
+
+      this.logger.log(
+        `Match status atualizado para '${scrapTitle}' no Job ${jobId}: ${status}`,
+      );
+      return { success: true };
+    } catch (error) {
+      this.logger.error(
+        `Erro ao atualizar match status para Job ${jobId}:`,
+        error,
+      );
+      throw error;
+    }
+  }
 }
